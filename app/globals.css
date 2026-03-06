@@ -1,0 +1,65 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+
+  /* --- NEW VEZOR-INSPIRED PALETTE (VIBRANT ORANGE-RED) --- */
+  --primary-accent: #FF5B33; /* Vibrant Orange-Red (Hero background & CTA buttons) */
+  --dark-text: #171717;      /* Near Black for dark backgrounds */
+  --gray-light: #f5f5f5;     /* Light Background */
+  --light-accent: #FFC0B2;  /* Lightened shade for secondary text/accents */
+  
+  --white: #ffffff;
+  --blue-300: #93c5fd;
+  --blue-700: #1d4ed8;
+  /* (Keeping previous blues just in case, but using new primary colors below) */
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+.skeleton-shimmer {
+  background: #f6f7f8;
+  background-image: linear-gradient(
+    to right,
+    #f6f7f8 0%,
+    #edeef1 20%,
+    #f6f7f8 40%,
+    #f6f7f8 100%
+  );
+  background-repeat: no-repeat;
+  background-size: 800px 104px;
+  display: inline-block;
+  position: relative;
+  animation-duration: 1.5s;
+  animation-fill-mode: forwards;
+  animation-iteration-count: infinite;
+  animation-name: shimmer;
+  animation-timing-function: linear;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -468px 0;
+  }
+  100% {
+    background-position: 468px 0;
+  }
+}

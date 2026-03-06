@@ -1,0 +1,10 @@
+{
+  "Navbar": {
+    "tagline": "an EDUCATIONAL legal counsel app",
+    "welcome": "Welcome",
+    "queries": "Queries",
+    "caseAdvisor": "Case Advisor",
+    "logout": "Logout",
+    "login": "Login / Signup"
+  }
+}
