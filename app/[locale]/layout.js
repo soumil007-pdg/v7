@@ -1,9 +1,8 @@
 import { NextIntlClientProvider } from 'next-intl';
-import { getMessages } from 'next-intl/server';
+import { getMessages, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
-import '../globals.css'; // Notice the path changed to '../' because layout moved!
+import '../globals.css'; 
 
-// Import your components. Adjust paths since layout is now inside [locale]
 import Navbar from '../components/Navbar'; 
 import Footer from '../components/Footer';
 
@@ -13,12 +12,17 @@ export const metadata = {
 };
 
 export default async function RootLayout({ children, params }) {
-  const { locale } = await params;
+  // In Next.js 15, params is a Promise and must be awaited
+  const resolvedParams = await params;
+  const locale = resolvedParams.locale;
 
   // Validate that the incoming locale is supported
   if (!['en', 'hi', 'mr', 'te'].includes(locale)) {
     notFound();
   }
+
+  // Enable static rendering
+  setRequestLocale(locale);
 
   // Fetch the translation messages for the current language
   const messages = await getMessages();
@@ -26,8 +30,7 @@ export default async function RootLayout({ children, params }) {
   return (
     <html lang={locale}>
       <body>
-        {/* NextIntlClientProvider passes the translations to the whole app */}
-        <NextIntlClientProvider messages={messages}>
+        <NextIntlClientProvider locale={locale} messages={messages}>
           <Navbar />
           {children}
           <Footer />

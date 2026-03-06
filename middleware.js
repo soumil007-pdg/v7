@@ -6,8 +6,6 @@ export default createMiddleware({
 });
  
 export const config = {
-  // This matcher ensures ALL pages are routed through the language middleware
-  // while explicitly ignoring API routes, Next.js static files, and images.
   matcher: [
     '/',
     '/(hi|mr|te|en)/:path*',
