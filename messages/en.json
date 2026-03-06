@@ -6,5 +6,53 @@
     "caseAdvisor": "Case Advisor",
     "logout": "Logout",
     "login": "Login / Signup"
+  },
+  "HomePage": {
+    "hero": {
+      "titlePart1": "Understand your ",
+      "titlePart2": "rights instantly",
+      "subtitle": "Get clear, practical legal guidance for any question. No jargon—just straightforward answers and next steps, tailored for everyday situations.",
+      "quickChatBtn": "Quick Rights Chat",
+      "caseAdvisorBtn": "Case Advisor"
+    },
+    "insights": {
+      "tag": "LEGAL INSIGHTS",
+      "title": "Empower your legal knowledge",
+      "description": "Discover your rights and get expert advice on any legal issue. Our platform simplifies complex legal information, making it accessible to everyone.",
+      "dashboardBtn": "Open Dashboard",
+      "startBtn": "Start now"
+    },
+    "services": {
+      "title": "Legal help, simplified for everyone",
+      "subtitle": "Get clear, practical legal guidance in minutes. Ask questions, understand your rights, and find your next steps—no legal background needed.",
+      "quickChatDesc": "Ask any legal question and receive clear, straightforward answers—no case details required. Perfect for everyday doubts.",
+      "caseAdvisorDesc": "Share your situation for precise, step-by-step legal advice. We'll build a strategy, evidence checklist, and timeline for you."
+    },
+    "features": {
+      "tag": "DISCOVER OUR CORE FEATURES",
+      "title": "Legal answers made effortless",
+      "easyTitle": "Easy to use",
+      "easyDesc": "Access legal help through a straightforward, intuitive interface designed for everyone—no law degree required. Just type and get answers.",
+      "accurateTitle": "Accurate responses",
+      "accurateDesc": "Get reliable, up-to-date legal information powered by advanced AI that cites specific Indian Constitutional Articles and Acts.",
+      "saveTitle": "Save tokens",
+      "saveDesc": "Find quick, relevant answers without wasting resources. We optimize every interaction for speed, efficiency, and clarity."
+    },
+    "faqCta": {
+      "ctaTitle": "Your legal questions, answered fast",
+      "ctaDesc": "Find clear, practical guidance on your rights and next steps in simple language.",
+      "startJourneyBtn": "Start Your Journey",
+      "askNowBtn": "Ask now",
+      "tags": "Simple • Educational",
+      "faqTitle": "Frequently Asked Questions",
+      "faq1Q": "What are 'Credits Saved'?",
+      "faq1A": "Think of AI tokens as \"word-coins\". A typical chat burns thousands. We do the heavy lifting upfront, optimizing your prompt to get a complete strategy in one go. \"Credits Saved\" tracks that efficiency.",
+      "faq2Q": "Can I use this in court?",
+      "faq2A": "No. Advocat-Easy is an <bold>educational tool</bold>. We empower you to understand your rights and strategy so you can talk to a lawyer confidently, but this is not a substitute for professional counsel.",
+      "faq3Q": "Is my question confidential?",
+      "faq3A": "Absolutely. Your details and questions are encrypted and never shared publicly. We use them solely to generate your specific legal analysis during the active session.",
+      "faq4Q": "Quick Chat vs. Case Advisor?",
+      "faq4A": "Use <bold>Quick Chat</bold> for everyday doubts (e.g., \"Is this rent clause legal?\"). Use <bold>Case Advisor</bold> when you have a specific dispute and need a structured roadmap and evidence checklist."
+    }
   }
 }
