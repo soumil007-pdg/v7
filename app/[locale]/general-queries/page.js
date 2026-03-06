@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { ChatSkeleton } from '@/app/components/SkeletonLoader';
 import { useAuth } from '@/hooks/useAuth';
+import { useTranslations } from 'next-intl';
 
 // --- Styles & Animations ---
 const FontLoader = () => (
@@ -62,6 +63,7 @@ const MarkdownComponents = {
 
 export default function GeneralQueries() {
   const { isLoggedIn, userEmail, loading } = useAuth(true);
+  const t = useTranslations('GeneralQueries');
 
   const [caseFiles, setCaseFiles] = useState({});
   const [activeCaseId, setActiveCaseId] = useState(null);
@@ -167,15 +169,14 @@ export default function GeneralQueries() {
   const handleCreateNewCase = (currentCases = caseFiles) => {
     const newCaseId = `case-${Date.now()}`;
     const newCase = {
-      title: "New Consultation",
+      title: t('sidebar.newConsultation'),
       messages: [],
-      tokensSaved: 0, // Start at 0
+      tokensSaved: 0,
       references: [] 
     };
     const updatedCaseFiles = { ...currentCases, [newCaseId]: newCase };
     setCaseFiles(updatedCaseFiles);
     setActiveCaseId(newCaseId);
-    // State updates will handle resetting credits to 0 automatically via useEffect
     if (window.innerWidth < 768) setIsSidebarOpen(false);
   };
 
@@ -211,7 +212,6 @@ export default function GeneralQueries() {
         if (keys.length > 0) setActiveCaseId(keys[0]);
         else handleCreateNewCase(updated);
     }
-    toast.success("Consultation deleted");
   };
 
   const handleSubmit = async (e) => {
@@ -240,11 +240,10 @@ export default function GeneralQueries() {
         
         setCreditPop(actualSaved);
         
-        // Calculate new total for THIS case only
         const currentTotal = caseFiles[activeCaseId].tokensSaved || 0;
         const newTotalCredits = currentTotal + actualSaved;
         
-        setSavedCredits(newTotalCredits); // Update UI immediately
+        setSavedCredits(newTotalCredits); 
         setTimeout(() => setCreditPop(null), 2000);
 
         const aiMessage = { 
@@ -274,7 +273,7 @@ export default function GeneralQueries() {
             ...caseFiles[activeCaseId],
             title: newTitle,
             messages: finalMessages,
-            tokensSaved: newTotalCredits, // Save specific case credits
+            tokensSaved: newTotalCredits,
             references: allCitations
         };
 
@@ -301,13 +300,13 @@ export default function GeneralQueries() {
             onClick={() => setMode('quick')}
             className={`px-3 py-1.5 rounded-md text-xs font-bold flex items-center gap-2 transition-all ${mode === 'quick' ? 'bg-white text-[#FF5B33] shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
         >
-            <Zap size={14} /> Quick
+            <Zap size={14} /> {t('header.quickBtn')}
         </button>
         <button 
             onClick={() => setMode('deep')}
             className={`px-3 py-1.5 rounded-md text-xs font-bold flex items-center gap-2 transition-all ${mode === 'deep' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
         >
-            <FileText size={14} /> Deep
+            <FileText size={14} /> {t('header.deepBtn')}
         </button>
     </div>
   );
@@ -328,12 +327,12 @@ export default function GeneralQueries() {
             ${!isSidebarOpen && 'md:w-0 md:border-none'} 
         `}>
           <div className="p-4 border-b border-slate-100 flex justify-between items-center min-w-[288px]">
-             <h2 className="font-bold text-slate-700">My Consultations</h2>
+             <h2 className="font-bold text-slate-700">{t('sidebar.title')}</h2>
              <button onClick={() => setIsSidebarOpen(false)} className="md:hidden text-slate-400"><X size={20}/></button>
           </div>
           <div className="p-4 min-w-[288px]">
             <button onClick={() => handleCreateNewCase()} className="w-full bg-[#171717] text-white py-3 px-4 rounded-lg hover:bg-black transition font-semibold flex items-center justify-center gap-2 shadow-md shadow-slate-900/10">
-                <Pencil size={16} /> New Consultation
+                <Pencil size={16} /> {t('sidebar.newConsultation')}
             </button>
           </div>
           <div className="flex-1 overflow-y-auto p-2 space-y-1 min-w-[288px]">
@@ -375,9 +374,9 @@ export default function GeneralQueries() {
                 className="fixed z-50 bg-white border border-slate-200 shadow-xl rounded-lg py-1 w-32"
                 style={{ top: contextMenu.y, left: contextMenu.x }}
             >
-                <button onClick={() => toast.success("Pinned (Demo)")} className="w-full text-left px-4 py-2 text-sm hover:bg-slate-50 flex items-center gap-2"><Pin size={14}/> Pin</button>
-                <button onClick={handleRenameStart} className="w-full text-left px-4 py-2 text-sm hover:bg-slate-50 flex items-center gap-2"><Pencil size={14}/> Rename</button>
-                <button onClick={handleDeleteCase} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"><Trash2 size={14}/> Delete</button>
+                <button onClick={() => toast.success("Pinned (Demo)")} className="w-full text-left px-4 py-2 text-sm hover:bg-slate-50 flex items-center gap-2"><Pin size={14}/> {t('contextMenu.pin')}</button>
+                <button onClick={handleRenameStart} className="w-full text-left px-4 py-2 text-sm hover:bg-slate-50 flex items-center gap-2"><Pencil size={14}/> {t('contextMenu.rename')}</button>
+                <button onClick={handleDeleteCase} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"><Trash2 size={14}/> {t('contextMenu.delete')}</button>
             </div>
         )}
 
@@ -392,11 +391,11 @@ export default function GeneralQueries() {
                 </button>
                 <div>
                     <h1 className="text-lg font-bold text-slate-900 truncate max-w-[150px] md:max-w-sm">
-                        {caseFiles[activeCaseId]?.title || 'New Consultation'}
+                        {caseFiles[activeCaseId]?.title || t('header.newConsultation')}
                     </h1>
                     <div className="flex items-center gap-2 text-xs text-slate-500">
                         <span className={`w-2 h-2 rounded-full ${activeCaseId ? 'bg-green-500' : 'bg-slate-300'}`}></span>
-                        {activeCaseId ? 'Active Session' : 'Ready'}
+                        {activeCaseId ? t('header.activeSession') : t('header.ready')}
                     </div>
                 </div>
             </div>
@@ -404,24 +403,24 @@ export default function GeneralQueries() {
             <div className="flex items-center gap-3 md:gap-4">
                 <div className="group relative hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 text-orange-700 rounded-full border border-orange-100 text-xs font-bold cursor-help">
                     <Sparkles size={14} className="text-[#FF5B33] fill-[#FF5B33]" />
-                    <span>{savedCredits} Credits Saved</span>
+                    <span>{savedCredits} {t('header.creditsSaved')}</span>
                     <Info size={14} className="ml-1 text-orange-300 group-hover:text-orange-600 transition-colors" />
                     
                     <div className="absolute top-full right-0 mt-2 w-72 p-4 bg-white shadow-2xl border border-slate-200 rounded-xl text-left invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-200 z-50">
                         <h4 className="font-bold text-slate-900 mb-2 flex items-center gap-2">
-                            <Sparkles size={14} className="text-[#FF5B33]"/> How Credits Work
+                            <Sparkles size={14} className="text-[#FF5B33]"/> {t('header.howCreditsWork')}
                         </h4>
                         <p className="text-slate-600 text-[11px] leading-relaxed mb-3">
-                            We calculate "Effort Saved" based on the complexity of your query.
+                            {t('header.creditsDesc')}
                         </p>
                         <ul className="space-y-2 text-[11px]">
                             <li className="flex items-start gap-2">
-                                <span className="bg-orange-100 text-orange-700 px-1.5 rounded font-bold">Vague</span>
-                                <span className="text-slate-600">High Credits (1.5x - 3.0x). AI bridges the gaps.</span>
+                                <span className="bg-orange-100 text-orange-700 px-1.5 rounded font-bold">{t('header.vagueTag')}</span>
+                                <span className="text-slate-600">{t('header.vagueDesc')}</span>
                             </li>
                             <li className="flex items-start gap-2">
-                                <span className="bg-green-100 text-green-700 px-1.5 rounded font-bold">Specific</span>
-                                <span className="text-slate-600">Lower Credits. You provided the context.</span>
+                                <span className="bg-green-100 text-green-700 px-1.5 rounded font-bold">{t('header.specificTag')}</span>
+                                <span className="text-slate-600">{t('header.specificDesc')}</span>
                             </li>
                         </ul>
                     </div>
@@ -451,10 +450,11 @@ export default function GeneralQueries() {
                         <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
                             <div className="text-3xl">⚖️</div>
                         </div>
-                        <h3 className="text-xl font-bold text-slate-900 mb-2">How can I help you today?</h3>
+                        <h3 className="text-xl font-bold text-slate-900 mb-2">{t('emptyState.title')}</h3>
                         <p className="text-slate-500 max-w-md mx-auto">
-                            Ask about your rights, specific acts, or describe a situation. 
-                            Use <span className="font-bold text-[#FF5B33]">Quick</span> for summaries and <span className="font-bold text-blue-600">Deep</span> for detailed legal strategy.
+                            {t.rich('emptyState.desc', {
+                                bold: (chunks) => <span className="font-bold text-[#FF5B33]">{chunks}</span>
+                            })}
                         </p>
                     </div>
                 )}
@@ -478,13 +478,12 @@ export default function GeneralQueries() {
                          {msg.role === 'model' ? (
                             <>
                                 <div className="prose-legal">
-                                    {/* Use custom components for Markdown */}
                                     <ReactMarkdown components={MarkdownComponents}>{msg.text}</ReactMarkdown>
                                 </div>
                                 {msg.credits > 0 && (
                                     <div className="mt-4 pt-3 border-t border-slate-100 flex items-center gap-2 text-xs font-semibold text-orange-600">
                                         <Zap size={12} className="fill-orange-600"/>
-                                        {msg.credits} credits saved with this answer
+                                        {msg.credits} {t('input.creditsSavedMsg')}
                                     </div>
                                 )}
                             </>
@@ -524,7 +523,7 @@ export default function GeneralQueries() {
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         onKeyDown={handleKeyDown}
-                        placeholder={mode === 'deep' ? "Describe the full situation in detail for a better legal strategy..." : "Ask a legal question..."}
+                        placeholder={mode === 'deep' ? t('input.placeholderDeep') : t('input.placeholderQuick')}
                         className="flex-1 bg-transparent border-none focus:ring-0 resize-none p-3 max-h-32 min-h-6 text-slate-800 placeholder:text-slate-400"
                         rows={1}
                         disabled={isLoading || !activeCaseId}
@@ -538,7 +537,7 @@ export default function GeneralQueries() {
                     </button>
                 </form>
                 <p className="text-center text-xs text-slate-400 mt-3">
-                    Advocat can make mistakes. Please verify legal citations independently.
+                    {t('input.disclaimer')}
                 </p>
             </div>
           </div>
@@ -553,13 +552,15 @@ export default function GeneralQueries() {
                 ${!isReferencesOpen && 'lg:w-0 lg:border-none'}
            `}>
               <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 min-w-[320px]">
-                 <h3 className="font-bold text-slate-700 flex items-center gap-2"><LinkIcon size={16}/> Citations</h3>
+                 <h3 className="font-bold text-slate-700 flex items-center gap-2"><LinkIcon size={16}/> {t('citations.title')}</h3>
                  <button onClick={() => setIsReferencesOpen(false)} className="text-slate-400 hover:text-red-500"><X size={20}/></button>
               </div>
               <div className="flex-1 overflow-y-auto p-4 space-y-4 min-w-[320px]">
                  {activeReferences.length === 0 ? (
                     <div className="text-center text-slate-400 py-10 text-sm italic">
-                        Citations and relevant acts will appear here when you use <strong>Deep Mode</strong>.
+                        {t.rich('citations.empty', {
+                            bold: (chunks) => <strong>{chunks}</strong>
+                        })}
                     </div>
                  ) : (
                    <ul className="space-y-3">

@@ -3,16 +3,18 @@ import React from 'react';
 import Link from 'next/link';
 import { MessageSquare, FileText, Scale, ArrowRight, ShieldCheck } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useTranslations } from 'next-intl';
 
 export default function Dashboard() {
   const { isLoggedIn, loading } = useAuth(true);
+  const t = useTranslations('Dashboard');
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC]">
         <div className="flex flex-col items-center">
           <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#FF5B33] mb-4"></div>
-          <p className="text-slate-400 text-sm font-medium">Loading Command Center...</p>
+          <p className="text-slate-400 text-sm font-medium">{t('loading')}</p>
         </div>
       </div>
     );
@@ -29,10 +31,12 @@ export default function Dashboard() {
           <Scale size={36} className="text-[#FF5B33]" />
         </div>
         <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-6 tracking-tight">
-          Legal Command Center
+          {t('title')}
         </h1>
         <p className="text-lg text-slate-500 max-w-4xl mx-auto leading-relaxed">
-          Select a tool below. We combine <span className="font-semibold text-slate-700">AI precision</span> with <span className="font-semibold text-slate-700">Indian Constitution</span> to guide you.
+          {t.rich('subtitle', {
+            bold: (chunks) => <span className="font-semibold text-slate-700">{chunks}</span>
+          })}
         </p>
       </div>
 
@@ -46,28 +50,24 @@ export default function Dashboard() {
                           transition-all duration-300 ease-out shadow-xl shadow-orange-500/20
                           hover:-translate-y-2 hover:shadow-orange-500/40">
               
-              {/* Header */}
               <div className="flex items-start justify-between mb-8">
-                {/* Icon Box: White BG to pop against Orange */}
                 <div className="p-4 bg-white text-[#FF5B33] rounded-2xl shadow-sm transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
                   <MessageSquare size={32} strokeWidth={2} />
                 </div>
                 <span className="px-3 py-1 bg-white/20 text-white text-xs font-bold uppercase tracking-wider rounded-full backdrop-blur-sm border border-white/20">
-                  Fast
+                  {t('quickChat.tag')}
                 </span>
               </div>
               
-              {/* Content */}
               <h2 className="text-2xl font-bold text-white mb-3 tracking-tight">
-                Quick Rights Chat
+                {t('quickChat.title')}
               </h2>
               <p className="text-orange-50 text-base leading-relaxed grow mb-8 font-medium opacity-90">
-                Ask everyday questions like "Can my landlord keep my deposit?" and get instant, cited answers based on the Constitution.
+                {t('quickChat.desc')}
               </p>
               
-              {/* CTA */}
               <div className="flex items-center font-bold text-white mt-auto">
-                <span>Start Consultation</span>
+                <span>{t('quickChat.btn')}</span>
                 <ArrowRight size={20} className="ml-2 opacity-70 group-hover:opacity-100 group-hover:translate-x-2 transition-all duration-300" />
               </div>
             </div>
@@ -79,28 +79,24 @@ export default function Dashboard() {
                           transition-all duration-300 ease-out shadow-xl shadow-slate-900/20
                           hover:-translate-y-2 hover:shadow-slate-900/40">
               
-              {/* Header */}
               <div className="flex items-start justify-between mb-8">
-                {/* Icon Box: White BG to pop against Black */}
                 <div className="p-4 bg-white text-[#171717] rounded-2xl shadow-sm transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
                   <FileText size={32} strokeWidth={2} />
                 </div>
                 <span className="px-3 py-1 bg-white/10 text-slate-300 text-xs font-bold uppercase tracking-wider rounded-full backdrop-blur-sm border border-white/10">
-                  Deep
+                  {t('caseAdvisor.tag')}
                 </span>
               </div>
               
-              {/* Content */}
               <h2 className="text-2xl font-bold text-white mb-3 tracking-tight">
-                Case Strategist
+                {t('caseAdvisor.title')}
               </h2>
               <p className="text-slate-400 text-base leading-relaxed grow mb-8 font-medium">
-                Dealing with a serious dispute? Structure your evidence, map your witnesses, and build a winning legal roadmap.
+                {t('caseAdvisor.desc')}
               </p>
               
-              {/* CTA */}
               <div className="flex items-center font-bold text-white mt-auto">
-                <span>Build Strategy</span>
+                <span>{t('caseAdvisor.btn')}</span>
                 <ArrowRight size={20} className="ml-2 opacity-70 group-hover:opacity-100 group-hover:translate-x-2 transition-all duration-300" />
               </div>
             </div>
@@ -112,7 +108,7 @@ export default function Dashboard() {
         <div className="mt-20 border-t border-slate-200 pt-8 flex flex-col md:flex-row items-center justify-center gap-2 text-slate-400">
           <ShieldCheck size={16} />
           <p className="text-xs font-medium tracking-wide uppercase">
-            Private & Secure • Educational AI Guidance
+            {t('footer')}
           </p>
         </div>
       </div>

@@ -55,4 +55,69 @@
       "faq4A": "Use <bold>Quick Chat</bold> for everyday doubts (e.g., \"Is this rent clause legal?\"). Use <bold>Case Advisor</bold> when you have a specific dispute and need a structured roadmap and evidence checklist."
     }
   }
+  ,"Dashboard": {
+    "loading": "Loading Command Center...",
+    "title": "Legal Command Center",
+    "subtitle": "Select a tool below. We combine <bold>AI precision</bold> with <bold>Indian Constitution</bold> to guide you.",
+    "quickChat": {
+      "tag": "Fast",
+      "title": "Quick Rights Chat",
+      "desc": "Ask everyday questions like \"Can my landlord keep my deposit?\" and get instant, cited answers based on the Constitution.",
+      "btn": "Start Consultation"
+    },
+    "caseAdvisor": {
+      "tag": "Deep",
+      "title": "Case Strategist",
+      "desc": "Dealing with a serious dispute? Structure your evidence, map your witnesses, and build a winning legal roadmap.",
+      "btn": "Build Strategy"
+    },
+    "footer": "Private & Secure • Educational AI Guidance"
+  },
+  "GeneralQueries": {
+    "sidebar": {
+      "title": "My Consultations",
+      "newConsultation": "New Consultation"
+    },
+    "contextMenu": {
+      "pin": "Pin",
+      "rename": "Rename",
+      "delete": "Delete"
+    },
+    "header": {
+      "newConsultation": "New Consultation",
+      "activeSession": "Active Session",
+      "ready": "Ready",
+      "creditsSaved": "Credits Saved",
+      "howCreditsWork": "How Credits Work",
+      "creditsDesc": "We calculate \"Effort Saved\" based on the complexity of your query.",
+      "vagueTag": "Vague",
+      "vagueDesc": "High Credits (1.5x - 3.0x). AI bridges the gaps.",
+      "specificTag": "Specific",
+      "specificDesc": "Lower Credits. You provided the context.",
+      "quickBtn": "Quick",
+      "deepBtn": "Deep"
+    },
+    "emptyState": {
+      "title": "How can I help you today?",
+      "desc": "Ask about your rights, specific acts, or describe a situation. Use <bold>Quick</bold> for summaries and <bold>Deep</bold> for detailed legal strategy."
+    },
+    "input": {
+      "placeholderQuick": "Ask a legal question...",
+      "placeholderDeep": "Describe the full situation in detail for a better legal strategy...",
+      "disclaimer": "Advocat can make mistakes. Please verify legal citations independently.",
+      "creditsSavedMsg": "credits saved with this answer"
+    },
+    "citations": {
+      "title": "Citations",
+      "empty": "Citations and relevant acts will appear here when you use <bold>Deep Mode</bold>."
+    }
+  }
+  ,"CaseAdvisor": {
+    "header": { "title": "Case Strategist", "step": "Step {step} of 4" },
+    "step1": { "title": "The Basics", "caseName": "Case Name", "caseNamePh": "e.g. Flat 302 Dispute", "category": "Category", "catSelect": "Select Type", "catContract": "Contract / Agreement", "catProperty": "Property / Real Estate", "catFamily": "Family / Matrimonial", "catConsumer": "Consumer Dispute", "catTort": "Civil Wrong / Damages", "catOther": "Other", "yourName": "Your Name", "yourNamePh": "Full Name", "opponent": "Opposing Party", "opponentPh": "Opponent Name", "state": "State", "stateSelect": "Select State", "city": "City", "cityPh": "City / District", "nextBtn": "Next: The Facts" },
+    "step2": { "title": "The Facts", "whatHappened": "What Happened?", "whatHappenedPh": "Describe the situation in detail...", "outcome": "Desired Outcome", "outcomePh": "e.g. Refund, Apology, Eviction", "startDate": "Start Date", "value": "Financial Value", "valuePh": "₹ Amount", "backBtn": "Back", "nextBtn": "Next: Evidence" },
+    "step3": { "title": "Evidence & Witnesses", "evLabel": "1. Evidence Files", "addBtn": "Add", "noEv": "No evidence added yet.", "typeDoc": "Document", "typePhoto": "Photo/Video", "typeStmt": "Statement", "typeOther": "Other", "attachProof": "Attach Proof", "proofDescPh": "What does this prove?", "witLabel": "2. Witnesses", "noWit": "No witnesses added.", "wNamePh": "Name", "wRelPh": "Relation", "wKnowPh": "What do they know?", "secTitle": "Electronic Evidence (Sec 65B)", "secDesc": "Mandatory for admissibility of WhatsApp, Emails, CCTV, etc.", "secNote": "Note: There is no central \"Code\" for this. It is a signed affidavit.", "secYes": "Yes, I have signed it", "secNo": "No, I need to draft it", "secUpload": "Upload Signed 65B Affidavit (PDF)", "secNoted": "Noted. Advocat will include a <bold>65B Draft Template</bold> in your final strategy.", "genBtn": "Generate Strategy" },
+    "step4": { "title": "Legal Strategy Report", "preparedFor": "Prepared for:", "citations": "Citations & Acts", "noCitations": "No specific acts cited in this brief.", "downloadBtn": "Download PDF", "newBtn": "New Analysis" },
+    "toasts": { "success": "Analysis Complete!", "failed": "Analysis failed.", "error": "Connection Error. Please try again.", "witErr": "Please fill in all Witness details.", "evErr": "Please describe your Evidence.", "reqErr": "Please fill required fields", "pdfSuccess": "PDF Downloaded", "noAnalysis": "No analysis to export yet." }
+  }
 }
