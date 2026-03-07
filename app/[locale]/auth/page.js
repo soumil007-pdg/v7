@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import { CheckCircle, ArrowRight } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 export default function Auth() {
   const [email, setEmail] = useState('');
@@ -10,6 +11,9 @@ export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  
+  // Initialize translations for Auth
+  const t = useTranslations('Auth');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -29,21 +33,21 @@ export default function Auth() {
         if (isLogin) {
           if (data.token) {
             localStorage.setItem('sessionToken', data.token);
-            toast.success('Welcome back!');
+            toast.success(t('toastWelcome'));
             router.push('/');
           } else {
-            toast.error('Login failed: No token received');
+            toast.error(t('toastNoToken'));
           }
         } else {
           setIsLogin(true);
-          toast.success('Account created! Please log in.');
+          toast.success(t('toastCreated'));
           setPassword(''); // Clear password for safety after signup
         }
       } else {
-        toast.error(data.message || 'Authentication failed');
+        toast.error(data.message || t('toastFail'));
       }
     } catch (err) {
-      toast.error('Connection error. Please try again.');
+      toast.error(t('toastError'));
     } finally {
       setIsLoading(false);
     }
@@ -53,19 +57,18 @@ export default function Auth() {
     <div className="min-h-screen w-full flex bg-white">
       
       {/* --- LEFT COLUMN: Brand & Emotion (Hidden on Mobile) --- */}
-      {/* Changed to 'justify-end' so the quote sits at the bottom */}
       <div className="hidden lg:flex lg:w-1/2 relative bg-slate-900 text-white flex-col justify-end p-12 overflow-hidden">
         {/* Background Image with Overlay */}
         <div 
           className="absolute inset-0 bg-cover bg-center opacity-40"
           style={{ backgroundImage: "url('/pic4.jpg')" }} 
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+        <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/40 to-transparent"></div>
 
         {/* Quote Only - No Logo, No Social Proof */}
         <div className="relative z-10 max-w-md">
           <blockquote className="text-2xl font-medium leading-relaxed mb-6 border-l-4 border-[#FF5B33] pl-6">
-            "The law should not be a mystery. We empower you to understand your rights before you even step into a lawyer's office."
+            {t('quote')}
           </blockquote>
         </div>
       </div>
@@ -77,10 +80,10 @@ export default function Auth() {
           {/* Header */}
           <div className="text-center lg:text-left">
             <h2 className="text-3xl font-extrabold text-slate-900 mb-2">
-              {isLogin ? 'Welcome back' : 'Create an account'}
+              {isLogin ? t('welcomeBack') : t('createAccount')}
             </h2>
             <p className="text-slate-500">
-              {isLogin ? 'Enter your details to access your case files.' : 'Start understanding your rights in minutes.'}
+              {isLogin ? t('loginDesc') : t('signupDesc')}
             </p>
           </div>
 
@@ -88,23 +91,23 @@ export default function Auth() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Email address</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">{t('emailLabel')}</label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@example.com"
+                  placeholder={t('emailPh')}
                   className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:border-[#FF5B33] focus:ring-4 focus:ring-[#FF5B33]/10 transition-all outline-none text-slate-900 placeholder:text-slate-400"
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Password</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">{t('passLabel')}</label>
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
+                  placeholder={t('passPh')}
                   className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:border-[#FF5B33] focus:ring-4 focus:ring-[#FF5B33]/10 transition-all outline-none text-slate-900 placeholder:text-slate-400"
                   required
                 />
@@ -121,7 +124,7 @@ export default function Auth() {
                 <span className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
                 <>
-                  {isLogin ? 'Sign In' : 'Get Started'} 
+                  {isLogin ? t('signInBtn') : t('getStartedBtn')} 
                   {!isLogin && <ArrowRight size={18} />}
                 </>
               )}
@@ -130,12 +133,12 @@ export default function Auth() {
 
           {/* Toggle Login/Signup */}
           <div className="text-center text-sm text-slate-500">
-            {isLogin ? "Don't have an account? " : "Already have an account? "}
+            {isLogin ? t('noAccount') : t('hasAccount')}
             <button
               onClick={() => setIsLogin(!isLogin)}
               className="font-bold text-[#FF5B33] hover:text-[#e04f2a] hover:underline transition-colors"
             >
-              {isLogin ? 'Sign up for free' : 'Log in'}
+              {isLogin ? t('signUpLink') : t('logInLink')}
             </button>
           </div>
 
@@ -143,10 +146,10 @@ export default function Auth() {
           {!isLogin && (
             <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-100">
               <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
-                <CheckCircle size={14} className="text-green-500" /> Free basic access
+                <CheckCircle size={14} className="text-green-500" /> {t('trustFree')}
               </div>
               <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
-                <CheckCircle size={14} className="text-green-500" /> No credit card required
+                <CheckCircle size={14} className="text-green-500" /> {t('trustNoCard')}
               </div>
             </div>
           )}

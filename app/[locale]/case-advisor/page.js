@@ -9,7 +9,7 @@ import * as z from 'zod';
 import jsPDF from 'jspdf';
 import { ChatSkeleton } from '@/app/components/SkeletonLoader';
 import { useAuth } from '@/hooks/useAuth';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { 
   Download, 
   Link as LinkIcon, 
@@ -126,6 +126,7 @@ const indianStates = [
 export default function CaseAdvisor() {
   const { isLoggedIn, loading } = useAuth(true); // Use the auth hook
   const t = useTranslations('CaseAdvisor');
+  const locale = useLocale(); // <--- ADDED THIS LINE
 
   // --- Schema (Human-Friendly) Moved inside to use translations ---
   const schema = useMemo(() => z.object({
@@ -256,6 +257,7 @@ export default function CaseAdvisor() {
     try {
       const payload = {
         ...data,
+        locale: locale, // <--- ADDED THIS LINE TO PASS LANGUAGE TO API
         certificateFile: data.certificateFile?.[0]?.name || "Not uploaded",
         evidence: data.evidence?.map(item => ({
           type: item.type,

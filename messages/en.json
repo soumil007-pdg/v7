@@ -120,4 +120,28 @@
     "step4": { "title": "Legal Strategy Report", "preparedFor": "Prepared for:", "citations": "Citations & Acts", "noCitations": "No specific acts cited in this brief.", "downloadBtn": "Download PDF", "newBtn": "New Analysis" },
     "toasts": { "success": "Analysis Complete!", "failed": "Analysis failed.", "error": "Connection Error. Please try again.", "witErr": "Please fill in all Witness details.", "evErr": "Please describe your Evidence.", "reqErr": "Please fill required fields", "pdfSuccess": "PDF Downloaded", "noAnalysis": "No analysis to export yet." }
   }
+  ,"Auth": {
+    "quote": "\"The law should not be a mystery. We empower you to understand your rights before you even step into a lawyer's office.\"",
+    "welcomeBack": "Welcome back",
+    "createAccount": "Create an account",
+    "loginDesc": "Enter your details to access your case files.",
+    "signupDesc": "Start understanding your rights in minutes.",
+    "emailLabel": "Email address",
+    "emailPh": "name@example.com",
+    "passLabel": "Password",
+    "passPh": "••••••••",
+    "signInBtn": "Sign In",
+    "getStartedBtn": "Get Started",
+    "noAccount": "Don't have an account? ",
+    "hasAccount": "Already have an account? ",
+    "signUpLink": "Sign up for free",
+    "logInLink": "Log in",
+    "trustFree": "Free basic access",
+    "trustNoCard": "No credit card required",
+    "toastWelcome": "Welcome back!",
+    "toastNoToken": "Login failed: No token received",
+    "toastCreated": "Account created! Please log in.",
+    "toastFail": "Authentication failed",
+    "toastError": "Connection error. Please try again."
+  }
 }

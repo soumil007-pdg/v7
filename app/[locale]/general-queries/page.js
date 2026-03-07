@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { ChatSkeleton } from '@/app/components/SkeletonLoader';
 import { useAuth } from '@/hooks/useAuth';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 
 // --- Styles & Animations ---
 const FontLoader = () => (
@@ -64,6 +64,7 @@ const MarkdownComponents = {
 export default function GeneralQueries() {
   const { isLoggedIn, userEmail, loading } = useAuth(true);
   const t = useTranslations('GeneralQueries');
+  const locale = useLocale(); // <--- ADDED: Extract the current language
 
   const [caseFiles, setCaseFiles] = useState({});
   const [activeCaseId, setActiveCaseId] = useState(null);
@@ -230,7 +231,8 @@ export default function GeneralQueries() {
       const res = await fetch('/api/auth/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: input, mode: mode, history: messages }),
+        // ADDED: Passing locale to the backend
+        body: JSON.stringify({ prompt: input, mode: mode, history: messages, locale: locale }), 
       });
       const data = await res.json();
       

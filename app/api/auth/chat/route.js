@@ -8,13 +8,22 @@ import {
 const MODEL_NAME = 'gemini-2.5-flash';
 
 export async function POST(req) {
-  const { prompt, mode = 'quick', history = [] } = await req.json();
+  // Added 'locale' to the extracted JSON with a default of 'en'
+  const { prompt, mode = 'quick', history = [], locale = 'en' } = await req.json();
+
+  // Map the locale code to the actual language name
+  const languageMap = {
+    en: "English",
+    hi: "Hindi",
+    mr: "Marathi",
+    te: "Telugu"
+  };
+  const targetLanguage = languageMap[locale] || "English";
 
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
   // --- *** THIS IS THE FINAL CORRECTED SYSTEM INSTRUCTION *** ---
-  // This is a simplified, "flattened" string to prevent the 400 Bad Request error.
-const systemInstruction = `You are "Advocat-Easy," an empathetic and strategic legal guide for Indian civil issues.
+  const systemInstruction = `You are "Advocat-Easy," an empathetic and strategic legal guide for Indian civil issues.
 
 **CORE PERSONA:**
 You are not just a database; you are a calm, knowledgeable senior counsel. Your goal is to de-escalate anxiety and provide clear, actionable paths.
@@ -41,10 +50,10 @@ You are not just a database; you are a calm, knowledgeable senior counsel. Your 
     - **Relevant Links:** (Official Indian Kanoon or government links in [Title](URL) format).
 
 **LINKS:** Provide high-quality, public links (Indian Kanoon, bare acts) strictly in [Link Title](URL) format so the interface can render them.`;
-  // We apply the systemInstruction when we *get* the model
+
   const model = genAI.getGenerativeModel({
     model: MODEL_NAME,
-    systemInstruction: systemInstruction, // <-- Correctly placed here
+    systemInstruction: systemInstruction,
   });
 
   // --- 1. FORMAT THE HISTORY FOR 'startChat' ---
@@ -53,12 +62,12 @@ You are not just a database; you are a calm, knowledgeable senior counsel. Your 
     parts: [{ text: msg.text }],
   }));
 
-  // --- 2. FORMAT THE NEW PROMPT ---
+  // --- 2. FORMAT THE NEW PROMPT (Now with Language Enforcement) ---
   let userPrompt = '';
   if (mode === 'deep') {
-    userPrompt = `Deep mode: ${prompt}. Full structure + template/pitfalls/links. Use - bullets. Under 400 words.`;
+    userPrompt = `Deep mode: ${prompt}. Full structure + template/pitfalls/links. Use - bullets. Under 400 words. \n\nCRITICAL INSTRUCTION: You MUST generate your ENTIRE response in ${targetLanguage}.`;
   } else {
-    userPrompt = `Quick mode: ${prompt}. Concise structure + 1 section/steps (- bullets, basic link, no template). Under 150 words.`;
+    userPrompt = `Quick mode: ${prompt}. Concise structure + 1 section/steps (- bullets, basic link, no template). Under 150 words. \n\nCRITICAL INSTRUCTION: You MUST generate your ENTIRE response in ${targetLanguage}.`;
   }
 
   // --- 3. CONFIGURE GENERATION AND SAFETY (unchanged) ---
@@ -96,15 +105,12 @@ You are not just a database; you are a calm, knowledgeable senior counsel. Your 
       safetySettings,
     });
 
-    // Send *only* the new prompt
     const result = await chat.sendMessage(userPrompt);
 
     const response = result.response;
     const text = response.text();
 
     // --- 5. READ THE METADATA ---
-    console.log('Gemini usageMetadata:', result.response.usageMetadata); // For your server debugging
-
     const usage = result.response.usageMetadata;
     let tokensUsed = 0;
 
@@ -113,13 +119,11 @@ You are not just a database; you are a calm, knowledgeable senior counsel. Your 
     } else if (usage && (usage.promptTokenCount > 0 || usage.candidatesTokenCount > 0)) {
       tokensUsed = (usage.promptTokenCount || 0) + (usage.candidatesTokenCount || 0);
     }
-    
-    console.log('Calculated tokensUsed:', tokensUsed); // For your server debugging
 
     return new Response(JSON.stringify({
       text,
-      tokensUsed: tokensUsed, // Send the *real* tokens
-      savedTokens: 0 // Frontend handles saved calculation
+      tokensUsed: tokensUsed, 
+      savedTokens: 0 
     }), { status: 200 });
 
   } catch (error) {
