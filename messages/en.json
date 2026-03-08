@@ -119,6 +119,11 @@
     "step3": { "title": "Evidence & Witnesses", "evLabel": "1. Evidence Files", "addBtn": "Add", "noEv": "No evidence added yet.", "typeDoc": "Document", "typePhoto": "Photo/Video", "typeStmt": "Statement", "typeOther": "Other", "attachProof": "Attach Proof", "proofDescPh": "What does this prove?", "witLabel": "2. Witnesses", "noWit": "No witnesses added.", "wNamePh": "Name", "wRelPh": "Relation", "wKnowPh": "What do they know?", "secTitle": "Electronic Evidence (Sec 65B)", "secDesc": "Mandatory for admissibility of WhatsApp, Emails, CCTV, etc.", "secNote": "Note: There is no central \"Code\" for this. It is a signed affidavit.", "secYes": "Yes, I have signed it", "secNo": "No, I need to draft it", "secUpload": "Upload Signed 65B Affidavit (PDF)", "secNoted": "Noted. Advocat will include a <bold>65B Draft Template</bold> in your final strategy.", "genBtn": "Generate Strategy" },
     "step4": { "title": "Legal Strategy Report", "preparedFor": "Prepared for:", "citations": "Citations & Acts", "noCitations": "No specific acts cited in this brief.", "downloadBtn": "Download PDF", "newBtn": "New Analysis" },
     "toasts": { "success": "Analysis Complete!", "failed": "Analysis failed.", "error": "Connection Error. Please try again.", "witErr": "Please fill in all Witness details.", "evErr": "Please describe your Evidence.", "reqErr": "Please fill required fields", "pdfSuccess": "PDF Downloaded", "noAnalysis": "No analysis to export yet." }
+    ,"lawyersTitle": "Top Rated Local Advocates",
+    "lawyersDesc": "Based on your location and case type, here are highly-rated professionals nearby.",
+    "rating": "Rating",
+    "reviews": "reviews",
+    "viewMapBtn": "View on Map"
   }
   ,"Auth": {
     "quote": "\"The law should not be a mystery. We empower you to understand your rights before you even step into a lawyer's office.\"",
@@ -144,4 +149,5 @@
     "toastFail": "Authentication failed",
     "toastError": "Connection error. Please try again."
   }
+  
 }

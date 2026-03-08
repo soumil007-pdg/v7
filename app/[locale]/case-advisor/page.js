@@ -21,7 +21,9 @@ import {
   Scale,
   CheckCircle,
   AlertTriangle,
-  Gavel
+  Gavel,
+  MapPin,
+  Star
 } from 'lucide-react';
 
 // --- 1. Professional Typography & "Legal Brief" Styling ---
@@ -124,11 +126,10 @@ const indianStates = [
 ];
 
 export default function CaseAdvisor() {
-  const { isLoggedIn, loading } = useAuth(true); // Use the auth hook
+  const { isLoggedIn, loading } = useAuth(true); 
   const t = useTranslations('CaseAdvisor');
-  const locale = useLocale(); // <--- ADDED THIS LINE
+  const locale = useLocale(); 
 
-  // --- Schema (Human-Friendly) Moved inside to use translations ---
   const schema = useMemo(() => z.object({
     caseTitle: z.string().min(1, t('toasts.reqErr')),
     plaintiffName: z.string().min(1, t('toasts.reqErr')),
@@ -158,6 +159,7 @@ export default function CaseAdvisor() {
   const [step, setStep] = useState(1);
   const [result, setResult] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [localLawyers, setLocalLawyers] = useState([]); 
   
   const [witnesses, setWitnesses] = useState([]); 
   const [evidence, setEvidence] = useState([]);
@@ -177,7 +179,6 @@ export default function CaseAdvisor() {
   
   const { register, handleSubmit, formState: { errors, dirtyFields }, watch, getValues, setValue, trigger } = methods;
 
-  // Value Formatter
   const [displaySuitValue, setDisplaySuitValue] = useState('');
   const handleSuitValueChange = (e) => {
     const rawValue = e.target.value.replace(/[^0-9]/g, '');
@@ -186,7 +187,6 @@ export default function CaseAdvisor() {
     setDisplaySuitValue(rawValue ? new Intl.NumberFormat('en-IN').format(rawValue) : '');
   };
 
-  // Dynamic Fields
   const addWitness = () => {
     const current = getValues('witnesses') || [];
     setValue('witnesses', [...current, { name: '', connection: '', knowledge: '' }]);
@@ -219,13 +219,11 @@ export default function CaseAdvisor() {
   const handleCertFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // We update status to 'Attached' internally for submission
       setValue('certificateStatus', `Have Certificate: ${file.name}`);
       setValue('certificateFile', e.target.files);
     }
   };
 
-  // Input Styling Helper
   const getInputClass = (fieldName, isError) => {
     const base = "w-full p-3 border rounded-lg bg-gray-800 text-white focus:outline-none transition-all duration-200 ";
     if (isError) return base + "border-red-500 focus:ring-2 focus:ring-red-500";
@@ -252,12 +250,13 @@ export default function CaseAdvisor() {
     setIsLoading(true);
     setResult('');
     setActiveCitations([]); 
+    setLocalLawyers([]); 
     setStep(4); 
     
     try {
       const payload = {
         ...data,
-        locale: locale, // <--- ADDED THIS LINE TO PASS LANGUAGE TO API
+        locale: locale, 
         certificateFile: data.certificateFile?.[0]?.name || "Not uploaded",
         evidence: data.evidence?.map(item => ({
           type: item.type,
@@ -278,6 +277,19 @@ export default function CaseAdvisor() {
         const citations = parseCitations(apiData.text);
         setActiveCitations(citations);
         toast.success(t('toasts.success'));
+
+        // --- Fetch Local Lawyers from Google Places ---
+        fetch('/api/lawyers', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ city: data.city, category: data.caseType })
+        })
+        .then(res => res.json())
+        .then(lawyerData => {
+            if (lawyerData.lawyers) setLocalLawyers(lawyerData.lawyers);
+        })
+        .catch(err => console.error("Error fetching lawyers:", err));
+
       } else {
         toast.error(apiData.message || t('toasts.failed'));
         setStep(3); 
@@ -558,7 +570,7 @@ export default function CaseAdvisor() {
                                 ))}
                             </div>
 
-                            {/* 3. 65B Certificate Section (IMPROVED) */}
+                            {/* 3. 65B Certificate Section */}
                             <div className="p-6 bg-yellow-900/10 border border-yellow-700/30 rounded-xl">
                                 <div className="flex items-start gap-3 mb-4">
                                     <div className="p-2 bg-yellow-500/10 rounded-lg"><AlertTriangle className="text-yellow-500" size={20}/></div>
@@ -637,7 +649,7 @@ export default function CaseAdvisor() {
                  <div className="bg-white rounded-lg shadow-2xl overflow-hidden min-h-[80vh] flex flex-col md:flex-row">
                     
                     {/* Left: The Document */}
-                    <div className="flex-1 p-8 md:p-12 bg-white text-slate-900">
+                    <div className="flex-1 p-8 md:p-12 bg-white text-slate-900 flex flex-col">
                        <div className="flex justify-between items-start mb-8 border-b border-slate-100 pb-6">
                            <div>
                                <h2 className="text-3xl font-extrabold text-slate-900 mb-2">{t('step4.title')}</h2>
@@ -646,7 +658,7 @@ export default function CaseAdvisor() {
                            <Scale className="text-[#FF5B33]" size={40} />
                        </div>
 
-                       <div className="prose-brief">
+                       <div className="prose-brief grow">
                            {isLoading ? (
                                <div className="space-y-6">
                                    <div className="h-4 bg-slate-100 rounded w-3/4 animate-pulse"></div>
@@ -658,6 +670,47 @@ export default function CaseAdvisor() {
                                <ReactMarkdown>{result}</ReactMarkdown>
                            )}
                        </div>
+
+                       {/* --- LOCAL LAWYERS SECTION --- */}
+                       {!isLoading && localLawyers.length > 0 && (
+                           <div className="mt-12 pt-8 border-t border-slate-200">
+                               <h3 className="text-xl font-extrabold text-slate-900 mb-2">{t('lawyersTitle') || "Top Rated Local Advocates"}</h3>
+                               <p className="text-slate-500 text-sm mb-6">{t('lawyersDesc') || "Based on your location and case type, here are highly-rated professionals nearby."}</p>
+                               
+                               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                   {localLawyers.map((lawyer, idx) => {
+                                       // Dynamically build a clean Google Maps search URL
+                                       const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(lawyer.name + ' ' + lawyer.address)}`;
+                                       
+                                       return (
+                                       <div key={idx} className="border border-slate-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow bg-slate-50 flex flex-col justify-between">
+                                           <div>
+                                               <h4 className="font-bold text-slate-800 text-sm mb-2 leading-tight">{lawyer.name}</h4>
+                                               <div className="flex items-center gap-1 mb-3">
+                                                   <Star size={14} className="text-amber-400 fill-amber-400" />
+                                                   <span className="text-sm font-bold text-slate-700">{lawyer.rating}</span>
+                                                   <span className="text-xs text-slate-500 ml-1">({lawyer.reviews} {t('reviews') || "reviews"})</span>
+                                               </div>
+                                               <p className="text-xs text-slate-500 mb-4 flex items-start gap-1">
+                                                   <MapPin size={12} className="shrink-0 mt-0.5 text-slate-400" /> 
+                                                   <span className="line-clamp-2">{lawyer.address}</span>
+                                               </p>
+                                           </div>
+                                           <a 
+                                               href={mapUrl} 
+                                               target="_blank" 
+                                               rel="noreferrer"
+                                               className="block text-center w-full py-2 mt-4 bg-white border border-slate-300 text-slate-700 text-xs font-bold rounded-lg hover:bg-slate-100 transition"
+                                           >
+                                               {t('viewMapBtn') || "View on Map"}
+                                           </a>
+                                       </div>
+                                       );
+                                   })}
+                               </div>
+                           </div>
+                       )}
+
                     </div>
 
                     {/* Right: The Reference Rail */}
@@ -699,7 +752,7 @@ export default function CaseAdvisor() {
                             <button onClick={handleExportPDF} disabled={isLoading || !result} className="w-full bg-[#171717] text-white py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 hover:bg-black transition disabled:opacity-50">
                                 <Download size={16}/> {t('step4.downloadBtn')}
                             </button>
-                            <button onClick={() => {setStep(1); methods.reset(); setWitnesses([]); setEvidence([]);}} className="w-full bg-white border border-slate-300 text-slate-700 py-3 rounded-lg font-semibold text-sm hover:bg-slate-50 transition">
+                            <button onClick={() => {setStep(1); methods.reset(); setWitnesses([]); setEvidence([]); setLocalLawyers([]);}} className="w-full bg-white border border-slate-300 text-slate-700 py-3 rounded-lg font-semibold text-sm hover:bg-slate-50 transition">
                                 {t('step4.newBtn')}
                             </button>
                         </div>
