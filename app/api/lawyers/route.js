@@ -1,69 +1,87 @@
 // app/api/lawyers/route.js
 export async function POST(req) {
   try {
-    const { city, category } = await req.json();
-    const apiKey = process.env.GOOGLE_PLACES_API_KEY;
+    const { city, category, lat, lng } = await req.json();
+    const apiToken = process.env.APIFY_API_TOKEN;
 
-    // --- FALLBACK MOCK DATA (If no API key is present) ---
-    if (!apiKey || apiKey === 'your_actual_api_key_here') {
-        console.warn("Using Mock Data: No valid GOOGLE_PLACES_API_KEY found.");
-        
-        // Create realistic-looking mock lawyers based on the user's city
-        const mockLawyers = [
-            {
-                id: "mock_1",
-                name: `${city} Legal Associates`,
-                rating: 4.9,
-                reviews: 142,
-                address: `101, High Court Road, ${city}`,
-            },
-            {
-                id: "mock_2",
-                name: `Sharma & Partners (${category} Specialists)`,
-                rating: 4.7,
-                reviews: 89,
-                address: `Chamber 45, District Court Complex, ${city}`,
-            },
-            {
-                id: "mock_3",
-                name: "Apex Law Chambers",
-                rating: 4.6,
-                reviews: 210,
-                address: `Sector 4, Main Market, ${city}`,
-            }
-        ];
-        
-        // Simulate a slight network delay so it feels real
-        await new Promise(resolve => setTimeout(resolve, 800));
-        return new Response(JSON.stringify({ lawyers: mockLawyers }), { status: 200 });
+    if (!apiToken || apiToken === '<YOUR_API_TOKEN>') {
+      return new Response(JSON.stringify({ message: 'Missing APIFY_API_TOKEN in .env' }), { status: 500 });
     }
 
-    // --- REAL GOOGLE PLACES API CALL ---
-    const query = encodeURIComponent(`${category} advocate lawyer in ${city}`);
-    const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${query}&key=${apiKey}`;
+    // 🔥 THE FIX: Removed the hardcoded "Delhi" so it respects the user's actual city
+    const searchTerm = `${category} lawyer advocate in ${city}`;
+    const locationQuery = city ? `${city}, India` : "India";
 
-    const response = await fetch(url);
-    const data = await response.json();
+    const input = {
+      searchStringsArray: [searchTerm],
+      locationQuery: locationQuery,
+      countryCode: "in",
+      maxCrawledPlacesPerSearch: 15, // Limit results slightly so it loads faster
+      scrapePlaceDetailPage: false, // 🔥 FIX: Set to false! This makes the scraper 10x faster
+      maxReviews: 0,
+      language: "en",
+      
+      // Forces Indian residential proxy
+      proxyConfiguration: {
+        useApifyProxy: true,
+        apifyProxyCountry: "IN",
+        apifyProxyGroups: ["RESIDENTIAL"]
+      }
+    };
 
-    if (data.results && data.results.length > 0) {
-        const topLawyers = data.results
-            .sort((a, b) => (b.rating || 0) - (a.rating || 0))
-            .slice(0, 3)
-            .map(place => ({
-                id: place.place_id,
-                name: place.name,
-                rating: place.rating || 'N/A',
-                reviews: place.user_ratings_total || 0,
-                address: place.formatted_address,
-            }));
+    console.log(`Scraping lawyers: "${searchTerm}" in location: "${locationQuery}"`);
 
-        return new Response(JSON.stringify({ lawyers: topLawyers }), { status: 200 });
+    const apifyUrl = `https://api.apify.com/v2/acts/compass~crawler-google-places/run-sync-get-dataset-items?token=${apiToken}`;
+
+    const response = await fetch(apifyUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(input)
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Apify Error:", errorText);
+      return new Response(JSON.stringify({ message: 'Apify failed. Check token or credits.' }), { status: 502 });
     }
 
-    return new Response(JSON.stringify({ lawyers: [] }), { status: 200 });
+    const items = await response.json();
+
+    const allLawyers = items.map((place, index) => {
+      // Safely calculate the review count
+      let reviewCount = 0;
+      if (typeof place.reviewsCount === 'number') {
+          reviewCount = place.reviewsCount;
+      } else if (typeof place.numberOfReviews === 'number') {
+          reviewCount = place.numberOfReviews;
+      } else if (Array.isArray(place.reviews)) {
+          reviewCount = place.reviews.length;
+      }
+
+      // Safe fallback for Google Maps URL
+      const fallbackMapUrl = `https://google.com/maps/search/?api=1&query=$${encodeURIComponent((place.title || place.name || '') + ' ' + (place.address || ''))}`;
+
+      return {
+        id: place.id || place.placeId || `lawyer_${index}`,
+        name: place.title || place.name || 'Unnamed Lawyer',
+        rating: place.totalScore || place.rating || place.stars || 'N/A',
+        reviews: reviewCount,
+        address: place.address || place.formattedAddress || 'Address not available',
+        phone: place.phone || place.phoneNumber || place.phoneUnformatted || null,
+        website: place.website || null,
+        googleMapsUrl: place.url || place.googleMapsUrl || fallbackMapUrl
+      };
+    });
+
+    console.log(`✅ Found ${allLawyers.length} lawyers for ${city || 'India'}`);
+    
+    return new Response(JSON.stringify({ lawyers: allLawyers }), { status: 200 });
 
   } catch (error) {
-    console.error('Places API error:', error);
-    return new Response(JSON.stringify({ message: 'Failed to fetch lawyers' }), { status: 500 });
+    console.error('API Error:', error);
+    return new Response(JSON.stringify({ 
+      message: 'Server error while fetching lawyers',
+      errorDetail: error.message 
+    }), { status: 500 });
   }
 }

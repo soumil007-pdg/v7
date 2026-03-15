@@ -11,106 +11,42 @@ import { ChatSkeleton } from '@/app/components/SkeletonLoader';
 import { useAuth } from '@/hooks/useAuth';
 import { useTranslations, useLocale } from 'next-intl';
 import { 
-  Download, 
-  Link as LinkIcon, 
-  ArrowRight, 
-  Plus, 
-  Trash2,
-  UploadCloud,
-  FileText,
-  Scale,
-  CheckCircle,
-  AlertTriangle,
-  Gavel,
-  MapPin,
-  Star
+  Download, Link as LinkIcon, ArrowRight, Plus, Trash2,
+  UploadCloud, FileText, Scale, CheckCircle, AlertTriangle, Gavel, MapPin, Star, Search
 } from 'lucide-react';
 
-// --- 1. Professional Typography & "Legal Brief" Styling ---
 const FontLoader = () => (
   <style>{`
     @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&family=Inter:wght@400;500;600;800&display=swap');
-    
-    /* The "Legal Paper" Look */
-    .prose-brief { 
-      font-family: 'Merriweather', serif; 
-      color: #334155; 
-      line-height: 1.8;
-      font-size: 1.05rem;
-    }
-    
-    .prose-brief h1, .prose-brief h2, .prose-brief h3 {
-      font-family: 'Inter', sans-serif;
-      color: #171717;
-      font-weight: 800;
-      margin-top: 1.5em;
-      margin-bottom: 0.6em;
-      letter-spacing: -0.02em;
-    }
-    
-    .prose-brief h3 {
-      font-size: 1.25rem;
-      border-bottom: 2px solid #f1f5f9;
-      padding-bottom: 0.5rem;
-    }
-
-    .prose-brief strong {
-      color: #000;
-      font-weight: 700;
-    }
-
-    .prose-brief ul {
-      list-style-type: disc;
-      padding-left: 1.2em;
-      margin-bottom: 1em;
-    }
-
-    .prose-brief li {
-      margin-bottom: 0.4em;
-    }
-
-    .prose-brief a {
-      color: #FF5B33;
-      text-decoration: underline;
-      text-decoration-thickness: 2px;
-      text-underline-offset: 2px;
-      font-weight: 600;
-    }
-
-    /* Custom Scrollbar for Citations */
+    .prose-brief { font-family: 'Merriweather', serif; color: #334155; line-height: 1.8; font-size: 1.05rem; }
+    .prose-brief h1, .prose-brief h2, .prose-brief h3 { font-family: 'Inter', sans-serif; color: #171717; font-weight: 800; margin-top: 1.5em; margin-bottom: 0.6em; letter-spacing: -0.02em; }
+    .prose-brief h3 { font-size: 1.25rem; border-bottom: 2px solid #f1f5f9; padding-bottom: 0.5rem; }
+    .prose-brief strong { color: #000; font-weight: 700; }
+    .prose-brief ul { list-style-type: disc; padding-left: 1.2em; margin-bottom: 1em; }
+    .prose-brief li { margin-bottom: 0.4em; }
+    .prose-brief a { color: #FF5B33; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 2px; font-weight: 600; }
     .custom-scrollbar::-webkit-scrollbar { width: 4px; }
     .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
   `}</style>
 );
 
-// --- Helper: Citation Parser ---
 const parseCitations = (text) => {
   if (!text) return [];
   const citations = [];
-  
   const linkRegex = /(https?:\/\/[^\s\)]+)/g;
   let match;
   while ((match = linkRegex.exec(text)) !== null) {
     const pre = text.substring(Math.max(0, match.index - 10), match.index);
     if (!pre.endsWith('](')) citations.push({ type: 'link', title: match[1], href: match[1] });
   }
-  
   const actRegex = /((?:Section|Article|Order|Rule)\s+\d+[A-Za-z]*|(?:The\s+)?[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\s+Act(?:,\s+\d{4})?)/g;
   while ((match = actRegex.exec(text)) !== null) {
-    if (!['The', 'Act', 'Section'].includes(match[0])) {
-        citations.push({ type: 'act', title: match[0], href: null });
-    }
+    if (!['The', 'Act', 'Section'].includes(match[0])) { citations.push({ type: 'act', title: match[0], href: null }); }
   }
-  
   const unique = [];
   const seen = new Set();
-  citations.forEach(c => {
-      if (!seen.has(c.title)) {
-          seen.add(c.title);
-          unique.push(c);
-      }
-  });
+  citations.forEach(c => { if (!seen.has(c.title)) { seen.add(c.title); unique.push(c); }});
   return unique;
 };
 
@@ -159,7 +95,6 @@ export default function CaseAdvisor() {
   const [step, setStep] = useState(1);
   const [result, setResult] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [localLawyers, setLocalLawyers] = useState([]); 
   
   const [witnesses, setWitnesses] = useState([]); 
   const [evidence, setEvidence] = useState([]);
@@ -250,7 +185,6 @@ export default function CaseAdvisor() {
     setIsLoading(true);
     setResult('');
     setActiveCitations([]); 
-    setLocalLawyers([]); 
     setStep(4); 
     
     try {
@@ -277,19 +211,6 @@ export default function CaseAdvisor() {
         const citations = parseCitations(apiData.text);
         setActiveCitations(citations);
         toast.success(t('toasts.success'));
-
-        // --- Fetch Local Lawyers from Google Places ---
-        fetch('/api/lawyers', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ city: data.city, category: data.caseType })
-        })
-        .then(res => res.json())
-        .then(lawyerData => {
-            if (lawyerData.lawyers) setLocalLawyers(lawyerData.lawyers);
-        })
-        .catch(err => console.error("Error fetching lawyers:", err));
-
       } else {
         toast.error(apiData.message || t('toasts.failed'));
         setStep(3); 
@@ -319,7 +240,6 @@ export default function CaseAdvisor() {
     else toast.error(t('toasts.reqErr'));
   };
 
-  // --- PDF Export Logic ---
   const handleExportPDF = () => {
     if (!result) { toast.error(t('toasts.noAnalysis')); return; }
     const doc = new jsPDF();
@@ -329,7 +249,6 @@ export default function CaseAdvisor() {
     
     let yPos = 20; 
 
-    // PDF Header
     doc.setFont("helvetica", "bold");
     doc.setFontSize(22);
     doc.setTextColor(41, 128, 185);
@@ -346,7 +265,6 @@ export default function CaseAdvisor() {
     doc.line(margin, yPos, pageWidth - margin, yPos);
     yPos += 10;
 
-    // Case Info Block
     doc.setFontSize(12);
     doc.setTextColor(0);
     doc.setFont("helvetica", "bold");
@@ -357,7 +275,6 @@ export default function CaseAdvisor() {
     doc.text(`Client: ${getValues('plaintiffName')} | Opponent: ${getValues('defendantName')}`, margin, yPos);
     yPos += 10;
 
-    // Body Text
     const splitText = result.split('\n');
     doc.setFontSize(11);
     
@@ -407,6 +324,13 @@ export default function CaseAdvisor() {
     toast.success(t('toasts.pdfSuccess'));
   };
 
+  const handleDirectoryRoute = () => {
+      const city = encodeURIComponent(getValues('city') || '');
+      const category = encodeURIComponent(getValues('caseType') || '');
+      // Opens directory in a NEW TAB so you never lose the generated report
+      window.open(`/${locale}/directory?city=${city}&category=${category}`, '_blank');
+  };
+
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-[#121212] text-white">Loading...</div>;
   if (!isLoggedIn) return null;
 
@@ -415,17 +339,15 @@ export default function CaseAdvisor() {
       <FontLoader />
       <div className="min-h-screen w-full bg-[#121212] text-white py-20 pb-20 font-sans">
         
-        {/* --- Progress Header --- */}
         <div className="max-w-5xl mx-auto px-6 mb-12">
           <div className="flex items-center justify-between mb-6">
              <h1 className="text-3xl font-extrabold flex items-center gap-3">
                 <Gavel className="text-[#FF5B33]" size={32} /> 
-                {t('header.title')}
+                {t('header.title') || "Case Advisor"}
              </h1>
-             <div className="text-sm text-gray-400 font-mono">{t('header.step', { step })}</div>
+             <div className="text-sm text-gray-400 font-mono">{t('header.step', { step }) || `Step ${step} of 4`}</div>
           </div>
           
-          {/* Custom Progress Bar */}
           <div className="w-full bg-gray-800 rounded-full h-1.5 mb-8 overflow-hidden">
              <div className="bg-[#FF5B33] h-1.5 rounded-full transition-all duration-500 ease-out" style={{ width: `${(step/4)*100}%` }}></div>
           </div>
@@ -434,143 +356,139 @@ export default function CaseAdvisor() {
         <div className="max-w-5xl mx-auto px-6">
           <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-6">
             
-            {/* --- INPUT STEPS (Dark Mode) --- */}
             {step < 4 && (
                 <div className="bg-[#1E1E1E] border border-gray-800 rounded-2xl p-8 shadow-2xl">
                     
                     {step === 1 && (
                         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                            <h3 className="text-2xl font-bold border-b border-gray-700 pb-4 mb-6 text-white">{t('step1.title')}</h3>
+                            <h3 className="text-2xl font-bold border-b border-gray-700 pb-4 mb-6 text-white">{t('step1.title') || "Basic Information"}</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                <label className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2 block">{t('step1.caseName')}</label>
-                                <input {...register('caseTitle')} className={getInputClass('caseTitle', errors.caseTitle)} placeholder={t('step1.caseNamePh')} />
+                                <label className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2 block">{t('step1.caseName') || "Case Title"}</label>
+                                <input {...register('caseTitle')} className={getInputClass('caseTitle', errors.caseTitle)} placeholder={t('step1.caseNamePh') || "e.g. Property Dispute"} />
                                 </div>
                                 <div>
-                                <label className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2 block">{t('step1.category')}</label>
+                                <label className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2 block">{t('step1.category') || "Category"}</label>
                                 <select {...register('caseType')} className={getInputClass('caseType', errors.caseType)}>
-                                    <option value="">{t('step1.catSelect')}</option>
-                                    <option value="contract">{t('step1.catContract')}</option>
-                                    <option value="property">{t('step1.catProperty')}</option>
-                                    <option value="family">{t('step1.catFamily')}</option>
-                                    <option value="consumer">{t('step1.catConsumer')}</option>
-                                    <option value="tort">{t('step1.catTort')}</option>
-                                    <option value="other">{t('step1.catOther')}</option>
+                                    <option value="">{t('step1.catSelect') || "Select Category"}</option>
+                                    <option value="contract">{t('step1.catContract') || "Contract"}</option>
+                                    <option value="property">{t('step1.catProperty') || "Property"}</option>
+                                    <option value="family">{t('step1.catFamily') || "Family"}</option>
+                                    <option value="consumer">{t('step1.catConsumer') || "Consumer"}</option>
+                                    <option value="tort">{t('step1.catTort') || "Tort"}</option>
+                                    <option value="other">{t('step1.catOther') || "Other"}</option>
                                 </select>
                                 </div>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <label className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2 block">{t('step1.yourName')}</label>
-                                    <input {...register('plaintiffName')} placeholder={t('step1.yourNamePh')} className={getInputClass('plaintiffName', errors.plaintiffName)} />
+                                    <label className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2 block">{t('step1.yourName') || "Your Name"}</label>
+                                    <input {...register('plaintiffName')} placeholder={t('step1.yourNamePh') || "Full Name"} className={getInputClass('plaintiffName', errors.plaintiffName)} />
                                 </div>
                                 <div>
-                                    <label className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2 block">{t('step1.opponent')}</label>
-                                    <input {...register('defendantName')} placeholder={t('step1.opponentPh')} className={getInputClass('defendantName', errors.defendantName)} />
+                                    <label className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2 block">{t('step1.opponent') || "Opponent"}</label>
+                                    <input {...register('defendantName')} placeholder={t('step1.opponentPh') || "Opponent Name"} className={getInputClass('defendantName', errors.defendantName)} />
                                 </div>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <label className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2 block">{t('step1.state')}</label>
+                                    <label className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2 block">{t('step1.state') || "State"}</label>
                                     <select {...register('state')} className={getInputClass('state', errors.state)}>
-                                    <option value="">{t('step1.stateSelect')}</option>
+                                    <option value="">{t('step1.stateSelect') || "Select State"}</option>
                                     {indianStates.map(s => <option key={s.name} value={s.name}>{s.name}</option>)}
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2 block">{t('step1.city')}</label>
-                                    <input {...register('city')} placeholder={t('step1.cityPh')} className={getInputClass('city', errors.city)} />
+                                    <label className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2 block">{t('step1.city') || "City"}</label>
+                                    <input {...register('city')} placeholder={t('step1.cityPh') || "e.g. Mumbai"} className={getInputClass('city', errors.city)} />
                                 </div>
                             </div>
                             <div className="pt-4">
-                                <button type="button" onClick={nextStep} className="w-full bg-[#FF5B33] hover:bg-[#e04f2a] text-white py-4 rounded-xl font-bold text-lg flex justify-center items-center gap-2 transition-all hover:shadow-[0_0_20px_rgba(255,91,51,0.3)]">{t('step1.nextBtn')} <ArrowRight size={20}/></button>
+                                <button type="button" onClick={nextStep} className="w-full bg-[#FF5B33] hover:bg-[#e04f2a] text-white py-4 rounded-xl font-bold text-lg flex justify-center items-center gap-2 transition-all hover:shadow-[0_0_20px_rgba(255,91,51,0.3)]">{t('step1.nextBtn') || "Next"} <ArrowRight size={20}/></button>
                             </div>
                         </div>
                     )}
 
                     {step === 2 && (
                         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                            <h3 className="text-2xl font-bold border-b border-gray-700 pb-4 mb-6 text-white">{t('step2.title')}</h3>
+                            <h3 className="text-2xl font-bold border-b border-gray-700 pb-4 mb-6 text-white">{t('step2.title') || "Case Details"}</h3>
                             <div>
-                                <label className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2 block">{t('step2.whatHappened')}</label>
-                                <textarea {...register('description')} rows={6} placeholder={t('step2.whatHappenedPh')} className={getInputClass('description', errors.description)} />
+                                <label className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2 block">{t('step2.whatHappened') || "What Happened?"}</label>
+                                <textarea {...register('description')} rows={6} placeholder={t('step2.whatHappenedPh') || "Describe the timeline..."} className={getInputClass('description', errors.description)} />
                             </div>
                             <div>
-                                <label className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2 block">{t('step2.outcome')}</label>
-                                <textarea {...register('reliefSought')} rows={2} placeholder={t('step2.outcomePh')} className={getInputClass('reliefSought', errors.reliefSought)} />
+                                <label className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2 block">{t('step2.outcome') || "Relief Sought"}</label>
+                                <textarea {...register('reliefSought')} rows={2} placeholder={t('step2.outcomePh') || "What do you want to achieve?"} className={getInputClass('reliefSought', errors.reliefSought)} />
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <label className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2 block">{t('step2.startDate')}</label>
+                                    <label className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2 block">{t('step2.startDate') || "Cause Date"}</label>
                                     <input type="date" lang="en-GB" {...register('causeDate')} className={getInputClass('causeDate', errors.causeDate)} />
                                 </div>
                                 <div>
-                                    <label className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2 block">{t('step2.value')}</label>
-                                    <input value={displaySuitValue} onChange={handleSuitValueChange} placeholder={t('step2.valuePh')} className={getInputClass('suitValue', errors.suitValue)} />
+                                    <label className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2 block">{t('step2.value') || "Suit Value"}</label>
+                                    <input value={displaySuitValue} onChange={handleSuitValueChange} placeholder={t('step2.valuePh') || "Amount in INR"} className={getInputClass('suitValue', errors.suitValue)} />
                                 </div>
                             </div>
                             <div className="flex gap-4 pt-4">
-                                <button type="button" onClick={() => setStep(1)} className="w-1/3 bg-gray-700 hover:bg-gray-600 py-4 rounded-xl font-semibold text-white">{t('step2.backBtn')}</button>
-                                <button type="button" onClick={nextStep} className="w-2/3 bg-[#FF5B33] hover:bg-[#e04f2a] text-white py-4 rounded-xl font-bold text-lg">{t('step2.nextBtn')}</button>
+                                <button type="button" onClick={() => setStep(1)} className="w-1/3 bg-gray-700 hover:bg-gray-600 py-4 rounded-xl font-semibold text-white">{t('step2.backBtn') || "Back"}</button>
+                                <button type="button" onClick={nextStep} className="w-2/3 bg-[#FF5B33] hover:bg-[#e04f2a] text-white py-4 rounded-xl font-bold text-lg">{t('step2.nextBtn') || "Next"}</button>
                             </div>
                         </div>
                     )}
 
                     {step === 3 && (
                         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                            <h3 className="text-2xl font-bold border-b border-gray-700 pb-4 mb-6 text-white">{t('step3.title')}</h3>
+                            <h3 className="text-2xl font-bold border-b border-gray-700 pb-4 mb-6 text-white">{t('step3.title') || "Evidence & Witnesses"}</h3>
                             
-                            {/* 1. Evidence List */}
                             <div className="space-y-4">
                                 <div className="flex justify-between items-end">
-                                    <label className="text-sm font-bold text-blue-400 uppercase tracking-wider">{t('step3.evLabel')}</label>
-                                    <button type="button" onClick={addEvidence} className="text-xs bg-blue-900/30 text-blue-400 px-3 py-1 rounded hover:bg-blue-900/50 flex items-center gap-1"><Plus size={14}/> {t('step3.addBtn')}</button>
+                                    <label className="text-sm font-bold text-blue-400 uppercase tracking-wider">{t('step3.evLabel') || "Evidence"}</label>
+                                    <button type="button" onClick={addEvidence} className="text-xs bg-blue-900/30 text-blue-400 px-3 py-1 rounded hover:bg-blue-900/50 flex items-center gap-1"><Plus size={14}/> {t('step3.addBtn') || "Add File"}</button>
                                 </div>
-                                {evidence.length === 0 && <div className="p-4 border border-dashed border-gray-700 rounded-lg text-center text-gray-500 text-sm">{t('step3.noEv')}</div>}
+                                {evidence.length === 0 && <div className="p-4 border border-dashed border-gray-700 rounded-lg text-center text-gray-500 text-sm">{t('step3.noEv') || "No evidence added."}</div>}
                                 {evidence.map((e, i) => (
                                     <div key={i} className="p-4 bg-[#121212] border border-gray-700 rounded-xl space-y-3 relative">
                                         <button type="button" onClick={() => removeEvidence(i)} className="absolute top-3 right-3 text-gray-500 hover:text-red-400"><Trash2 size={16}/></button>
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                                             <select {...register(`evidence.${i}.type`)} className={getInputClass(`evidence.${i}.type`, false)}>
-                                                <option value="documents">{t('step3.typeDoc')}</option>
-                                                <option value="photos">{t('step3.typePhoto')}</option>
-                                                <option value="testimony">{t('step3.typeStmt')}</option>
-                                                <option value="other">{t('step3.typeOther')}</option>
+                                                <option value="documents">{t('step3.typeDoc') || "Document"}</option>
+                                                <option value="photos">{t('step3.typePhoto') || "Photo"}</option>
+                                                <option value="testimony">{t('step3.typeStmt') || "Statement"}</option>
+                                                <option value="other">{t('step3.typeOther') || "Other"}</option>
                                             </select>
                                             <div className="md:col-span-2">
                                                 <label className="flex items-center justify-center w-full p-3 border border-gray-600 bg-[#1E1E1E] rounded-lg cursor-pointer hover:border-[#FF5B33] transition group">
                                                     <div className="flex items-center gap-2 text-sm text-gray-400 group-hover:text-white transition-colors truncate">
-                                                        <UploadCloud size={18} /> {watch(`evidence.${i}.fileName`) || t('step3.attachProof')}
+                                                        <UploadCloud size={18} /> {watch(`evidence.${i}.fileName`) || t('step3.attachProof') || 'Attach Proof'}
                                                     </div>
                                                     <input type="file" className="hidden" onChange={(e) => handleFileChange(e, i)} />
                                                 </label>
                                             </div>
                                         </div>
-                                        <input {...register(`evidence.${i}.description`)} placeholder={t('step3.proofDescPh')} className={getInputClass(`evidence.${i}.description`, errors.evidence?.[i]?.description)} />
+                                        <input {...register(`evidence.${i}.description`)} placeholder={t('step3.proofDescPh') || "Description"} className={getInputClass(`evidence.${i}.description`, errors.evidence?.[i]?.description)} />
                                     </div>
                                 ))}
                             </div>
 
-                            {/* 2. Witness List */}
                             <div className="space-y-4 pt-4 border-t border-gray-800">
                                 <div className="flex justify-between items-end">
-                                    <label className="text-sm font-bold text-green-400 uppercase tracking-wider">{t('step3.witLabel')}</label>
-                                    <button type="button" onClick={addWitness} className="text-xs bg-green-900/30 text-green-400 px-3 py-1 rounded hover:bg-green-900/50 flex items-center gap-1"><Plus size={14}/> {t('step3.addBtn')}</button>
+                                    <label className="text-sm font-bold text-green-400 uppercase tracking-wider">{t('step3.witLabel') || "Witnesses"}</label>
+                                    <button type="button" onClick={addWitness} className="text-xs bg-green-900/30 text-green-400 px-3 py-1 rounded hover:bg-green-900/50 flex items-center gap-1"><Plus size={14}/> {t('step3.addBtn') || "Add"}</button>
                                 </div>
-                                {witnesses.length === 0 && <div className="p-4 border border-dashed border-gray-700 rounded-lg text-center text-gray-500 text-sm">{t('step3.noWit')}</div>}
+                                {witnesses.length === 0 && <div className="p-4 border border-dashed border-gray-700 rounded-lg text-center text-gray-500 text-sm">{t('step3.noWit') || "No witnesses added."}</div>}
                                 {witnesses.map((w, i) => (
                                     <div key={i} className="p-4 bg-[#121212] border border-gray-700 rounded-xl space-y-3 relative">
                                         <button type="button" onClick={() => removeWitness(i)} className="absolute top-3 right-3 text-gray-500 hover:text-red-400"><Trash2 size={16}/></button>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                            <input {...register(`witnesses.${i}.name`)} placeholder={t('step3.wNamePh')} className={getInputClass(`witnesses.${i}.name`, errors.witnesses?.[i]?.name)} />
-                                            <input {...register(`witnesses.${i}.connection`)} placeholder={t('step3.wRelPh')} className={getInputClass(`witnesses.${i}.connection`, errors.witnesses?.[i]?.connection)} />
+                                            <input {...register(`witnesses.${i}.name`)} placeholder={t('step3.wNamePh') || "Name"} className={getInputClass(`witnesses.${i}.name`, errors.witnesses?.[i]?.name)} />
+                                            <input {...register(`witnesses.${i}.connection`)} placeholder={t('step3.wRelPh') || "Relationship"} className={getInputClass(`witnesses.${i}.connection`, errors.witnesses?.[i]?.connection)} />
                                         </div>
-                                        <input {...register(`witnesses.${i}.knowledge`)} placeholder={t('step3.wKnowPh')} className={getInputClass(`witnesses.${i}.knowledge`, errors.witnesses?.[i]?.knowledge)} />
+                                        <input {...register(`witnesses.${i}.knowledge`)} placeholder={t('step3.wKnowPh') || "What do they know?"} className={getInputClass(`witnesses.${i}.knowledge`, errors.witnesses?.[i]?.knowledge)} />
                                     </div>
                                 ))}
                             </div>
 
-                            {/* 3. 65B Certificate Section */}
                             <div className="p-6 bg-yellow-900/10 border border-yellow-700/30 rounded-xl">
                                 <div className="flex items-start gap-3 mb-4">
                                     <div className="p-2 bg-yellow-500/10 rounded-lg"><AlertTriangle className="text-yellow-500" size={20}/></div>
@@ -583,7 +501,6 @@ export default function CaseAdvisor() {
                                     </div>
                                 </div>
 
-                                {/* Toggle Question */}
                                 <div className="flex gap-4 mb-4">
                                     <label className="flex items-center gap-2 cursor-pointer">
                                         <input 
@@ -608,7 +525,6 @@ export default function CaseAdvisor() {
                                     </label>
                                 </div>
 
-                                {/* Conditional UI based on choice */}
                                 {watch('certificateStatus')?.includes('Have Certificate') ? (
                                     <div className="animate-in fade-in slide-in-from-top-2 duration-300">
                                         <label className="flex items-center justify-center w-full p-4 border-2 border-dashed border-yellow-700/40 bg-[#121212] rounded-lg cursor-pointer hover:bg-yellow-900/10 transition group">
@@ -635,8 +551,8 @@ export default function CaseAdvisor() {
                             </div>
 
                             <div className="flex gap-4 pt-6">
-                                <button type="button" onClick={() => setStep(2)} className="w-1/3 bg-gray-700 hover:bg-gray-600 py-4 rounded-xl font-semibold text-white">{t('step2.backBtn')}</button>
-                                <button type="submit" className="w-2/3 bg-[#FF5B33] hover:bg-[#e04f2a] text-white py-4 rounded-xl font-bold text-lg shadow-lg shadow-orange-900/20">{t('step3.genBtn')}</button>
+                                <button type="button" onClick={() => setStep(2)} className="w-1/3 bg-gray-700 hover:bg-gray-600 py-4 rounded-xl font-semibold text-white">{t('step2.backBtn') || "Back"}</button>
+                                <button type="submit" className="w-2/3 bg-[#FF5B33] hover:bg-[#e04f2a] text-white py-4 rounded-xl font-bold text-lg shadow-lg shadow-orange-900/20">{t('step3.genBtn') || "Generate Report"}</button>
                             </div>
                         </div>
                     )}
@@ -646,14 +562,15 @@ export default function CaseAdvisor() {
             {/* --- RESULT STEP (The "Paper" View) --- */}
             {step === 4 && (
               <div className="animate-in zoom-in-95 duration-500">
-                 <div className="bg-white rounded-lg shadow-2xl overflow-hidden min-h-[80vh] flex flex-col md:flex-row">
+                 {/* REMOVED overflow-hidden to prevent vertical clipping of long AI text */}
+                 <div className="bg-white rounded-lg shadow-2xl min-h-[80vh] flex flex-col md:flex-row pb-10">
                     
                     {/* Left: The Document */}
-                    <div className="flex-1 p-8 md:p-12 bg-white text-slate-900 flex flex-col">
+                    <div className="flex-1 p-8 md:p-12 bg-white text-slate-900 flex flex-col relative">
                        <div className="flex justify-between items-start mb-8 border-b border-slate-100 pb-6">
                            <div>
-                               <h2 className="text-3xl font-extrabold text-slate-900 mb-2">{t('step4.title')}</h2>
-                               <p className="text-slate-500 text-sm">{t('step4.preparedFor')} <span className="font-semibold text-slate-900">{getValues('plaintiffName')}</span></p>
+                               <h2 className="text-3xl font-extrabold text-slate-900 mb-2">{t('step4.title') || "Legal Brief & Analysis"}</h2>
+                               <p className="text-slate-500 text-sm">{t('step4.preparedFor') || "Prepared for"} <span className="font-semibold text-slate-900">{getValues('plaintiffName')}</span></p>
                            </div>
                            <Scale className="text-[#FF5B33]" size={40} />
                        </div>
@@ -671,52 +588,35 @@ export default function CaseAdvisor() {
                            )}
                        </div>
 
-                       {/* --- LOCAL LAWYERS SECTION --- */}
-                       {!isLoading && localLawyers.length > 0 && (
-                           <div className="mt-12 pt-8 border-t border-slate-200">
-                               <h3 className="text-xl font-extrabold text-slate-900 mb-2">{t('lawyersTitle') || "Top Rated Local Advocates"}</h3>
-                               <p className="text-slate-500 text-sm mb-6">{t('lawyersDesc') || "Based on your location and case type, here are highly-rated professionals nearby."}</p>
-                               
-                               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                   {localLawyers.map((lawyer, idx) => {
-                                       // Dynamically build a clean Google Maps search URL
-                                       const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(lawyer.name + ' ' + lawyer.address)}`;
-                                       
-                                       return (
-                                       <div key={idx} className="border border-slate-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow bg-slate-50 flex flex-col justify-between">
-                                           <div>
-                                               <h4 className="font-bold text-slate-800 text-sm mb-2 leading-tight">{lawyer.name}</h4>
-                                               <div className="flex items-center gap-1 mb-3">
-                                                   <Star size={14} className="text-amber-400 fill-amber-400" />
-                                                   <span className="text-sm font-bold text-slate-700">{lawyer.rating}</span>
-                                                   <span className="text-xs text-slate-500 ml-1">({lawyer.reviews} {t('reviews') || "reviews"})</span>
-                                               </div>
-                                               <p className="text-xs text-slate-500 mb-4 flex items-start gap-1">
-                                                   <MapPin size={12} className="shrink-0 mt-0.5 text-slate-400" /> 
-                                                   <span className="line-clamp-2">{lawyer.address}</span>
-                                               </p>
-                                           </div>
-                                           <a 
-                                               href={mapUrl} 
-                                               target="_blank" 
-                                               rel="noreferrer"
-                                               className="block text-center w-full py-2 mt-4 bg-white border border-slate-300 text-slate-700 text-xs font-bold rounded-lg hover:bg-slate-100 transition"
-                                           >
-                                               {t('viewMapBtn') || "View on Map"}
-                                           </a>
-                                       </div>
-                                       );
-                                   })}
+                       {/* --- NEW: PROFESSIONAL REDESIGNED DIRECTORY WIDGET --- */}
+                       {!isLoading && (
+                           <div className="mt-12 border-t border-slate-200 pt-8">
+                               <div className="bg-[#171717] rounded-xl p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl">
+                                   <div className="text-left">
+                                       <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
+                                           <Search size={20} className="text-[#FF5B33]" />
+                                           Find Legal Representation
+                                       </h3>
+                                       <p className="text-slate-400 text-sm max-w-md">
+                                           Your case assessment is complete. Take the next step by finding specialized {getValues('caseType') || 'legal'} representation in {getValues('city') || 'your area'}.
+                                       </p>
+                                   </div>
+                                   <button 
+                                       type="button"
+                                       onClick={handleDirectoryRoute} 
+                                       className="shrink-0 bg-[#FF5B33] hover:bg-[#e04f2a] text-white px-6 py-3 rounded-lg font-bold transition flex items-center gap-2"
+                                   >
+                                       Search Directory <ArrowRight size={18} />
+                                   </button>
                                </div>
                            </div>
                        )}
-
                     </div>
 
                     {/* Right: The Reference Rail */}
                     <div className="w-full md:w-80 bg-slate-50 border-l border-slate-200 p-6 text-slate-800 shrink-0">
                         <h3 className="font-bold text-sm text-slate-400 uppercase tracking-wider mb-6 flex items-center gap-2">
-                            <LinkIcon size={14}/> {t('step4.citations')}
+                            <LinkIcon size={14}/> {t('step4.citations') || "Citations"}
                         </h3>
                         
                         {isLoading ? (
@@ -726,7 +626,7 @@ export default function CaseAdvisor() {
                         ) : (
                             <ul className="space-y-3 custom-scrollbar overflow-y-auto max-h-[calc(100vh-200px)]">
                                 {activeCitations.length === 0 ? (
-                                    <li className="text-sm text-slate-400 italic">{t('step4.noCitations')}</li>
+                                    <li className="text-sm text-slate-400 italic">{t('step4.noCitations') || "No direct citations extracted."}</li>
                                 ) : (
                                     activeCitations.map((c, i) => (
                                         <li key={i} className="bg-white p-3 rounded-lg border border-slate-200 shadow-sm hover:border-orange-200 transition-colors text-sm">
@@ -749,11 +649,11 @@ export default function CaseAdvisor() {
 
                         {/* Action Buttons in Sidebar */}
                         <div className="mt-8 space-y-3 pt-6 border-t border-slate-200">
-                            <button onClick={handleExportPDF} disabled={isLoading || !result} className="w-full bg-[#171717] text-white py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 hover:bg-black transition disabled:opacity-50">
-                                <Download size={16}/> {t('step4.downloadBtn')}
+                            <button type="button" onClick={handleExportPDF} disabled={isLoading || !result} className="w-full bg-[#171717] text-white py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 hover:bg-black transition disabled:opacity-50">
+                                <Download size={16}/> Download PDF
                             </button>
-                            <button onClick={() => {setStep(1); methods.reset(); setWitnesses([]); setEvidence([]); setLocalLawyers([]);}} className="w-full bg-white border border-slate-300 text-slate-700 py-3 rounded-lg font-semibold text-sm hover:bg-slate-50 transition">
-                                {t('step4.newBtn')}
+                            <button type="button" onClick={() => {setStep(1); methods.reset(); setWitnesses([]); setEvidence([]);}} className="w-full bg-white border border-slate-300 text-slate-700 py-3 rounded-lg font-semibold text-sm hover:bg-slate-50 transition">
+                                Start New Assessment
                             </button>
                         </div>
                     </div>

@@ -22,7 +22,6 @@ export async function POST(req) {
   const model = genAI.getGenerativeModel({ model: MODEL_NAME });
 
   // --- FINAL SYSTEM INSTRUCTION ---
-  // Notice Section 7 has the exact, working Google Maps URL structure now.
   const systemInstruction = `You are "Advocat-Analysis Engine," a Senior Indian Civil Lawyer acting as a strategic case strategist.
 
 **YOUR MISSION:**
@@ -75,7 +74,7 @@ Do not just recite the law. Analyze the *winnability* of this case. Your job is 
     temperature: 0.2, 
     topK: 1,
     topP: 1,
-    maxOutputTokens: 4096,
+    maxOutputTokens: 8192, // Increased to prevent mid-sentence cutoffs
   };
   
   const safetySettings = [
