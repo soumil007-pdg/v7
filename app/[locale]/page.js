@@ -1,91 +1,53 @@
-'use client';
-import React, { useState, useEffect } from 'react';
+import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
-import { Clock, RefreshCw, Layers, MessageSquare, Scale, ArrowRight, ShieldCheck } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { Clock, RefreshCw, Layers, MessageSquare, Scale, ArrowRight } from 'lucide-react';
 
-// --- Feature Row Component ---
-const FeatureRow = ({ icon: Icon, title, description, accent, variant = 'default' }) => {
-  const isFilled = variant === 'filled';
-  
-  return (
-    <div 
-      className={`flex flex-col md:flex-row items-center gap-6 md:gap-12 p-10 md:p-12 rounded-3xl transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 group w-full ${isFilled ? 'shadow-lg' : 'bg-white'}`}
-      style={{ 
-        backgroundColor: isFilled ? accent : 'white', 
-        border: isFilled ? 'none' : `2px solid ${accent}20`
-      }}
-    >
-      <div className="flex flex-col md:flex-row items-center gap-6 md:w-1/3 shrink-0 text-center md:text-left">
-        <div className={`p-5 rounded-2xl shadow-sm transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3 ${isFilled ? 'bg-white' : 'bg-gray-50'}`}>
-          <Icon size={36} strokeWidth={2.5} style={{ color: accent }} />
-        </div>
-        <h3 className={`text-2xl md:text-3xl font-extrabold tracking-tight ${isFilled ? 'text-white' : 'text-gray-900'}`}>
-          {title}
-        </h3>
-      </div>
-      <div className={`md:w-2/3 text-center md:text-left border-t md:border-t-0 md:border-l pt-6 md:pt-0 md:pl-12 ${isFilled ? 'border-white/20' : 'border-gray-100'}`}>
-        <p className={`text-lg md:text-xl leading-relaxed font-medium ${isFilled ? 'text-white/90' : 'text-gray-600'}`}>
-          {description}
-        </p>
-      </div>
-    </div>
-  );
-};
+export async function generateMetadata({ params }) {
+  const resolvedParams = await params;
+  const locale = resolvedParams.locale;
+  const t = await getTranslations({ locale, namespace: 'HomePage' });
 
-export default function Home() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const router = useRouter();
-  
-  // Initialize translations for the HomePage namespace
-  const t = useTranslations('HomePage');
+  return {
+    title: t('hero.titlePart1') + ' ' + t('hero.titlePart2'),
+    description: t('hero.subtitle'),
+  };
+}
 
-  useEffect(() => {
-    const token = localStorage.getItem('sessionToken');
-    if (token) {
-      setIsLoggedIn(true);
-    } else {
-      setIsLoggedIn(false);
-    }
-  }, []);
-  
-  const getLink = (path) => isLoggedIn ? path : '/auth';
+export default async function HomePage({ params }) {
+  const resolvedParams = await params;
+  const locale = resolvedParams.locale;
+  const t = await getTranslations({ locale, namespace: 'HomePage' });
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-sans text-slate-900">
       
-      {/* --- Section 1: Hero (LOWERED BOTTOM EDGE) --- */}
+      {/* --- Section 1: Hero --- */}
       <section className="bg-[#FF5B33] pt-24 pb-32 md:pt-32 md:pb-48 text-white relative overflow-hidden">
         <div className="absolute inset-0 opacity-5 bg-[url('/noise.png')]"></div>
         <div className="container mx-auto px-4 max-w-4xl text-center relative z-10">
-            <h1 className="text-5xl md:text-7xl font-extrabold leading-tight mb-6 tracking-tight">
-              {t('hero.titlePart1')} <br />
-              <span className="text-white opacity-90">{t('hero.titlePart2')}</span>
-            </h1>
-            <p className="text-lg md:text-xl text-white/90 mb-10 max-w-2xl mx-auto leading-relaxed font-medium">
-              {t('hero.subtitle')}
-            </p>
-            
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-5 md:gap-8">
-              
-              {/* Button 1: Quick Chat */}
-              <Link href={getLink("/general-queries")} className="w-full sm:w-auto">
-                <button className="w-full sm:w-auto bg-white text-[#FF5B33] font-bold py-4 px-10 rounded-xl shadow-xl hover:bg-gray-50 hover:scale-105 transition-all duration-200 flex items-center justify-center gap-3 text-xl border-2 border-transparent">
-                  <MessageSquare size={24} />
-                  {t('hero.quickChatBtn')}
-                </button>
-              </Link>
+          <h1 className="text-5xl md:text-7xl font-extrabold leading-tight mb-6 tracking-tight">
+            {t('hero.titlePart1')} <br />
+            <span className="text-white opacity-90">{t('hero.titlePart2')}</span>
+          </h1>
+          <p className="text-lg md:text-xl text-white/90 mb-10 max-w-2xl mx-auto leading-relaxed font-medium">
+            {t('hero.subtitle')}
+          </p>
+          
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-5 md:gap-8">
+            <Link href="/auth" className="w-full sm:w-auto">
+              <button className="w-full sm:w-auto bg-white text-[#FF5B33] font-bold py-4 px-10 rounded-xl shadow-xl hover:bg-gray-50 hover:scale-105 transition-all duration-200 flex items-center justify-center gap-3 text-xl border-2 border-transparent">
+                <MessageSquare size={24} />
+                {t('hero.quickChatBtn')}
+              </button>
+            </Link>
 
-              {/* Button 2: Case Advisor */}
-              <Link href={getLink("/case-advisor")} className="w-full sm:w-auto">
-                <button className="w-full sm:w-auto bg-white text-[#171717] font-bold py-4 px-10 rounded-xl shadow-xl hover:bg-gray-50 hover:scale-105 transition-all duration-200 flex items-center justify-center gap-3 text-xl border-2 border-transparent">
-                  <Scale size={24} />
-                  {t('hero.caseAdvisorBtn')}
-                </button>
-              </Link>
-
-            </div>
+            <Link href="/auth" className="w-full sm:w-auto">
+              <button className="w-full sm:w-auto bg-white text-[#171717] font-bold py-4 px-10 rounded-xl shadow-xl hover:bg-gray-50 hover:scale-105 transition-all duration-200 flex items-center justify-center gap-3 text-xl border-2 border-transparent">
+                <Scale size={24} />
+                {t('hero.caseAdvisorBtn')}
+              </button>
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -101,9 +63,9 @@ export default function Home() {
             <p className="text-lg text-slate-600 mb-10 max-w-xl leading-relaxed">
               {t('insights.description')}
             </p>
-            <Link href={isLoggedIn ? "/dashboard" : "/auth"}>
+            <Link href="/auth">
               <button className="bg-[#171717] text-white font-bold py-4 px-8 rounded-xl shadow-lg hover:bg-black hover:-translate-y-1 transition-all duration-300 flex items-center gap-2">
-                {isLoggedIn ? t('insights.dashboardBtn') : t('insights.startBtn')} <ArrowRight size={20}/>
+                {t('insights.startBtn')} <ArrowRight size={20}/>
               </button>
             </Link>
           </div>
@@ -121,7 +83,7 @@ export default function Home() {
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            <Link href={getLink("/general-queries")} className="group block h-full">
+            <Link href="/auth" className="group block h-full">
               <div className="relative bg-white border border-slate-200 p-8 rounded-2xl h-full flex flex-col transition-all duration-300 hover:border-[#FF5B33] hover:shadow-xl hover:-translate-y-1">
                 <div className="mb-6 p-4 bg-orange-50 rounded-xl w-fit group-hover:bg-[#FF5B33] transition-colors duration-300">
                   <MessageSquare size={32} className="text-[#FF5B33] group-hover:text-white transition-colors duration-300" />
@@ -135,7 +97,7 @@ export default function Home() {
               </div>
             </Link>
 
-            <Link href={getLink("/case-advisor")} className="group block h-full">
+            <Link href="/auth" className="group block h-full">
               <div className="relative bg-white border border-slate-200 p-8 rounded-2xl h-full flex flex-col transition-all duration-300 hover:border-[#171717] hover:shadow-xl hover:-translate-y-1">
                 <div className="mb-6 p-4 bg-slate-50 rounded-xl w-fit group-hover:bg-[#171717] transition-colors duration-300">
                   <Scale size={32} className="text-[#171717] group-hover:text-white transition-colors duration-300" />
@@ -161,27 +123,9 @@ export default function Home() {
           </h2>
 
           <div className="flex flex-col space-y-8">
-            <FeatureRow 
-              icon={Layers} 
-              title={t('features.easyTitle')} 
-              description={t('features.easyDesc')} 
-              accent="#171717" 
-              variant="filled" 
-            />
-            <FeatureRow 
-              icon={RefreshCw} 
-              title={t('features.accurateTitle')} 
-              description={t('features.accurateDesc')} 
-              accent="#171717" 
-              variant="default" 
-            />
-            <FeatureRow 
-              icon={Clock} 
-              title={t('features.saveTitle')} 
-              description={t('features.saveDesc')} 
-              accent="#FF5B33" 
-              variant="filled" 
-            />
+            <FeatureRow icon={Layers} title={t('features.easyTitle')} description={t('features.easyDesc')} accent="#171717" variant="filled" />
+            <FeatureRow icon={RefreshCw} title={t('features.accurateTitle')} description={t('features.accurateDesc')} accent="#171717" variant="default" />
+            <FeatureRow icon={Clock} title={t('features.saveTitle')} description={t('features.saveDesc')} accent="#FF5B33" variant="filled" />
           </div>
         </div>
       </section>
@@ -189,53 +133,66 @@ export default function Home() {
       {/* --- Section 5: FAQ & CTA --- */}
       <section className="py-16 md:py-24 bg-[#171717] text-white">
         <div className="container mx-auto px-4 max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-16 items-start">
-            <div style={{backgroundColor: 'var(--primary-accent)'}} className="p-10 md:p-12 rounded-3xl shadow-2xl">
-                <h2 className="text-4xl font-extrabold mb-6 leading-tight">{t('faqCta.ctaTitle')}</h2>
-                <p className="text-lg text-white/90 mb-8 font-medium">{t('faqCta.ctaDesc')}</p>
-                <Link href={getLink("/dashboard")}>
-                    <button className="bg-white text-[#FF5B33] font-bold py-4 px-8 rounded-xl shadow-lg hover:bg-gray-50 hover:scale-105 transition-all duration-300 flex items-center gap-2 text-lg">
-                        {isLoggedIn ? t('faqCta.startJourneyBtn') : t('faqCta.askNowBtn')} <ArrowRight size={20} />
-                    </button>
-                </Link>
-                <div className="mt-8 pt-6 border-t border-white/20 flex items-center gap-2 text-white/80 text-xs font-bold uppercase tracking-wider">
-                    <span>{t('faqCta.tags')}</span>
-                </div>
-            </div>
+          <div style={{backgroundColor: 'var(--primary-accent)'}} className="p-10 md:p-12 rounded-3xl shadow-2xl">
+            <h2 className="text-4xl font-extrabold mb-6 leading-tight">{t('faqCta.ctaTitle')}</h2>
+            <p className="text-lg text-white/90 mb-8 font-medium">{t('faqCta.ctaDesc')}</p>
+            <Link href="/auth">
+              <button className="bg-white text-[#FF5B33] font-bold py-4 px-8 rounded-xl shadow-lg hover:bg-gray-50 hover:scale-105 transition-all duration-300 flex items-center gap-2 text-lg">
+                {t('faqCta.startJourneyBtn')} <ArrowRight size={20} />
+              </button>
+            </Link>
+          </div>
 
-            <div className="space-y-8">
-                <h3 className="text-2xl font-bold text-white border-b border-gray-700 pb-4 mb-2">{t('faqCta.faqTitle')}</h3>
-                <div>
-                    <h4 className="font-bold text-white text-lg mb-1">{t('faqCta.faq1Q')}</h4>
-                    <p className="text-sm text-gray-400 leading-relaxed">
-                        {t('faqCta.faq1A')}
-                    </p>
-                </div>
-                <div>
-                    <h4 className="font-bold text-white text-lg mb-1">{t('faqCta.faq2Q')}</h4>
-                    <p className="text-sm text-gray-400 leading-relaxed">
-                        {t.rich('faqCta.faq2A', {
-                          bold: (chunks) => <strong>{chunks}</strong>
-                        })}
-                    </p>
-                </div>
-                <div>
-                    <h4 className="font-bold text-white text-lg mb-1">{t('faqCta.faq3Q')}</h4>
-                    <p className="text-sm text-gray-400 leading-relaxed">
-                        {t('faqCta.faq3A')}
-                    </p>
-                </div>
-                <div>
-                    <h4 className="font-bold text-white text-lg mb-1">{t('faqCta.faq4Q')}</h4>
-                    <p className="text-sm text-gray-400 leading-relaxed">
-                        {t.rich('faqCta.faq4A', {
-                          bold: (chunks) => <strong>{chunks}</strong>
-                        })}
-                    </p>
-                </div>
+          <div className="space-y-8">
+            <h3 className="text-2xl font-bold text-white border-b border-gray-700 pb-4 mb-2">{t('faqCta.faqTitle')}</h3>
+            <div>
+              <h4 className="font-bold text-white text-lg mb-1">{t('faqCta.faq1Q')}</h4>
+              <p className="text-sm text-gray-400 leading-relaxed">{t('faqCta.faq1A')}</p>
             </div>
+            <div>
+              <h4 className="font-bold text-white text-lg mb-1">{t('faqCta.faq2Q')}</h4>
+              <p className="text-sm text-gray-400 leading-relaxed">
+                {t.rich('faqCta.faq2A', { bold: (chunks) => <strong>{chunks}</strong> })}
+              </p>
+            </div>
+            <div>
+              <h4 className="font-bold text-white text-lg mb-1">{t('faqCta.faq3Q')}</h4>
+              <p className="text-sm text-gray-400 leading-relaxed">{t('faqCta.faq3A')}</p>
+            </div>
+            <div>
+              <h4 className="font-bold text-white text-lg mb-1">{t('faqCta.faq4Q')}</h4>
+              <p className="text-sm text-gray-400 leading-relaxed">
+                {t.rich('faqCta.faq4A', { bold: (chunks) => <strong>{chunks}</strong> })}
+              </p>
+            </div>
+          </div>
         </div>
       </section>
-
     </div>
   );
 }
+
+// FeatureRow Component (still server-side)
+const FeatureRow = ({ icon: Icon, title, description, accent, variant = 'default' }) => {
+  const isFilled = variant === 'filled';
+  return (
+    <div 
+      className={`flex flex-col md:flex-row items-center gap-6 md:gap-12 p-10 md:p-12 rounded-3xl transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 group w-full ${isFilled ? 'shadow-lg' : 'bg-white'}`}
+      style={{ backgroundColor: isFilled ? accent : 'white', border: isFilled ? 'none' : `2px solid ${accent}20` }}
+    >
+      <div className="flex flex-col md:flex-row items-center gap-6 md:w-1/3 shrink-0 text-center md:text-left">
+        <div className={`p-5 rounded-2xl shadow-sm transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3 ${isFilled ? 'bg-white' : 'bg-gray-50'}`}>
+          <Icon size={36} strokeWidth={2.5} style={{ color: accent }} />
+        </div>
+        <h3 className={`text-2xl md:text-3xl font-extrabold tracking-tight ${isFilled ? 'text-white' : 'text-gray-900'}`}>
+          {title}
+        </h3>
+      </div>
+      <div className={`md:w-2/3 text-center md:text-left border-t md:border-t-0 md:border-l pt-6 md:pt-0 md:pl-12 ${isFilled ? 'border-white/20' : 'border-gray-100'}`}>
+        <p className={`text-lg md:text-xl leading-relaxed font-medium ${isFilled ? 'text-white/90' : 'text-gray-600'}`}>
+          {description}
+        </p>
+      </div>
+    </div>
+  );
+};

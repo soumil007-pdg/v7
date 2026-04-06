@@ -1,13 +1,16 @@
+import { getTranslations } from 'next-intl/server';
+import { Suspense } from 'react';
+
+// ==================== CLIENT COMPONENT ====================
 'use client';
-import React, { useEffect, useState, Suspense } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { MapPin, Star, ArrowLeft, ExternalLink, Phone, AlertTriangle, Navigation } from 'lucide-react';
 
-function DirectoryContent() {
+function DirectoryContent({ initialCity, t }) {
   const searchParams = useSearchParams();
   const router = useRouter();
   
-  const initialCity = searchParams.get('city') || 'Pitampura';
   const category = searchParams.get('category') || 'legal';
 
   const [city, setCity] = useState(initialCity);
@@ -54,7 +57,6 @@ function DirectoryContent() {
       async (position) => {
         const { latitude, longitude } = position.coords;
         
-        // Free reverse geocoding (Nominatim)
         try {
           const res = await fetch(
             `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&addressdetails=1`
@@ -170,10 +172,26 @@ function DirectoryContent() {
   );
 }
 
-export default function DirectoryPage() {
+// ==================== SERVER COMPONENT (SEO) ====================
+export async function generateMetadata({ params }) {
+  const resolvedParams = await params;
+  const locale = resolvedParams.locale;
+  const t = await getTranslations({ locale, namespace: 'Directory' });
+
+  return {
+    title: t('title') || 'Legal Directory - ADVOCAT-Easy',
+    description: t('description') || 'Find lawyers near you in your city',
+  };
+}
+
+export default async function DirectoryPage({ params }) {
+  const resolvedParams = await params;
+  const locale = resolvedParams.locale;
+  const t = await getTranslations({ locale, namespace: 'Directory' });
+
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#121212] flex items-center justify-center text-xl">Loading...</div>}>
-      <DirectoryContent />
+    <Suspense fallback={<div className="min-h-screen bg-[#121212] flex items-center justify-center text-white">Loading directory...</div>}>
+      <DirectoryContent initialCity="Pitampura" t={t} />
     </Suspense>
   );
 }

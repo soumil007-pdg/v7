@@ -1,19 +1,18 @@
+import { getTranslations } from 'next-intl/server';
+
+// ==================== CLIENT COMPONENT (Form + interactivity) ====================
 'use client';
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import { CheckCircle, ArrowRight } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 
-export default function Auth() {
+function AuthForm({ t }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  
-  // Initialize translations for Auth
-  const t = useTranslations('Auth');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -41,7 +40,7 @@ export default function Auth() {
         } else {
           setIsLogin(true);
           toast.success(t('toastCreated'));
-          setPassword(''); // Clear password for safety after signup
+          setPassword(''); 
         }
       } else {
         toast.error(data.message || t('toastFail'));
@@ -58,14 +57,12 @@ export default function Auth() {
       
       {/* --- LEFT COLUMN: Brand & Emotion (Hidden on Mobile) --- */}
       <div className="hidden lg:flex lg:w-1/2 relative bg-slate-900 text-white flex-col justify-end p-12 overflow-hidden">
-        {/* Background Image with Overlay */}
         <div 
           className="absolute inset-0 bg-cover bg-center opacity-40"
           style={{ backgroundImage: "url('/pic4.jpg')" }} 
         />
         <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/40 to-transparent"></div>
 
-        {/* Quote Only - No Logo, No Social Proof */}
         <div className="relative z-10 max-w-md">
           <blockquote className="text-2xl font-medium leading-relaxed mb-6 border-l-4 border-[#FF5B33] pl-6">
             {t('quote')}
@@ -73,11 +70,10 @@ export default function Auth() {
         </div>
       </div>
 
-      {/* --- RIGHT COLUMN: The Form (Action) --- */}
+      {/* --- RIGHT COLUMN: The Form --- */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 md:p-16 bg-white">
         <div className="w-full max-w-md space-y-8">
           
-          {/* Header */}
           <div className="text-center lg:text-left">
             <h2 className="text-3xl font-extrabold text-slate-900 mb-2">
               {isLogin ? t('welcomeBack') : t('createAccount')}
@@ -87,7 +83,6 @@ export default function Auth() {
             </p>
           </div>
 
-          {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-4">
               <div>
@@ -114,7 +109,6 @@ export default function Auth() {
               </div>
             </div>
 
-            {/* Submit Button */}
             <button
               type="submit"
               disabled={isLoading}
@@ -131,7 +125,6 @@ export default function Auth() {
             </button>
           </form>
 
-          {/* Toggle Login/Signup */}
           <div className="text-center text-sm text-slate-500">
             {isLogin ? t('noAccount') : t('hasAccount')}
             <button
@@ -142,7 +135,6 @@ export default function Auth() {
             </button>
           </div>
 
-          {/* Trust Features (Micro-copy) */}
           {!isLogin && (
             <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-100">
               <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
@@ -157,4 +149,24 @@ export default function Auth() {
       </div>
     </div>
   );
+}
+
+// ==================== SERVER COMPONENT (for SEO) ====================
+export async function generateMetadata({ params }) {
+  const resolvedParams = await params;
+  const locale = resolvedParams.locale;
+  const t = await getTranslations({ locale, namespace: 'Auth' });
+
+  return {
+    title: t('welcomeBack') || 'Login / Signup - ADVOCAT-Easy',
+    description: t('loginDesc') || 'Sign in to access your AI legal assistant',
+  };
+}
+
+export default async function AuthPage({ params }) {
+  const resolvedParams = await params;
+  const locale = resolvedParams.locale;
+  const t = await getTranslations({ locale, namespace: 'Auth' });
+
+  return <AuthForm t={t} />;
 }
