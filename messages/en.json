@@ -1,4 +1,10 @@
 {
+  
+  "Metadata": {
+    "title": "ADVOCAT-Easy",
+    "description": "Your Legal AI Assistant – Chatbot & Case Advisor in English, Hindi, Marathi & Telugu"
+  },
+
   "Navbar": {
     "tagline": "an EDUCATIONAL legal counsel app",
     "welcome": "Welcome",

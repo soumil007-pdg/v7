@@ -1,30 +1,40 @@
 import { NextIntlClientProvider } from 'next-intl';
-import { getMessages, setRequestLocale } from 'next-intl/server';
+import { getMessages, setRequestLocale, getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import '../globals.css'; 
 
 import Navbar from '../components/Navbar'; 
 import Footer from '../components/Footer';
 
-export const metadata = {
-  title: 'ADVOCAT-Easy',
-  description: 'Your Legal AI Assistant',
-};
+const locales = ['en', 'hi', 'mr', 'te'];
 
-export default async function RootLayout({ children, params }) {
-  // In Next.js 15, params is a Promise and must be awaited
+export async function generateMetadata({ params }) {
   const resolvedParams = await params;
   const locale = resolvedParams.locale;
 
-  // Validate that the incoming locale is supported
-  if (!['en', 'hi', 'mr', 'te'].includes(locale)) {
+  const t = await getTranslations({ locale, namespace: 'Metadata' });
+
+  return {
+    title: t('title'),
+    description: t('description'),
+    alternates: {
+      languages: locales.reduce((acc, lang) => {
+        acc[lang] = `/${lang}`;
+        return acc;
+      }, {}),
+    },
+  };
+}
+
+export default async function RootLayout({ children, params }) {
+  const resolvedParams = await params;
+  const locale = resolvedParams.locale;
+
+  if (!locales.includes(locale)) {
     notFound();
   }
 
-  // Enable static rendering
   setRequestLocale(locale);
-
-  // Fetch the translation messages for the current language
   const messages = await getMessages();
 
   return (
