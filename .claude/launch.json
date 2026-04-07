@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "Next.js dev (Turbopack)",
+      "runtimeExecutable": "/bin/bash",
+      "runtimeArgs": ["-lc", "export PATH=\"/Users/dell/.nvm/versions/node/v24.14.0/bin:$PATH\" && npm run dev"],
+      "port": 3000,
+      "autoPort": true
+    }
+  ]
+}

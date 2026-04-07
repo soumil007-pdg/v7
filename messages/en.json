@@ -62,6 +62,8 @@
     }
   }
   ,"Dashboard": {
+    "metaTitle": "Dashboard - ADVOCAT-Easy",
+    "metaDescription": "Your legal command center. Access Quick Rights Chat and the Case Strategist.",
     "loading": "Loading Command Center...",
     "title": "Legal Command Center",
     "subtitle": "Select a tool below. We combine <bold>AI precision</bold> with <bold>Indian Constitution</bold> to guide you.",
@@ -80,6 +82,8 @@
     "footer": "Private & Secure • Educational AI Guidance"
   },
   "GeneralQueries": {
+    "metaTitle": "Quick Rights Chat - ADVOCAT-Easy",
+    "metaDescription": "Ask any legal question and get clear, cited answers from an AI legal assistant.",
     "sidebar": {
       "title": "My Consultations",
       "newConsultation": "New Consultation"
@@ -119,6 +123,8 @@
     }
   }
   ,"CaseAdvisor": {
+    "metaTitle": "Case Strategist - ADVOCAT-Easy",
+    "metaDescription": "Build a structured legal strategy with evidence, witnesses, and a winning roadmap.",
     "header": { "title": "Case Strategist", "step": "Step {step} of 4" },
     "step1": { "title": "The Basics", "caseName": "Case Name", "caseNamePh": "e.g. Flat 302 Dispute", "category": "Category", "catSelect": "Select Type", "catContract": "Contract / Agreement", "catProperty": "Property / Real Estate", "catFamily": "Family / Matrimonial", "catConsumer": "Consumer Dispute", "catTort": "Civil Wrong / Damages", "catOther": "Other", "yourName": "Your Name", "yourNamePh": "Full Name", "opponent": "Opposing Party", "opponentPh": "Opponent Name", "state": "State", "stateSelect": "Select State", "city": "City", "cityPh": "City / District", "nextBtn": "Next: The Facts" },
     "step2": { "title": "The Facts", "whatHappened": "What Happened?", "whatHappenedPh": "Describe the situation in detail...", "outcome": "Desired Outcome", "outcomePh": "e.g. Refund, Apology, Eviction", "startDate": "Start Date", "value": "Financial Value", "valuePh": "₹ Amount", "backBtn": "Back", "nextBtn": "Next: Evidence" },
@@ -132,6 +138,8 @@
     "viewMapBtn": "View on Map"
   }
   ,"Auth": {
+    "metaTitle": "Login or Sign Up - ADVOCAT-Easy",
+    "metaDescription": "Sign in to access your AI legal assistant, case files and personalized strategy.",
     "quote": "\"The law should not be a mystery. We empower you to understand your rights before you even step into a lawyer's office.\"",
     "welcomeBack": "Welcome back",
     "createAccount": "Create an account",
@@ -155,5 +163,13 @@
     "toastFail": "Authentication failed",
     "toastError": "Connection error. Please try again."
   }
-  
+  ,"Directory": {
+    "metaTitle": "Legal Directory - ADVOCAT-Easy",
+    "metaDescription": "Find top-rated lawyers near you. Search by city and category for verified local legal professionals."
+  }
+  ,"Error": {
+    "title": "Something went wrong",
+    "description": "An unexpected error occurred. Please try again, or go back to the home page.",
+    "retry": "Try again"
+  }
 }
