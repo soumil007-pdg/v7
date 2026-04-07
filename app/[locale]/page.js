@@ -34,14 +34,14 @@ export default async function HomePage({ params }) {
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-5 md:gap-8">
-            <Link href="/auth" className="w-full sm:w-auto">
+            <Link href="/general-queries" className="w-full sm:w-auto">
               <button className="w-full sm:w-auto bg-white text-[#FF5B33] font-bold py-4 px-10 rounded-xl shadow-xl hover:bg-gray-50 hover:scale-105 transition-all duration-200 flex items-center justify-center gap-3 text-xl border-2 border-transparent">
                 <MessageSquare size={24} />
                 {t('hero.quickChatBtn')}
               </button>
             </Link>
 
-            <Link href="/auth" className="w-full sm:w-auto">
+            <Link href="/case-advisor" className="w-full sm:w-auto">
               <button className="w-full sm:w-auto bg-white text-[#171717] font-bold py-4 px-10 rounded-xl shadow-xl hover:bg-gray-50 hover:scale-105 transition-all duration-200 flex items-center justify-center gap-3 text-xl border-2 border-transparent">
                 <Scale size={24} />
                 {t('hero.caseAdvisorBtn')}
@@ -63,7 +63,7 @@ export default async function HomePage({ params }) {
             <p className="text-lg text-slate-600 mb-10 max-w-xl leading-relaxed">
               {t('insights.description')}
             </p>
-            <Link href="/auth">
+            <Link href="/dashboard">
               <button className="bg-[#171717] text-white font-bold py-4 px-8 rounded-xl shadow-lg hover:bg-black hover:-translate-y-1 transition-all duration-300 flex items-center gap-2">
                 {t('insights.startBtn')} <ArrowRight size={20}/>
               </button>
@@ -83,7 +83,7 @@ export default async function HomePage({ params }) {
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            <Link href="/auth" className="group block h-full">
+            <Link href="/general-queries" className="group block h-full">
               <div className="relative bg-white border border-slate-200 p-8 rounded-2xl h-full flex flex-col transition-all duration-300 hover:border-[#FF5B33] hover:shadow-xl hover:-translate-y-1">
                 <div className="mb-6 p-4 bg-orange-50 rounded-xl w-fit group-hover:bg-[#FF5B33] transition-colors duration-300">
                   <MessageSquare size={32} className="text-[#FF5B33] group-hover:text-white transition-colors duration-300" />
@@ -97,7 +97,7 @@ export default async function HomePage({ params }) {
               </div>
             </Link>
 
-            <Link href="/auth" className="group block h-full">
+            <Link href="/case-advisor" className="group block h-full">
               <div className="relative bg-white border border-slate-200 p-8 rounded-2xl h-full flex flex-col transition-all duration-300 hover:border-[#171717] hover:shadow-xl hover:-translate-y-1">
                 <div className="mb-6 p-4 bg-slate-50 rounded-xl w-fit group-hover:bg-[#171717] transition-colors duration-300">
                   <Scale size={32} className="text-[#171717] group-hover:text-white transition-colors duration-300" />
@@ -136,7 +136,7 @@ export default async function HomePage({ params }) {
           <div style={{backgroundColor: 'var(--primary-accent)'}} className="p-10 md:p-12 rounded-3xl shadow-2xl">
             <h2 className="text-4xl font-extrabold mb-6 leading-tight">{t('faqCta.ctaTitle')}</h2>
             <p className="text-lg text-white/90 mb-8 font-medium">{t('faqCta.ctaDesc')}</p>
-            <Link href="/auth">
+            <Link href="/dashboard">
               <button className="bg-white text-[#FF5B33] font-bold py-4 px-8 rounded-xl shadow-lg hover:bg-gray-50 hover:scale-105 transition-all duration-300 flex items-center gap-2 text-lg">
                 {t('faqCta.startJourneyBtn')} <ArrowRight size={20} />
               </button>
