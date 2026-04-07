@@ -17,6 +17,10 @@ import Footer from '../components/Footer';
 const locales = ['en', 'hi', 'mr', 'te'];
 const baseUrl = 'https://yourdomain.com';   // ← CHANGE THIS TO YOUR REAL DOMAIN (or Vercel URL)
 
+export function generateStaticParams() {
+  return locales.map((locale) => ({ locale }));
+}
+
 export async function generateMetadata({ params }) {
   const resolvedParams = await params;
   const locale = resolvedParams.locale;
