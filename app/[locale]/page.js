@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { Clock, RefreshCw, Layers, MessageSquare, Scale, ArrowRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export async function generateMetadata({ params }) {
   const resolvedParams = await params;
@@ -35,17 +36,17 @@ export default async function HomePage({ params }) {
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-5 md:gap-8">
             <Link href="/general-queries" className="w-full sm:w-auto">
-              <button className="w-full sm:w-auto bg-white text-[#FF5B33] font-bold py-4 px-10 rounded-xl shadow-xl hover:bg-gray-50 hover:scale-105 transition-all duration-200 flex items-center justify-center gap-3 text-xl border-2 border-transparent">
+              <Button variant="brand-outline" size="xl-wide" className="w-full sm:w-auto shadow-xl hover:scale-105">
                 <MessageSquare size={24} />
                 {t('hero.quickChatBtn')}
-              </button>
+              </Button>
             </Link>
 
             <Link href="/case-advisor" className="w-full sm:w-auto">
-              <button className="w-full sm:w-auto bg-white text-[#171717] font-bold py-4 px-10 rounded-xl shadow-xl hover:bg-gray-50 hover:scale-105 transition-all duration-200 flex items-center justify-center gap-3 text-xl border-2 border-transparent">
+              <Button variant="dark-outline" size="xl-wide" className="w-full sm:w-auto shadow-xl hover:scale-105">
                 <Scale size={24} />
                 {t('hero.caseAdvisorBtn')}
-              </button>
+              </Button>
             </Link>
           </div>
         </div>
@@ -64,9 +65,9 @@ export default async function HomePage({ params }) {
               {t('insights.description')}
             </p>
             <Link href="/dashboard">
-              <button className="bg-[#171717] text-white font-bold py-4 px-8 rounded-xl shadow-lg hover:bg-black hover:-translate-y-1 transition-all duration-300 flex items-center gap-2">
+              <Button variant="dark" size="xl" className="shadow-lg hover:-translate-y-1">
                 {t('insights.startBtn')} <ArrowRight size={20}/>
-              </button>
+              </Button>
             </Link>
           </div>
         </div>
@@ -137,9 +138,9 @@ export default async function HomePage({ params }) {
             <h2 className="text-4xl font-extrabold mb-6 leading-tight">{t('faqCta.ctaTitle')}</h2>
             <p className="text-lg text-white/90 mb-8 font-medium">{t('faqCta.ctaDesc')}</p>
             <Link href="/dashboard">
-              <button className="bg-white text-[#FF5B33] font-bold py-4 px-8 rounded-xl shadow-lg hover:bg-gray-50 hover:scale-105 transition-all duration-300 flex items-center gap-2 text-lg">
+              <Button variant="brand-outline" size="xl" className="shadow-lg hover:scale-105">
                 {t('faqCta.startJourneyBtn')} <ArrowRight size={20} />
-              </button>
+              </Button>
             </Link>
           </div>
 

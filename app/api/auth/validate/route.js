@@ -26,7 +26,7 @@ export async function POST(req) {
        return new Response(JSON.stringify({ isValid: false, message: 'Session expired' }), { status: 401 });
     }
 
-    return new Response(JSON.stringify({ isValid: true, email: session.email }), { status: 200 });
+    return new Response(JSON.stringify({ isValid: true, email: session.email, name: session.name || '' }), { status: 200 });
   } catch (err) {
     console.error('Validation error:', err);
     return new Response(JSON.stringify({ isValid: false, message: 'Server error' }), { status: 500 });

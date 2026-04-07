@@ -40,8 +40,9 @@ export async function POST(req) {
     await sessions.insertOne({
       token: sessionToken,
       email,
+      name: user.name || '',
       createdAt: new Date(),
-      expiresAt: expiresAt // Save the expiry date
+      expiresAt: expiresAt
     });
 
     // 5. Return success

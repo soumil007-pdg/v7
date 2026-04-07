@@ -1,36 +1,43 @@
 'use client';
-import Skeleton from 'react-loading-skeleton';
-import 'react-loading-skeleton/dist/skeleton.css';
+import { Skeleton } from '@/components/ui/skeleton';
 
-// Base style for the shimmer
-const skeletonBase = {
-  baseColor: "#ebebeb",
-  highlightColor: "#f5f5f5",
-  className: "skeleton-shimmer", // Use the custom shimmer from globals.css
-};
-
-export const ChatSkeleton = ({ lines = 3 }) => (
-  <div className="space-y-4 p-4">
-    <Skeleton {...skeletonBase} height={60} width="80%" />
-    <Skeleton {...skeletonBase} height={60} width="60%" />
-    <Skeleton {...skeletonBase} height={60} width="70%" />
-    <Skeleton {...skeletonBase} height={40} width="30%" />
+// --- ChatSkeleton ---
+export const ChatSkeleton = () => (
+  <div className="space-y-3 w-full">
+    <Skeleton className="h-3.5 w-[75%] bg-slate-200" />
+    <Skeleton className="h-3.5 w-full bg-slate-200" />
+    <Skeleton className="h-3.5 w-[60%] bg-slate-200" />
+    <Skeleton className="h-3.5 w-[85%] bg-slate-200" />
+    <div className="pt-2">
+      <Skeleton className="h-3.5 w-[30%] bg-[#FF5B33]/20" />
+    </div>
   </div>
 );
 
-export const FormSkeleton = ({ fields = 4 }) => (
-  <div className="space-y-6 p-4">
-    {[...Array(fields)].map((_, i) => (
-      <Skeleton key={i} {...skeletonBase} height={i < 2 ? 40 : 100} />
-    ))}
-    <Skeleton {...skeletonBase} height={40} count={2} width="50%" />
-  </div>
-);
-
+// --- AnalysisSkeleton ---
 export const AnalysisSkeleton = () => (
-  <div className="space-y-6 p-4">
-    <Skeleton {...skeletonBase} height={200} />
-    <Skeleton {...skeletonBase} height={150} count={3} />
-    <Skeleton {...skeletonBase} height={50} width="70%" />
+  <div className="space-y-5 w-full">
+    <Skeleton className="h-4 w-[70%] bg-slate-200" />
+    <Skeleton className="h-4 w-full bg-slate-200" />
+    <Skeleton className="h-4 w-[85%] bg-slate-200" />
+    <Skeleton className="h-4 w-full bg-slate-200" />
+    <Skeleton className="h-28 w-full bg-slate-100 rounded-xl" />
+    <Skeleton className="h-4 w-[90%] bg-slate-200" />
+    <Skeleton className="h-4 w-[65%] bg-slate-200" />
+    <div className="pt-1">
+      <Skeleton className="h-4 w-[40%] bg-[#FF5B33]/20" />
+    </div>
+  </div>
+);
+
+// --- CitationSkeleton ---
+export const CitationSkeleton = () => (
+  <div className="space-y-3">
+    {[1, 2, 3].map((i) => (
+      <div key={i} className="rounded-lg border border-slate-100 p-3 bg-white space-y-2">
+        <Skeleton className="h-3 w-[80%] bg-slate-200" />
+        <Skeleton className="h-3 w-[55%] bg-slate-100" />
+      </div>
+    ))}
   </div>
 );

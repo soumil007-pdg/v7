@@ -7,7 +7,7 @@ const dbName = 'auth_db';
 const collectionName = 'users';
 
 export async function POST(req) {
-  const { email, password } = await req.json();
+  const { email, password, name } = await req.json();
 
   try {
     await client.connect();
@@ -20,7 +20,7 @@ export async function POST(req) {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    await collection.insertOne({ email, password: hashedPassword });
+    await collection.insertOne({ email, password: hashedPassword, name: name || '' });
 
     return new Response(JSON.stringify({ message: 'Signup successful' }), { status: 201 });
   } catch (err) {

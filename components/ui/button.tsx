@@ -9,6 +9,7 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
+        // --- shadcn defaults (untouched) ---
         default: "bg-primary text-primary-foreground [a]:hover:bg-primary/80",
         outline:
           "border-border bg-background hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
@@ -19,8 +20,23 @@ const buttonVariants = cva(
         destructive:
           "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
         link: "text-primary underline-offset-4 hover:underline",
+
+        // --- site variants (experimental — colors match current raw classNames) ---
+        // Primary orange CTA  →  was: bg-[#FF5B33] hover:bg-[#e04f2a] text-white
+        brand: "bg-[#FF5B33] hover:bg-[#e04f2a] text-white font-bold",
+        // Dark/near-black secondary  →  was: bg-[#171717] hover:bg-black text-white
+        dark: "bg-[#171717] hover:bg-black text-white font-bold",
+        // White card with orange text  →  was: bg-white text-[#FF5B33] hover:bg-gray-50
+        "brand-outline": "bg-white text-[#FF5B33] hover:bg-gray-50 font-bold border-2 border-transparent",
+        // White card with dark text  →  was: bg-white text-[#171717] hover:bg-gray-50
+        "dark-outline": "bg-white text-[#171717] hover:bg-gray-50 font-bold border-2 border-transparent",
+        // Inline text link orange  →  was: text-[#FF5B33] hover:text-[#e04f2a] hover:underline
+        "link-brand": "text-[#FF5B33] hover:text-[#e04f2a] hover:underline underline-offset-4 font-bold p-0 h-auto",
+        // Slate border card reset style  →  was: bg-white border border-slate-300 text-slate-700 hover:bg-slate-50
+        "card-outline": "bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 font-semibold",
       },
       size: {
+        // --- shadcn defaults (untouched) ---
         default:
           "h-8 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
         xs: "h-6 gap-1 rounded-[min(var(--radius-md),10px)] px-2 text-xs in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3",
@@ -32,6 +48,16 @@ const buttonVariants = cva(
         "icon-sm":
           "size-7 rounded-[min(var(--radius-md),12px)] in-data-[slot=button-group]:rounded-lg",
         "icon-lg": "size-9",
+
+        // --- site sizes ---
+        // Large hero/CTA  →  was: py-4 px-8 rounded-xl text-lg
+        xl: "gap-2 rounded-xl px-8 py-4 text-lg",
+        // Hero extra-wide  →  was: py-4 px-10 rounded-xl text-xl
+        "xl-wide": "gap-3 rounded-xl px-10 py-4 text-xl",
+        // Standard action  →  was: py-3 px-6 rounded-xl / rounded-lg font-semibold
+        md: "gap-2 rounded-xl px-6 py-3",
+        // Compact action  →  was: py-3 rounded-lg (full-width buttons)
+        "md-full": "gap-2 rounded-lg px-4 py-3 w-full",
       },
     },
     defaultVariants: {

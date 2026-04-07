@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { MessageSquare, FileText, Scale, ArrowRight, ShieldCheck } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useTranslations } from 'next-intl';
+import { Badge } from '@/components/ui/badge';
 
 export default function DashboardClient() {
   const { isLoggedIn, loading } = useAuth(true);
@@ -54,9 +55,7 @@ export default function DashboardClient() {
                 <div className="p-4 bg-white text-[#FF5B33] rounded-2xl shadow-sm transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
                   <MessageSquare size={32} strokeWidth={2} />
                 </div>
-                <span className="px-3 py-1 bg-white/20 text-white text-xs font-bold uppercase tracking-wider rounded-full backdrop-blur-sm border border-white/20">
-                  {t('quickChat.tag')}
-                </span>
+                <Badge variant="card-pill">{t('quickChat.tag')}</Badge>
               </div>
               
               <h2 className="text-2xl font-bold text-white mb-3 tracking-tight">
@@ -83,9 +82,7 @@ export default function DashboardClient() {
                 <div className="p-4 bg-white text-[#171717] rounded-2xl shadow-sm transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
                   <FileText size={32} strokeWidth={2} />
                 </div>
-                <span className="px-3 py-1 bg-white/10 text-slate-300 text-xs font-bold uppercase tracking-wider rounded-full backdrop-blur-sm border border-white/10">
-                  {t('caseAdvisor.tag')}
-                </span>
+                <Badge variant="card-pill-dim">{t('caseAdvisor.tag')}</Badge>
               </div>
               
               <h2 className="text-2xl font-bold text-white mb-3 tracking-tight">

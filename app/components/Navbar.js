@@ -5,7 +5,7 @@ import { Scale, MessageSquare, FileText, LogOut, Globe } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter, usePathname } from 'next/navigation';
 
-const Navbar = ({ isLoggedIn, userEmail, handleLogout }) => {
+const Navbar = ({ isLoggedIn, userEmail, userName, handleLogout }) => {
   const t = useTranslations('Navbar');
   const router = useRouter();
   const pathname = usePathname();
@@ -55,7 +55,7 @@ const Navbar = ({ isLoggedIn, userEmail, handleLogout }) => {
 
         {isLoggedIn ? (
           <>
-            <span className="text-sm hidden lg:block text-white/80">{t('welcome')}, {userEmail}</span>
+            <span className="text-sm hidden lg:block text-white/80">{t('welcome')}, {userName || userEmail}</span>
             <Link 
               href="/general-queries" 
               className="flex items-center gap-1 text-sm font-semibold hover:text-white/70 transition-colors duration-150"

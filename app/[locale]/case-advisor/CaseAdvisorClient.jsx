@@ -7,9 +7,14 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import jsPDF from 'jspdf';
-import { ChatSkeleton } from '@/app/components/SkeletonLoader';
+import { AnalysisSkeleton, CitationSkeleton } from '@/app/components/SkeletonLoader';
 import { useAuth } from '@/hooks/useAuth';
 import { useTranslations, useLocale } from 'next-intl';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { ProgressBar } from '@/components/ui/progress';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { 
   Download, Link as LinkIcon, ArrowRight, Plus, Trash2,
   UploadCloud, FileText, Scale, CheckCircle, AlertTriangle, Gavel, MapPin, Star, Search
@@ -184,9 +189,9 @@ export default function CaseAdvisorClient() {
   const onSubmit = async (data) => {
     setIsLoading(true);
     setResult('');
-    setActiveCitations([]); 
-    setStep(4); 
-    
+    setActiveCitations([]);
+    setStep(4);
+
     try {
       const payload = {
         ...data,
@@ -348,9 +353,7 @@ export default function CaseAdvisorClient() {
              <div className="text-sm text-gray-400 font-mono">{t('header.step', { step }) || `Step ${step} of 4`}</div>
           </div>
           
-          <div className="w-full bg-gray-800 rounded-full h-1.5 mb-8 overflow-hidden">
-             <div className="bg-[#FF5B33] h-1.5 rounded-full transition-all duration-500 ease-out" style={{ width: `${(step/4)*100}%` }}></div>
-          </div>
+          <ProgressBar value={(step / 4) * 100} className="mb-8" />
         </div>
 
         <div className="max-w-5xl mx-auto px-6">
@@ -365,7 +368,7 @@ export default function CaseAdvisorClient() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                 <label className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2 block">{t('step1.caseName') || "Case Title"}</label>
-                                <input {...register('caseTitle')} className={getInputClass('caseTitle', errors.caseTitle)} placeholder={t('step1.caseNamePh') || "e.g. Property Dispute"} />
+                                <Input {...register('caseTitle')} className={getInputClass('caseTitle', errors.caseTitle)} placeholder={t('step1.caseNamePh') || "e.g. Property Dispute"} />
                                 </div>
                                 <div>
                                 <label className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2 block">{t('step1.category') || "Category"}</label>
@@ -383,11 +386,11 @@ export default function CaseAdvisorClient() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <label className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2 block">{t('step1.yourName') || "Your Name"}</label>
-                                    <input {...register('plaintiffName')} placeholder={t('step1.yourNamePh') || "Full Name"} className={getInputClass('plaintiffName', errors.plaintiffName)} />
+                                    <Input {...register('plaintiffName')} placeholder={t('step1.yourNamePh') || "Full Name"} className={getInputClass('plaintiffName', errors.plaintiffName)} />
                                 </div>
                                 <div>
                                     <label className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2 block">{t('step1.opponent') || "Opponent"}</label>
-                                    <input {...register('defendantName')} placeholder={t('step1.opponentPh') || "Opponent Name"} className={getInputClass('defendantName', errors.defendantName)} />
+                                    <Input {...register('defendantName')} placeholder={t('step1.opponentPh') || "Opponent Name"} className={getInputClass('defendantName', errors.defendantName)} />
                                 </div>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -400,11 +403,11 @@ export default function CaseAdvisorClient() {
                                 </div>
                                 <div>
                                     <label className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2 block">{t('step1.city') || "City"}</label>
-                                    <input {...register('city')} placeholder={t('step1.cityPh') || "e.g. Mumbai"} className={getInputClass('city', errors.city)} />
+                                    <Input {...register('city')} placeholder={t('step1.cityPh') || "e.g. Mumbai"} className={getInputClass('city', errors.city)} />
                                 </div>
                             </div>
                             <div className="pt-4">
-                                <button type="button" onClick={nextStep} className="w-full bg-[#FF5B33] hover:bg-[#e04f2a] text-white py-4 rounded-xl font-bold text-lg flex justify-center items-center gap-2 transition-all hover:shadow-[0_0_20px_rgba(255,91,51,0.3)]">{t('step1.nextBtn') || "Next"} <ArrowRight size={20}/></button>
+                                <Button type="button" variant="brand" size="xl" onClick={nextStep} className="w-full justify-center hover:shadow-[0_0_20px_rgba(255,91,51,0.3)]">{t('step1.nextBtn') || "Next"} <ArrowRight size={20}/></Button>
                             </div>
                         </div>
                     )}
@@ -414,25 +417,25 @@ export default function CaseAdvisorClient() {
                             <h3 className="text-2xl font-bold border-b border-gray-700 pb-4 mb-6 text-white">{t('step2.title') || "Case Details"}</h3>
                             <div>
                                 <label className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2 block">{t('step2.whatHappened') || "What Happened?"}</label>
-                                <textarea {...register('description')} rows={6} placeholder={t('step2.whatHappenedPh') || "Describe the timeline..."} className={getInputClass('description', errors.description)} />
+                                <Textarea {...register('description')} rows={6} placeholder={t('step2.whatHappenedPh') || "Describe the timeline..."} className={getInputClass('description', errors.description)} />
                             </div>
                             <div>
                                 <label className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2 block">{t('step2.outcome') || "Relief Sought"}</label>
-                                <textarea {...register('reliefSought')} rows={2} placeholder={t('step2.outcomePh') || "What do you want to achieve?"} className={getInputClass('reliefSought', errors.reliefSought)} />
+                                <Textarea {...register('reliefSought')} rows={2} placeholder={t('step2.outcomePh') || "What do you want to achieve?"} className={getInputClass('reliefSought', errors.reliefSought)} />
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <label className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2 block">{t('step2.startDate') || "Cause Date"}</label>
-                                    <input type="date" lang="en-GB" {...register('causeDate')} className={getInputClass('causeDate', errors.causeDate)} />
+                                    <Input type="date" lang="en-GB" {...register('causeDate')} className={getInputClass('causeDate', errors.causeDate)} />
                                 </div>
                                 <div>
                                     <label className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2 block">{t('step2.value') || "Suit Value"}</label>
-                                    <input value={displaySuitValue} onChange={handleSuitValueChange} placeholder={t('step2.valuePh') || "Amount in INR"} className={getInputClass('suitValue', errors.suitValue)} />
+                                    <Input value={displaySuitValue} onChange={handleSuitValueChange} placeholder={t('step2.valuePh') || "Amount in INR"} className={getInputClass('suitValue', errors.suitValue)} />
                                 </div>
                             </div>
                             <div className="flex gap-4 pt-4">
                                 <button type="button" onClick={() => setStep(1)} className="w-1/3 bg-gray-700 hover:bg-gray-600 py-4 rounded-xl font-semibold text-white">{t('step2.backBtn') || "Back"}</button>
-                                <button type="button" onClick={nextStep} className="w-2/3 bg-[#FF5B33] hover:bg-[#e04f2a] text-white py-4 rounded-xl font-bold text-lg">{t('step2.nextBtn') || "Next"}</button>
+                                <Button type="button" variant="brand" size="xl" onClick={nextStep} className="w-2/3 justify-center">{t('step2.nextBtn') || "Next"}</Button>
                             </div>
                         </div>
                     )}
@@ -466,7 +469,7 @@ export default function CaseAdvisorClient() {
                                                 </label>
                                             </div>
                                         </div>
-                                        <input {...register(`evidence.${i}.description`)} placeholder={t('step3.proofDescPh') || "Description"} className={getInputClass(`evidence.${i}.description`, errors.evidence?.[i]?.description)} />
+                                        <Input {...register(`evidence.${i}.description`)} placeholder={t('step3.proofDescPh') || "Description"} className={getInputClass(`evidence.${i}.description`, errors.evidence?.[i]?.description)} />
                                     </div>
                                 ))}
                             </div>
@@ -481,23 +484,23 @@ export default function CaseAdvisorClient() {
                                     <div key={i} className="p-4 bg-[#121212] border border-gray-700 rounded-xl space-y-3 relative">
                                         <button type="button" onClick={() => removeWitness(i)} className="absolute top-3 right-3 text-gray-500 hover:text-red-400"><Trash2 size={16}/></button>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                            <input {...register(`witnesses.${i}.name`)} placeholder={t('step3.wNamePh') || "Name"} className={getInputClass(`witnesses.${i}.name`, errors.witnesses?.[i]?.name)} />
-                                            <input {...register(`witnesses.${i}.connection`)} placeholder={t('step3.wRelPh') || "Relationship"} className={getInputClass(`witnesses.${i}.connection`, errors.witnesses?.[i]?.connection)} />
+                                            <Input {...register(`witnesses.${i}.name`)} placeholder={t('step3.wNamePh') || "Name"} className={getInputClass(`witnesses.${i}.name`, errors.witnesses?.[i]?.name)} />
+                                            <Input {...register(`witnesses.${i}.connection`)} placeholder={t('step3.wRelPh') || "Relationship"} className={getInputClass(`witnesses.${i}.connection`, errors.witnesses?.[i]?.connection)} />
                                         </div>
-                                        <input {...register(`witnesses.${i}.knowledge`)} placeholder={t('step3.wKnowPh') || "What do they know?"} className={getInputClass(`witnesses.${i}.knowledge`, errors.witnesses?.[i]?.knowledge)} />
+                                        <Input {...register(`witnesses.${i}.knowledge`)} placeholder={t('step3.wKnowPh') || "What do they know?"} className={getInputClass(`witnesses.${i}.knowledge`, errors.witnesses?.[i]?.knowledge)} />
                                     </div>
                                 ))}
                             </div>
 
-                            <div className="p-6 bg-yellow-900/10 border border-yellow-700/30 rounded-xl">
+                            <Alert variant="warning">
                                 <div className="flex items-start gap-3 mb-4">
                                     <div className="p-2 bg-yellow-500/10 rounded-lg"><AlertTriangle className="text-yellow-500" size={20}/></div>
                                     <div>
-                                        <h4 className="text-sm font-bold text-yellow-500 mb-1">{t('step3.secTitle')}</h4>
-                                        <p className="text-xs text-gray-400 leading-relaxed">
+                                        <AlertTitle className="text-yellow-500">{t('step3.secTitle')}</AlertTitle>
+                                        <AlertDescription className="text-gray-400">
                                             {t('step3.secDesc')} <br/>
                                             <span className="text-yellow-600/80 italic">{t('step3.secNote')}</span>
-                                        </p>
+                                        </AlertDescription>
                                     </div>
                                 </div>
 
@@ -541,18 +544,18 @@ export default function CaseAdvisorClient() {
                                         </label>
                                     </div>
                                 ) : watch('certificateStatus') === 'Need Drafting' ? (
-                                    <div className="p-3 bg-yellow-500/10 rounded border border-yellow-500/20 text-xs text-yellow-200 animate-in fade-in slide-in-from-top-2">
+                                    <Alert variant="info" className="animate-in fade-in slide-in-from-top-2">
                                         <div className="flex items-center gap-2">
                                             <CheckCircle size={14} />
                                             <span>{t.rich('step3.secNoted', { bold: (chunks) => <strong>{chunks}</strong> })}</span>
                                         </div>
-                                    </div>
+                                    </Alert>
                                 ) : null}
-                            </div>
+                            </Alert>
 
                             <div className="flex gap-4 pt-6">
                                 <button type="button" onClick={() => setStep(2)} className="w-1/3 bg-gray-700 hover:bg-gray-600 py-4 rounded-xl font-semibold text-white">{t('step2.backBtn') || "Back"}</button>
-                                <button type="submit" className="w-2/3 bg-[#FF5B33] hover:bg-[#e04f2a] text-white py-4 rounded-xl font-bold text-lg shadow-lg shadow-orange-900/20">{t('step3.genBtn') || "Generate Report"}</button>
+                                <Button type="submit" variant="brand" size="xl" className="w-2/3 justify-center shadow-lg shadow-orange-900/20">{t('step3.genBtn') || "Generate Report"}</Button>
                             </div>
                         </div>
                     )}
@@ -577,12 +580,7 @@ export default function CaseAdvisorClient() {
 
                        <div className="prose-brief grow">
                            {isLoading ? (
-                               <div className="space-y-6">
-                                   <div className="h-4 bg-slate-100 rounded w-3/4 animate-pulse"></div>
-                                   <div className="h-4 bg-slate-100 rounded w-full animate-pulse"></div>
-                                   <div className="h-4 bg-slate-100 rounded w-5/6 animate-pulse"></div>
-                                   <div className="h-32 bg-slate-50 rounded animate-pulse"></div>
-                               </div>
+                               <AnalysisSkeleton />
                            ) : (
                                <ReactMarkdown>{result}</ReactMarkdown>
                            )}
@@ -601,13 +599,15 @@ export default function CaseAdvisorClient() {
                                            Your case assessment is complete. Take the next step by finding specialized {getValues('caseType') || 'legal'} representation in {getValues('city') || 'your area'}.
                                        </p>
                                    </div>
-                                   <button 
+                                   <Button
                                        type="button"
-                                       onClick={handleDirectoryRoute} 
-                                       className="shrink-0 bg-[#FF5B33] hover:bg-[#e04f2a] text-white px-6 py-3 rounded-lg font-bold transition flex items-center gap-2"
+                                       variant="brand"
+                                       size="md"
+                                       onClick={handleDirectoryRoute}
+                                       className="shrink-0"
                                    >
                                        Search Directory <ArrowRight size={18} />
-                                   </button>
+                                   </Button>
                                </div>
                            </div>
                        )}
@@ -620,9 +620,7 @@ export default function CaseAdvisorClient() {
                         </h3>
                         
                         {isLoading ? (
-                            <div className="space-y-3">
-                                {[1,2,3].map(i => <div key={i} className="h-12 bg-white rounded-lg animate-pulse border border-slate-100"></div>)}
-                            </div>
+                            <CitationSkeleton />
                         ) : (
                             <ul className="space-y-3 custom-scrollbar overflow-y-auto max-h-[calc(100vh-200px)]">
                                 {activeCitations.length === 0 ? (
@@ -649,12 +647,12 @@ export default function CaseAdvisorClient() {
 
                         {/* Action Buttons in Sidebar */}
                         <div className="mt-8 space-y-3 pt-6 border-t border-slate-200">
-                            <button type="button" onClick={handleExportPDF} disabled={isLoading || !result} className="w-full bg-[#171717] text-white py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 hover:bg-black transition disabled:opacity-50">
+                            <Button type="button" variant="dark" onClick={handleExportPDF} disabled={isLoading || !result} className="w-full justify-center text-sm">
                                 <Download size={16}/> Download PDF
-                            </button>
-                            <button type="button" onClick={() => {setStep(1); methods.reset(); setWitnesses([]); setEvidence([]);}} className="w-full bg-white border border-slate-300 text-slate-700 py-3 rounded-lg font-semibold text-sm hover:bg-slate-50 transition">
+                            </Button>
+                            <Button type="button" variant="card-outline" onClick={() => {setStep(1); methods.reset(); setWitnesses([]); setEvidence([]);}} className="w-full justify-center text-sm py-3">
                                 Start New Assessment
-                            </button>
+                            </Button>
                         </div>
                     </div>
 
