@@ -1,0 +1,26 @@
+<!-- CHAPTER 5: ADVOCAT-Easy Architecture -->
+<section id="chapter-5" class="chapter">
+  <h1>🏗️ Chapter 5: ADVOCAT-Easy Architecture</h1>
+  <p class="intro">Now that you understand React and Next.js, let's see how ADVOCAT-Easy is organized. This architecture is production-ready and scales from one feature to many.</p>
+
+  <h2>Folder Structure Deep Dive</h2>
+  <h3>📁 app/[locale]/ — Localized Pages</h3>
+  <pre><code class="language-text">app/[locale]/
+├── page.js          → Homepage
+├── layout.js        → Global header, navbar
+├── error.js         → Error boundary
+└── [feature]/
+    ├── page.js      → Server wrapper (SEO)
+    └── [Feature]Client.jsx → Client component</code></pre>
+
+  <h2>Key Concepts</h2>
+  <ul>
+    <li><strong>Server Pages:</strong> Handle SEO, metadata, translations</li>
+    <li><strong>Client Components:</strong> Handle state, hooks, interactivity</li>
+    <li><strong>API Routes:</strong> Backend endpoints at app/api/*</li>
+    <li><strong>Translations:</strong> messages/*.json for multi-language support</li>
+    <li><strong>Custom Hooks:</strong> Reusable logic in hooks/</li>
+  </ul>
+
+  <p class="success">✅ You now understand ADVOCAT-Easy's structure. Chapter 6 shows building pages!</p>
+</section>

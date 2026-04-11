@@ -1,0 +1,167 @@
+<!-- CHAPTER 4: Next.js 15 Deep Dive -->
+<section id="chapter-4" class="chapter">
+  <h1>⚡ Chapter 4: Next.js 15 Deep Dive</h1>
+  <p class="intro">Next.js is a React framework that makes building production-ready web apps easier. It adds routing, server-side rendering, API routes, and more. ADVOCAT-Easy uses Next.js 15 with the App Router.</p>
+
+  <h2>What is Next.js?</h2>
+  <p>Next.js solves common problems in React development:</p>
+  <ul>
+    <li><strong>Routing:</strong> Automatic routes based on file structure</li>
+    <li><strong>Server & Client Components:</strong> Mix server-side and client-side rendering</li>
+    <li><strong>API Routes:</strong> Write backend API endpoints as JavaScript functions</li>
+    <li><strong>SEO:</strong> Automatic metadata, sitemaps, and structured data</li>
+    <li><strong>Performance:</strong> Image optimization, code splitting, caching</li>
+    <li><strong>Deployment:</strong> Works with Vercel and any Node.js server</li>
+  </ul>
+
+  <h2>The App Router: File-Based Routing</h2>
+  <p>In Next.js, your folder structure automatically becomes your routes. This is the App Router (new in Next.js 13+).</p>
+
+  <pre><code class="language-text">app/
+├── page.js              → /
+├── about/page.js        → /about
+├── blog/
+│   ├── page.js          → /blog
+│   └── [id]/page.js     → /blog/123 (dynamic)
+├── api/
+│   └── auth/
+│       └── login/route.js → POST /api/auth/login
+└── [locale]/            → /en, /hi, /mr, /te (ADVOCAT-Easy uses this)</code></pre>
+
+  <h3>Dynamic Routes with Brackets</h3>
+  <p>Put brackets around a folder name to make it dynamic:</p>
+  <pre><code class="language-text">app/[locale]/page.js     → Matches /en, /hi, /mr, /te
+app/products/[id]/page.js → Matches /products/123, /products/shoes</code></pre>
+
+  <p>Access the parameter in your component:</p>
+  <pre><code class="language-javascript">// app/products/[id]/page.js
+export default async function ProductPage({ params }) {
+  const { id } = await params;  // id = "123"
+  return &lt;h1&gt;Product {id}&lt;/h1&gt;;
+}</code></pre>
+
+  <h2>Server Components vs Client Components</h2>
+  <p>This is the biggest change in Next.js 13+. Components are Server by default—much faster.</p>
+
+  <div class="concept">
+    <h4>Server Components (Default)</h4>
+    <pre><code class="language-javascript">// app/dashboard/page.js (this is a Server Component)
+export default async function Dashboard() {
+  // Run on the SERVER, not the browser
+  const data = await fetchDataFromDatabase();
+
+  return &lt;div&gt;{data}&lt;/div&gt;;
+}</code></pre>
+    <p><strong>Benefits:</strong> Fast, secure (no API keys leak), direct DB access</p>
+    <p><strong>Limitations:</strong> Can't use hooks like useState, no interactivity</p>
+  </div>
+
+  <div class="concept">
+    <h4>Client Components (opt-in)</h4>
+    <pre><code class="language-javascript">// app/dashboard/DashboardClient.jsx
+'use client';  // Must be FIRST line
+
+import { useState } from 'react';
+
+export default function DashboardClient() {
+  const [count, setCount] = useState(0);
+
+  return &lt;button onClick={() => setCount(count + 1)}&gt;Count: {count}&lt;/button&gt;;
+}</code></pre>
+    <p><strong>Benefits:</strong> Full React features, hooks, interactivity</p>
+    <p><strong>Limitations:</strong> Runs in browser, slower than Server Components</p>
+  </div>
+
+  <h3>The Pattern in ADVOCAT-Easy</h3>
+  <p>ADVOCAT-Easy follows best practice: Server page wraps Client component:</p>
+  <pre><code class="language-javascript">// app/[locale]/dashboard/page.js (Server Component)
+import DashboardClient from './DashboardClient';
+
+export async function generateMetadata({ params }) {
+  const { locale } = await params;
+  return { title: 'Dashboard', description: '...' };
+}
+
+export default async function Dashboard({ params }) {
+  const { locale } = await params;
+  setRequestLocale(locale);  // For i18n
+
+  return &lt;DashboardClient /&gt;;  // Wrap the client component
+}
+
+// app/[locale]/dashboard/DashboardClient.jsx (Client Component)
+'use client';
+
+export default function DashboardClient() {
+  // Interactive code here
+  return &lt;h1&gt;Dashboard&lt;/h1&gt;;
+}</code></pre>
+
+  <p><strong>Why?</strong> Get SEO (metadata from server), translations (server-side), and interactivity (client component).</p>
+
+  <h2>API Routes: Backend in JavaScript</h2>
+  <p>Write backend endpoints in the <code>app/api</code> folder:</p>
+
+  <pre><code class="language-javascript">// app/api/auth/login/route.js
+export async function POST(request) {
+  const { email, password } = await request.json();
+
+  // Validate user, create session
+  const token = createToken();
+
+  return new Response(
+    JSON.stringify({ token }),
+    { status: 200, headers: { 'Content-Type': 'application/json' } }
+  );
+}</code></pre>
+
+  <p>Access it from the client:</p>
+  <pre><code class="language-javascript">'use client';
+
+async function login(email, password) {
+  const res = await fetch('/api/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+  });
+
+  const { token } = await res.json();
+  localStorage.setItem('sessionToken', token);
+}</code></pre>
+
+  <h2>generateStaticParams: Pre-render All Locales</h2>
+  <p>In ADVOCAT-Easy, every page exists in 4 languages (en, hi, mr, te). Use <code>generateStaticParams</code> to pre-render all:</p>
+
+  <pre><code class="language-javascript">// app/[locale]/layout.js
+const locales = ['en', 'hi', 'mr', 'te'];
+
+export function generateStaticParams() {
+  return locales.map((locale) => ({ locale }));
+}</code></pre>
+
+  <p>Now every page at <code>/en</code>, <code>/hi</code>, <code>/mr</code>, <code>/te</code> is pre-rendered at build time.</p>
+
+  <h2>Key Next.js Concepts</h2>
+  <div class="checklist">
+    <div class="item">
+      <input type="checkbox"> Folder structure = routes (app/about → /about)
+    </div>
+    <div class="item">
+      <input type="checkbox"> Server Components (default) = fast, no JavaScript in browser
+    </div>
+    <div class="item">
+      <input type="checkbox"> Client Components ('use client') = interactive, hooks, state
+    </div>
+    <div class="item">
+      <input type="checkbox"> API Routes (app/api) = backend endpoints
+    </div>
+    <div class="item">
+      <input type="checkbox"> generateMetadata = SEO titles, descriptions, Open Graph
+    </div>
+    <div class="item">
+      <input type="checkbox"> generateStaticParams = pre-render all locales/variations
+    </div>
+  </div>
+
+  <p class="success">✅ Next.js turns React components into a complete framework. Chapter 5 shows how ADVOCAT-Easy uses it!</p>
+</section>

@@ -576,6 +576,1907 @@ function Dashboard() {
         <p class="success">✅ You now understand React basics. Chapter 4 will show how Next.js builds on top of React!</p>
       </section>
 
+      <!-- CHAPTER 4: Next.js 15 Deep Dive -->
+      <section id="chapter-4" class="chapter">
+        <h1>⚡ Chapter 4: Next.js 15 Deep Dive</h1>
+        <p class="intro">Next.js is a React framework that makes building production-ready web apps easier. It adds routing, server-side rendering, API routes, and more. ADVOCAT-Easy uses Next.js 15 with the App Router.</p>
+
+        <h2>What is Next.js?</h2>
+        <p>Next.js solves common problems in React development:</p>
+        <ul>
+          <li><strong>Routing:</strong> Automatic routes based on file structure</li>
+          <li><strong>Server & Client Components:</strong> Mix server-side and client-side rendering</li>
+          <li><strong>API Routes:</strong> Write backend API endpoints as JavaScript functions</li>
+          <li><strong>SEO:</strong> Automatic metadata, sitemaps, and structured data</li>
+          <li><strong>Performance:</strong> Image optimization, code splitting, caching</li>
+          <li><strong>Deployment:</strong> Works with Vercel and any Node.js server</li>
+        </ul>
+
+        <h2>The App Router: File-Based Routing</h2>
+        <p>In Next.js, your folder structure automatically becomes your routes. This is the App Router (new in Next.js 13+).</p>
+
+        <pre><code class="language-text">app/
+├── page.js              → /
+├── about/page.js        → /about
+├── blog/
+│   ├── page.js          → /blog
+│   └── [id]/page.js     → /blog/123 (dynamic)
+├── api/
+│   └── auth/
+│       └── login/route.js → POST /api/auth/login
+└── [locale]/            → /en, /hi, /mr, /te (ADVOCAT-Easy uses this)</code></pre>
+
+        <h3>Dynamic Routes with Brackets</h3>
+        <p>Put brackets around a folder name to make it dynamic:</p>
+        <pre><code class="language-text">app/[locale]/page.js     → Matches /en, /hi, /mr, /te
+app/products/[id]/page.js → Matches /products/123, /products/shoes</code></pre>
+
+        <p>Access the parameter in your component:</p>
+        <pre><code class="language-javascript">// app/products/[id]/page.js
+export default async function ProductPage({ params }) {
+  const { id } = await params;  // id = "123"
+  return &lt;h1&gt;Product {id}&lt;/h1&gt;;
+}</code></pre>
+
+        <h2>Server Components vs Client Components</h2>
+        <p>This is the biggest change in Next.js 13+. Components are Server by default—much faster.</p>
+
+        <div class="concept">
+          <h4>Server Components (Default)</h4>
+          <pre><code class="language-javascript">// app/dashboard/page.js (this is a Server Component)
+export default async function Dashboard() {
+  // Run on the SERVER, not the browser
+  const data = await fetchDataFromDatabase();
+
+  return &lt;div&gt;{data}&lt;/div&gt;;
+}</code></pre>
+          <p><strong>Benefits:</strong> Fast, secure (no API keys leak), direct DB access</p>
+          <p><strong>Limitations:</strong> Can't use hooks like useState, no interactivity</p>
+        </div>
+
+        <div class="concept">
+          <h4>Client Components (opt-in)</h4>
+          <pre><code class="language-javascript">// app/dashboard/DashboardClient.jsx
+'use client';  // Must be FIRST line
+
+import { useState } from 'react';
+
+export default function DashboardClient() {
+  const [count, setCount] = useState(0);
+
+  return &lt;button onClick={() => setCount(count + 1)}&gt;Count: {count}&lt;/button&gt;;
+}</code></pre>
+          <p><strong>Benefits:</strong> Full React features, hooks, interactivity</p>
+          <p><strong>Limitations:</strong> Runs in browser, slower than Server Components</p>
+        </div>
+
+        <h3>The Pattern in ADVOCAT-Easy</h3>
+        <p>ADVOCAT-Easy follows best practice: Server page wraps Client component:</p>
+        <pre><code class="language-javascript">// app/[locale]/dashboard/page.js (Server Component)
+import DashboardClient from './DashboardClient';
+
+export async function generateMetadata({ params }) {
+  const { locale } = await params;
+  return { title: 'Dashboard', description: '...' };
+}
+
+export default async function Dashboard({ params }) {
+  const { locale } = await params;
+  setRequestLocale(locale);  // For i18n
+
+  return &lt;DashboardClient /&gt;;  // Wrap the client component
+}
+
+// app/[locale]/dashboard/DashboardClient.jsx (Client Component)
+'use client';
+
+export default function DashboardClient() {
+  // Interactive code here
+  return &lt;h1&gt;Dashboard&lt;/h1&gt;;
+}</code></pre>
+
+        <p><strong>Why?</strong> Get SEO (metadata from server), translations (server-side), and interactivity (client component).</p>
+
+        <h2>API Routes: Backend in JavaScript</h2>
+        <p>Write backend endpoints in the <code>app/api</code> folder:</p>
+
+        <pre><code class="language-javascript">// app/api/auth/login/route.js
+export async function POST(request) {
+  const { email, password } = await request.json();
+
+  // Validate user, create session
+  const token = createToken();
+
+  return new Response(
+    JSON.stringify({ token }),
+    { status: 200, headers: { 'Content-Type': 'application/json' } }
+  );
+}</code></pre>
+
+        <p>Access it from the client:</p>
+        <pre><code class="language-javascript">'use client';
+
+async function login(email, password) {
+  const res = await fetch('/api/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+  });
+
+  const { token } = await res.json();
+  localStorage.setItem('sessionToken', token);
+}</code></pre>
+
+        <h2>generateStaticParams: Pre-render All Locales</h2>
+        <p>In ADVOCAT-Easy, every page exists in 4 languages (en, hi, mr, te). Use <code>generateStaticParams</code> to pre-render all:</p>
+
+        <pre><code class="language-javascript">// app/[locale]/layout.js
+const locales = ['en', 'hi', 'mr', 'te'];
+
+export function generateStaticParams() {
+  return locales.map((locale) => ({ locale }));
+}</code></pre>
+
+        <p>Now every page at <code>/en</code>, <code>/hi</code>, <code>/mr</code>, <code>/te</code> is pre-rendered at build time.</p>
+
+        <h2>Key Next.js Concepts</h2>
+        <div class="checklist">
+          <div class="item">
+            <input type="checkbox"> Folder structure = routes (app/about → /about)
+          </div>
+          <div class="item">
+            <input type="checkbox"> Server Components (default) = fast, no JavaScript in browser
+          </div>
+          <div class="item">
+            <input type="checkbox"> Client Components ('use client') = interactive, hooks, state
+          </div>
+          <div class="item">
+            <input type="checkbox"> API Routes (app/api) = backend endpoints
+          </div>
+          <div class="item">
+            <input type="checkbox"> generateMetadata = SEO titles, descriptions, Open Graph
+          </div>
+          <div class="item">
+            <input type="checkbox"> generateStaticParams = pre-render all locales/variations
+          </div>
+        </div>
+
+        <p class="success">✅ Next.js turns React components into a complete framework. Chapter 5 shows how ADVOCAT-Easy uses it!</p>
+      </section>
+
+      <!-- CHAPTER 5: ADVOCAT-Easy Architecture -->
+      <section id="chapter-5" class="chapter">
+        <h1>🏗️ Chapter 5: ADVOCAT-Easy Architecture</h1>
+        <p class="intro">Now that you understand React and Next.js, let's see how ADVOCAT-Easy is organized. This architecture is production-ready and scales from one feature to many.</p>
+
+        <h2>High-Level Architecture</h2>
+        <pre><code class="language-text">┌─────────────────┐
+│   BROWSER       │
+│  (Next.js App)  │ ← Pages, components, state (React)
+└────────┬────────┘
+         │ API calls (/api/*)
+         ↓
+┌─────────────────┐
+│  SERVER API     │
+│  (Next.js)      │ ← Auth, chat, database (Node.js + AI)
+└────────┬────────┘
+         │ Fetch data
+         ↓
+┌─────────────────┐
+│   DATABASE      │
+│  (In-memory)    │ ← Users, sessions, conversations
+└─────────────────┘</code></pre>
+
+        <h2>Folder Structure Deep Dive</h2>
+
+        <h3>📁 app/[locale]/ — Localized Pages</h3>
+        <pre><code class="language-text">app/[locale]/
+├── page.js              → Homepage
+├── layout.js            → Global header, navbar (wraps all pages)
+├── error.js             → Error boundary
+├── auth/
+│   ├── page.js          → Server wrapper (SEO)
+│   └── AuthClient.jsx   → Client component (form, state)
+├── dashboard/
+│   ├── page.js          → Server wrapper
+│   └── DashboardClient.jsx
+├── general-queries/
+│   ├── page.js          → Quick Rights Chat
+│   └── GeneralQueriesClient.jsx
+└── case-advisor/
+    ├── page.js          → Case Strategist
+    └── CaseAdvisorClient.jsx</code></pre>
+
+        <h3>📁 app/api/ — Backend Endpoints</h3>
+        <pre><code class="language-text">app/api/
+├── auth/
+│   ├── login/route.js      → POST /api/auth/login
+│   ├── signup/route.js     → POST /api/auth/signup
+│   ├── validate/route.js   → POST /api/auth/validate
+│   └── logout/route.js     → POST /api/auth/logout
+└── chat/
+    └── route.js            → POST /api/chat (calls Gemini AI)</code></pre>
+
+        <h3>📁 app/components/ — Reusable UI</h3>
+        <p>Shared components used across pages:</p>
+        <pre><code class="language-text">app/components/
+├── Navbar.jsx           → Header with logo, language selector
+├── SkeletonLoader.jsx   → Placeholder while loading
+└── Modal.jsx            → Reusable popup</code></pre>
+
+        <h3>📁 hooks/ — Custom React Hooks</h3>
+        <pre><code class="language-text">hooks/
+└── useAuth.js           → Check if user logged in, protect pages</code></pre>
+
+        <h3>📁 lib/ — Utilities & Config</h3>
+        <pre><code class="language-text">lib/
+├── authStore.js         → In-memory user/session storage
+└── db.js                → Database connection (if using MongoDB)</code></pre>
+
+        <h3>📁 messages/ — Translations</h3>
+        <pre><code class="language-text">messages/
+├── en.json              → English translations
+├── hi.json              → हिन्दी (Hindi)
+├── mr.json              → मराठी (Marathi)
+└── te.json              → తెలుగు (Telugu)</code></pre>
+
+        <h2>Authentication Flow</h2>
+        <p>How users sign up, log in, and stay authenticated:</p>
+
+        <pre><code class="language-text">1. USER SIGNS UP
+   ↓
+   AuthClient submits email + password
+   ↓
+   POST /api/auth/signup
+   ↓
+   Server hashes password, stores in memory
+   ↓
+   Returns 201 Created
+
+
+2. USER LOGS IN
+   ↓
+   AuthClient submits email + password
+   ↓
+   POST /api/auth/login
+   ↓
+   Server validates, creates UUID token, stores session
+   ↓
+   Returns token
+   ↓
+   Client stores token in localStorage
+
+
+3. USER ACCESSES PROTECTED PAGE
+   ↓
+   useAuth() hook runs on mount
+   ↓
+   Checks localStorage for token
+   ↓
+   POST /api/auth/validate with token
+   ↓
+   Server validates token not expired
+   ↓
+   If valid: setIsLoggedIn(true)
+   If invalid: router.push('/auth')
+
+
+4. USER LOGS OUT
+   ↓
+   AuthClient calls logout()
+   ↓
+   POST /api/auth/logout with token
+   ↓
+   Server deletes session
+   ↓
+   Client removes token from localStorage</code></pre>
+
+        <h2>Data Flow: Asking a Legal Question</h2>
+        <p>When a user asks a question in Quick Rights Chat:</p>
+
+        <pre><code class="language-text">1. User types "Can my landlord raise rent?" in GeneralQueriesClient
+
+2. onClick handler calls handleSubmit()
+
+3. Client sends: POST /api/chat
+   {
+     "message": "Can my landlord raise rent?",
+     "mode": "quick",
+     "token": "session-uuid"
+   }
+
+4. Server receives at app/api/chat/route.js
+   - Validates token
+   - Sends to Google Gemini API
+   - Gemini returns legal guidance with citations
+
+5. Server responds:
+   {
+     "response": "According to Property Rights Act 2012...",
+     "citations": ["Property Rights Act, 2012", "Article 300A"],
+     "creditsSaved": 702
+   }
+
+6. Client receives response
+   - Displays AI answer with citations
+   - Updates credit counter
+   - Saves conversation to state</code></pre>
+
+        <h2>i18n (Internationalization) System</h2>
+        <p>ADVOCAT-Easy works in 4 languages. Here's how:</p>
+
+        <pre><code class="language-javascript">// Server side (page.js)
+import { getTranslations, setRequestLocale } from 'next-intl/server';
+
+export async function generateMetadata({ params }) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'Auth' });
+  return { title: t('metaTitle') };  // Loads from messages/en.json
+}
+
+// Client side (DashboardClient.jsx)
+'use client';
+import { useTranslations } from 'next-intl';
+
+export default function Dashboard() {
+  const t = useTranslations('Dashboard');
+  return &lt;h1&gt;{t('title')}&lt;/h1&gt;;  // Displays correct language
+}</code></pre>
+
+        <p>The middleware redirects /dashboard → /en/dashboard (with locale prefix).</p>
+
+        <h2>Key Files You'll Edit</h2>
+        <table style="width:100%; border-collapse: collapse;">
+          <tr style="border-bottom: 1px solid #ccc;">
+            <td style="padding: 10px;"><strong>File</strong></td>
+            <td style="padding: 10px;"><strong>Purpose</strong></td>
+          </tr>
+          <tr style="border-bottom: 1px solid #ddd;">
+            <td style="padding: 10px;"><code>app/[locale]/*/page.js</code></td>
+            <td style="padding: 10px;">Server pages (SEO, data fetching)</td>
+          </tr>
+          <tr style="border-bottom: 1px solid #ddd;">
+            <td style="padding: 10px;"><code>app/[locale]/*/[Component]Client.jsx</code></td>
+            <td style="padding: 10px;">Interactive components (state, hooks)</td>
+          </tr>
+          <tr style="border-bottom: 1px solid #ddd;">
+            <td style="padding: 10px;"><code>app/api/**/route.js</code></td>
+            <td style="padding: 10px;">Backend endpoints</td>
+          </tr>
+          <tr style="border-bottom: 1px solid #ddd;">
+            <td style="padding: 10px;"><code>messages/*.json</code></td>
+            <td style="padding: 10px;">Translations</td>
+          </tr>
+          <tr>
+            <td style="padding: 10px;"><code>hooks/useAuth.js</code></td>
+            <td style="padding: 10px;">Auth protection logic</td>
+          </tr>
+        </table>
+
+        <p class="success">✅ You now understand ADVOCAT-Easy's structure. Let's build something in Chapter 6!</p>
+      </section>
+
+      <!-- CHAPTER 6: Building Your First Page -->
+      <section id="chapter-6" class="chapter">
+        <h1>📄 Chapter 6: Building Your First Page</h1>
+        <p class="intro">Let's create a new page from scratch. You'll see how Server and Client Components work together, handle SEO, and add translations.</p>
+
+        <h2>Step 1: Create the Page Files</h2>
+        <p>Let's build a <strong>FAQ page</strong> at <code>/en/faq</code>.</p>
+
+        <pre><code class="language-bash"># Create the folder
+mkdir -p app/[locale]/faq
+
+# Create two files
+touch app/[locale]/faq/page.js
+touch app/[locale]/faq/FAQClient.jsx</code></pre>
+
+        <h2>Step 2: Write the Server Page (page.js)</h2>
+        <p>This handles SEO, translations, and auth checks:</p>
+
+        <pre><code class="language-javascript">// app/[locale]/faq/page.js
+import { getTranslations, setRequestLocale } from 'next-intl/server';
+import FAQClient from './FAQClient';
+
+export async function generateMetadata({ params }) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'FAQ' });
+
+  return {
+    title: t('metaTitle'),           // "Frequently Asked Questions"
+    description: t('metaDescription'),
+    alternates: {
+      canonical: `/${locale}/faq`,
+      languages: {
+        en: '/en/faq',
+        hi: '/hi/faq',
+        mr: '/mr/faq',
+        te: '/te/faq'
+      }
+    }
+  };
+}
+
+export default async function FAQPage({ params }) {
+  const { locale } = await params;
+  setRequestLocale(locale);  // For i18n
+
+  return &lt;FAQClient /&gt;;
+}</code></pre>
+
+        <h2>Step 3: Write the Client Component (FAQClient.jsx)</h2>
+        <p>This handles interactivity (opening/closing questions):</p>
+
+        <pre><code class="language-javascript">// app/[locale]/faq/FAQClient.jsx
+'use client';
+
+import { useState } from 'react';
+import { useTranslations } from 'next-intl';
+
+export default function FAQClient() {
+  const t = useTranslations('FAQ');
+  const [expandedId, setExpandedId] = useState(null);
+
+  const faqs = [
+    {
+      id: 1,
+      question: t('q1'),  // "Is this service free?"
+      answer: t('a1')      // "Yes, ADVOCAT-Easy is free..."
+    },
+    {
+      id: 2,
+      question: t('q2'),
+      answer: t('a2')
+    }
+  ];
+
+  return (
+    &lt;main className="min-h-screen bg-gray-50 p-8"&gt;
+      &lt;div className="max-w-2xl mx-auto"&gt;
+        &lt;h1 className="text-4xl font-bold mb-8"&gt;{t('title')}&lt;/h1&gt;
+
+        {faqs.map((faq) => (
+          &lt;div key={faq.id} className="bg-white p-6 mb-4 rounded-lg shadow"&gt;
+            &lt;button
+              onClick={() => setExpandedId(
+                expandedId === faq.id ? null : faq.id
+              )}
+              className="w-full text-left font-semibold text-lg hover:text-orange-500"
+            &gt;
+              {faq.question}
+            &lt;/button&gt;
+
+            {expandedId === faq.id && (
+              &lt;p className="mt-4 text-gray-700"&gt;{faq.answer}&lt;/p&gt;
+            )}
+          &lt;/div&gt;
+        ))}
+      &lt;/div&gt;
+    &lt;/main&gt;
+  );
+}</code></pre>
+
+        <h2>Step 4: Add Translations</h2>
+        <p>Add FAQ translations to each language file:</p>
+
+        <pre><code class="language-json">// messages/en.json
+{
+  "FAQ": {
+    "metaTitle": "Frequently Asked Questions - ADVOCAT-Easy",
+    "metaDescription": "Get answers to common questions about ADVOCAT-Easy.",
+    "title": "Frequently Asked Questions",
+    "q1": "Is this service free?",
+    "a1": "Yes, ADVOCAT-Easy is completely free to use...",
+    "q2": "How accurate is the AI?",
+    "a2": "Our AI uses the Indian Constitution and verified acts..."
+  }
+}
+
+// messages/hi.json
+{
+  "FAQ": {
+    "metaTitle": "सामान्य प्रश्न - ADVOCAT-Easy",
+    "metaDescription": "ADVOCAT-Easy के बारे में सामान्य प्रश्नों के उत्तर प्राप्त करें।",
+    "title": "सामान्य प्रश्न",
+    "q1": "क्या यह सेवा मुफ्त है?",
+    "a1": "हाँ, ADVOCAT-Easy पूरी तरह मुफ्त है..."
+  }
+}</code></pre>
+
+        <h2>Step 5: Test the Page</h2>
+        <p>Start the dev server and test:</p>
+        <pre><code class="language-bash">npm run dev</code></pre>
+
+        <p>Visit:</p>
+        <ul>
+          <li><code>http://localhost:3000/en/faq</code> → English</li>
+          <li><code>http://localhost:3000/hi/faq</code> → हिन्दी</li>
+          <li>Click the questions to expand/collapse answers</li>
+        </ul>
+
+        <h2>Key Takeaways</h2>
+        <div class="checklist">
+          <div class="item">
+            <input type="checkbox"> Server page (page.js) = SEO, metadata, translations
+          </div>
+          <div class="item">
+            <input type="checkbox"> Client component (*Client.jsx) = state, hooks, interactivity
+          </div>
+          <div class="item">
+            <input type="checkbox"> Always add translations to messages/*.json
+          </div>
+          <div class="item">
+            <input type="checkbox"> Use useTranslations() in client components
+          </div>
+          <div class="item">
+            <input type="checkbox"> generateMetadata() for SEO titles and descriptions
+          </div>
+        </div>
+
+        <p class="success">✅ You've built your first page! Chapter 7 shows how to make reusable components.</p>
+      </section>
+
+      <!-- CHAPTER 7: Components & Reusability -->
+      <section id="chapter-7" class="chapter">
+        <h1>🎨 Chapter 7: Components & Reusability</h1>
+        <p class="intro">Components are the building blocks. Let's learn to write DRY (Don't Repeat Yourself) components that you can use across pages.</p>
+
+        <h2>What Makes a Good Component?</h2>
+        <ul>
+          <li><strong>Single Responsibility:</strong> Does one thing well</li>
+          <li><strong>Reusable:</strong> Can be used in many places</li>
+          <li><strong>Configurable:</strong> Takes props to customize behavior</li>
+          <li><strong>Predictable:</strong> Same props = same output</li>
+        </ul>
+
+        <h2>Example: Button Component</h2>
+        <p>Instead of writing buttons inline everywhere, create a reusable Button:</p>
+
+        <pre><code class="language-javascript">// app/components/Button.jsx
+'use client';
+
+export default function Button({
+  children,           // Button text
+  onClick,            // Click handler
+  variant = 'primary',  // 'primary' or 'secondary'
+  disabled = false,
+  className = ''
+}) {
+  const baseStyles = 'px-6 py-3 rounded-lg font-bold transition-all';
+
+  const variants = {
+    primary: 'bg-orange-500 text-white hover:bg-orange-600',
+    secondary: 'bg-gray-200 text-gray-900 hover:bg-gray-300'
+  };
+
+  return (
+    &lt;button
+      onClick={onClick}
+      disabled={disabled}
+      className={`${baseStyles} ${variants[variant]} ${className}`}
+    &gt;
+      {children}
+    &lt;/button&gt;
+  );
+}</code></pre>
+
+        <p>Now use it everywhere:</p>
+
+        <pre><code class="language-javascript">'use client';
+import Button from '@/app/components/Button';
+
+export default function LoginForm() {
+  return (
+    &lt;form&gt;
+      &lt;Button variant="primary"&gt;Sign In&lt;/Button&gt;
+      &lt;Button variant="secondary"&gt;Forgot Password&lt;/Button&gt;
+    &lt;/form&gt;
+  );
+}</code></pre>
+
+        <h2>Card Component with Slots</h2>
+        <p>More advanced: a Card that wraps other components:</p>
+
+        <pre><code class="language-javascript">// app/components/Card.jsx
+'use client';
+
+export default function Card({
+  title,
+  subtitle,
+  children,
+  footer,
+  className = ''
+}) {
+  return (
+    &lt;div className={`bg-white rounded-lg shadow-md p-6 ${className}`}&gt;
+      {title && &lt;h2 className="text-2xl font-bold mb-2"&gt;{title}&lt;/h2&gt;}
+      {subtitle && &lt;p className="text-gray-600 mb-4"&gt;{subtitle}&lt;/p&gt;}
+
+      &lt;div className="mb-4"&gt;{children}&lt;/div&gt;
+
+      {footer && &lt;div className="border-t pt-4 mt-4"&gt;{footer}&lt;/div&gt;}
+    &lt;/div&gt;
+  );
+}</code></pre>
+
+        <p>Use it to build layouts:</p>
+
+        <pre><code class="language-javascript">&lt;Card
+  title="Case Strategist"
+  subtitle="Build your legal roadmap"
+  footer={&lt;Button&gt;Start Now&lt;/Button&gt;}
+&gt;
+  &lt;p&gt;Share your situation and get expert guidance...&lt;/p&gt;
+&lt;/Card&gt;</code></pre>
+
+        <h2>The Input Component</h2>
+        <p>Standardize form inputs:</p>
+
+        <pre><code class="language-javascript">// app/components/Input.jsx
+'use client';
+
+export default function Input({
+  label,
+  type = 'text',
+  placeholder,
+  value,
+  onChange,
+  error,
+  required
+}) {
+  return (
+    &lt;div className="mb-4"&gt;
+      {label && (
+        &lt;label className="block font-semibold mb-2"&gt;
+          {label}
+          {required && &lt;span className="text-red-500"&gt;*&lt;/span&gt;}
+        &lt;/label&gt;
+      )}
+
+      &lt;input
+        type={type}
+        placeholder={placeholder}
+        value={value}
+        onChange={onChange}
+        className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2
+          ${error ? 'border-red-500 ring-red-500' : 'border-gray-300 focus:ring-orange-500'}`}
+      /&gt;
+
+      {error && &lt;p className="text-red-500 text-sm mt-1"&gt;{error}&lt;/p&gt;}
+    &lt;/div&gt;
+  );
+}</code></pre>
+
+        <h2>Component Organization</h2>
+        <p>As your project grows, organize components:</p>
+
+        <pre><code class="language-text">app/components/
+├── UI/
+│   ├── Button.jsx
+│   ├── Input.jsx
+│   ├── Card.jsx
+│   └── Modal.jsx
+├── Layout/
+│   ├── Navbar.jsx
+│   ├── Footer.jsx
+│   └── Sidebar.jsx
+└── Features/
+    ├── ChatWindow.jsx
+    ├── AuthForm.jsx
+    └── FAQAccordion.jsx</code></pre>
+
+        <p class="success">✅ Good components make your codebase scalable. Chapter 8 adds authentication!</p>
+      </section>
+
+      <!-- CHAPTER 8: Authentication System -->
+      <section id="chapter-8" class="chapter">
+        <h1>🔐 Chapter 8: Authentication System</h1>
+        <p class="intro">Authentication (auth) verifies who the user is. ADVOCAT-Easy uses a simple token-based system. Let's see how it works.</p>
+
+        <h2>How Token-Based Auth Works</h2>
+
+        <pre><code class="language-text">SIGNUP:
+  User enters email + password
+    ↓
+  Server hashes password (never store plain passwords!)
+    ↓
+  Server creates user record
+    ↓
+  Redirects to login
+
+LOGIN:
+  User enters email + password
+    ↓
+  Server checks password matches hash
+    ↓
+  Server creates unique token (UUID)
+    ↓
+  Server stores: token → {email, createdAt, expiresAt}
+    ↓
+  Returns token to client
+    ↓
+  Client stores in localStorage
+
+ACCESSING PROTECTED PAGE:
+  Page loads → useAuth() hook runs
+    ↓
+  Hook reads token from localStorage
+    ↓
+  Sends token to /api/auth/validate
+    ↓
+  Server checks: is token valid? Not expired?
+    ↓
+  If valid: page renders
+  If invalid: redirects to /auth
+
+LOGOUT:
+  User clicks logout
+    ↓
+  Client calls /api/auth/logout with token
+    ↓
+  Server deletes the token from storage
+    ↓
+  Client removes token from localStorage</code></pre>
+
+        <h2>The useAuth Hook (Already Built)</h2>
+        <p>ADVOCAT-Easy has a custom hook to check auth. Use it in any component:</p>
+
+        <pre><code class="language-javascript">// hooks/useAuth.js
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+
+export function useAuth(requireAuth = true) {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    const token = localStorage.getItem('sessionToken');
+    if (!token) {
+      if (requireAuth) router.push('/auth');
+      return;
+    }
+
+    // Validate token
+    fetch('/api/auth/validate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token })
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.isValid) {
+          setIsLoggedIn(true);
+        } else if (requireAuth) {
+          router.push('/auth');
+        }
+      });
+  }, []);
+
+  return { isLoggedIn };
+}</code></pre>
+
+        <h2>Protecting a Page with Auth</h2>
+        <p>Make a page require login:</p>
+
+        <pre><code class="language-javascript">// app/[locale]/dashboard/DashboardClient.jsx
+'use client';
+
+import { useAuth } from '@/hooks/useAuth';
+
+export default function DashboardClient() {
+  const { isLoggedIn } = useAuth(true);  // true = must be logged in
+
+  if (!isLoggedIn) {
+    return &lt;p&gt;Loading...&lt;/p&gt;;  // Show loading until auth check done
+  }
+
+  return &lt;h1&gt;Welcome to your dashboard!&lt;/h1&gt;;
+}</code></pre>
+
+        <h2>The Login/Signup Form (Already Built)</h2>
+        <p>In ADVOCAT-Easy, AuthClient handles login. Here's the flow:</p>
+
+        <pre><code class="language-javascript">// app/[locale]/auth/AuthClient.jsx
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+
+export default function AuthClient() {
+  const [isLogin, setIsLogin] = useState(true);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const router = useRouter();
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+
+    const endpoint = isLogin ? '/api/auth/login' : '/api/auth/signup';
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      // Login/signup successful
+      localStorage.setItem('sessionToken', data.token);
+      router.push('/dashboard');  // Redirect to dashboard
+    } else {
+      // Show error
+      alert(data.message);
+    }
+  }
+
+  return (
+    &lt;form onSubmit={handleSubmit}&gt;
+      &lt;input
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="Email"
+      /&gt;
+      &lt;input
+        type="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        placeholder="Password"
+      /&gt;
+      &lt;button type="submit"&gt;
+        {isLogin ? 'Sign In' : 'Sign Up'}
+      &lt;/button&gt;
+
+      &lt;button
+        type="button"
+        onClick={() => setIsLogin(!isLogin)}
+      &gt;
+        {isLogin ? 'Need account? Sign up' : 'Have account? Sign in'}
+      &lt;/button&gt;
+    &lt;/form&gt;
+  );
+}</code></pre>
+
+        <h2>Authentication Best Practices</h2>
+        <div class="checklist">
+          <div class="item">
+            <input type="checkbox"> Never store passwords in plain text—always hash
+          </div>
+          <div class="item">
+            <input type="checkbox"> Use HTTPS in production (tokens leak over HTTP)
+          </div>
+          <div class="item">
+            <input type="checkbox"> Set token expiration (ADVOCAT-Easy: 7 days)
+          </div>
+          <div class="item">
+            <input type="checkbox"> Use httpOnly cookies for extra security (not localStorage)
+          </div>
+          <div class="item">
+            <input type="checkbox"> Validate tokens on every protected API call
+          </div>
+          <div class="item">
+            <input type="checkbox"> Clear localStorage on logout
+          </div>
+        </div>
+
+        <p class="success">✅ Auth protects your app. Chapter 9 adds international support!</p>
+      </section>
+
+      <!-- CHAPTER 9: Multilingual Support (i18n) -->
+      <section id="chapter-9" class="chapter">
+        <h1>🌍 Chapter 9: Multilingual Support (i18n)</h1>
+        <p class="intro">ADVOCAT-Easy supports 4 languages: English, हिन्दी (Hindi), मराठी (Marathi), తెలుగు (Telugu). Here's how i18n (internationalization) works.</p>
+
+        <h2>What is i18n?</h2>
+        <p>i18n = making your app work in multiple languages. It involves:</p>
+        <ul>
+          <li><strong>Translation files:</strong> Store text in each language</li>
+          <li><strong>Language detection:</strong> Know which language user prefers</li>
+          <li><strong>URL routing:</strong> /en, /hi, /mr, /te (locale in URL)</li>
+          <li><strong>Dynamic rendering:</strong> Show correct language based on URL</li>
+        </ul>
+
+        <h2>Translation Files</h2>
+        <p>ADVOCAT-Easy uses <code>next-intl</code> library. Translations are in <code>messages/</code>:</p>
+
+        <pre><code class="language-json">// messages/en.json
+{
+  "Auth": {
+    "metaTitle": "Login or Sign Up - ADVOCAT-Easy",
+    "metaDescription": "Secure login to your legal guidance account",
+    "loginHeading": "Welcome back",
+    "signupHeading": "Get Started"
+  },
+  "Dashboard": {
+    "metaTitle": "Dashboard - ADVOCAT-Easy",
+    "title": "Legal Command Center",
+    "subtitle": "Select a tool below"
+  }
+}
+
+// messages/hi.json
+{
+  "Auth": {
+    "metaTitle": "लॉगिन या साइन अप करें - ADVOCAT-Easy",
+    "metaDescription": "अपने कानूनी मार्गदर्शन खाते में सुरक्षित लॉगिन",
+    "loginHeading": "वापसी के लिए आपका स्वागत है",
+    "signupHeading": "शुरू हो जाइए"
+  }
+}</code></pre>
+
+        <h2>Using Translations in Components</h2>
+
+        <h3>Server Components (page.js)</h3>
+        <pre><code class="language-javascript">// app/[locale]/auth/page.js
+import { getTranslations } from 'next-intl/server';
+
+export async function generateMetadata({ params }) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'Auth' });
+
+  return {
+    title: t('metaTitle'),  // Loads from messages/en.json or messages/hi.json
+    description: t('metaDescription')
+  };
+}</code></pre>
+
+        <h3>Client Components (*Client.jsx)</h3>
+        <pre><code class="language-javascript">// app/[locale]/auth/AuthClient.jsx
+'use client';
+
+import { useTranslations } from 'next-intl';
+
+export default function AuthClient() {
+  const t = useTranslations('Auth');  // Load 'Auth' section
+
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;{t('loginHeading')}&lt;/h1&gt;  {/* "Welcome back" or "वापसी के लिए आपका स्वागत है" */}
+      &lt;p&gt;{t('metaDescription')}&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+
+        <h2>URL-Based Routing</h2>
+        <p>Every route has a locale prefix:</p>
+
+        <pre><code class="language-text">/en/dashboard   → English
+/hi/dashboard   → हिन्दी
+/mr/dashboard   → मराठी
+/te/dashboard   → తెలుగు</code></pre>
+
+        <p>The <code>app/[locale]/</code> folder automatically handles this. Middleware redirects:</p>
+
+        <pre><code class="language-javascript">// middleware.js
+import createMiddleware from 'next-intl/middleware';
+
+export default createMiddleware({
+  locales: ['en', 'hi', 'mr', 'te'],
+  defaultLocale: 'en'
+});
+
+// Redirects /dashboard → /en/dashboard
+// Detects browser language if not in URL</code></pre>
+
+        <h2>Language Selector</h2>
+        <p>Let users switch languages. The Navbar has a dropdown:</p>
+
+        <pre><code class="language-javascript">// In Navbar.jsx
+&lt;select onChange={(e) => router.push(`/${e.target.value}/dashboard`)}&gt;
+  &lt;option value="en"&gt;English&lt;/option&gt;
+  &lt;option value="hi"&gt;हिन्दी&lt;/option&gt;
+  &lt;option value="mr"&gt;मराठी&lt;/option&gt;
+  &lt;option value="te"&gt;తెలుగు&lt;/option&gt;
+&lt;/select&gt;</code></pre>
+
+        <h2>Adding a New Translated Page</h2>
+
+        <p><strong>1. Create page with locale:</strong></p>
+        <pre><code class="language-bash">mkdir app/[locale]/faq
+touch app/[locale]/faq/page.js</code></pre>
+
+        <p><strong>2. Add translations:</strong></p>
+        <pre><code class="language-json">// In ALL messages files (en.json, hi.json, mr.json, te.json)
+{
+  "FAQ": {
+    "metaTitle": "Frequently Asked Questions",
+    "title": "Questions?",
+    "q1": "How does this work?"
+  }
+}</code></pre>
+
+        <p><strong>3. Use in component:</strong></p>
+        <pre><code class="language-javascript">const t = useTranslations('FAQ');
+return &lt;h1&gt;{t('title')}&lt;/h1&gt;;</code></pre>
+
+        <h2>Key i18n Concepts</h2>
+        <div class="checklist">
+          <div class="item">
+            <input type="checkbox"> messages/*.json = translation files (one per language)
+          </div>
+          <div class="item">
+            <input type="checkbox"> Namespace = section in JSON (Auth, Dashboard, FAQ)
+          </div>
+          <div class="item">
+            <input type="checkbox"> Server: getTranslations() for SEO metadata
+          </div>
+          <div class="item">
+            <input type="checkbox"> Client: useTranslations() for display text
+          </div>
+          <div class="item">
+            <input type="checkbox"> URL has locale: /en, /hi, /mr, /te
+          </div>
+          <div class="item">
+            <input type="checkbox"> Middleware auto-detects language and redirects
+          </div>
+        </div>
+
+        <p class="success">✅ Your app speaks many languages. Chapter 10 makes it SEO-friendly!</p>
+      </section>
+
+      <!-- CHAPTER 10: SEO Optimization -->
+      <section id="chapter-10" class="chapter">
+        <h1>🔍 Chapter 10: SEO Optimization</h1>
+        <p class="intro">SEO (Search Engine Optimization) makes your site appear in Google results. ADVOCAT-Easy implements best practices for rankings and visibility.</p>
+
+        <h2>Core SEO Elements</h2>
+
+        <h3>1. Metadata (generateMetadata)</h3>
+        <p>Titles and descriptions shown in Google search results:</p>
+
+        <pre><code class="language-javascript">// app/[locale]/dashboard/page.js
+export async function generateMetadata({ params }) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'Dashboard' });
+
+  return {
+    title: t('metaTitle'),              // "Dashboard - ADVOCAT-Easy"
+    description: t('metaDescription'),  // "Your legal command center..."
+    keywords: ['legal', 'advice', 'India'],
+    alternates: {
+      canonical: `https://advocat-easy.com/${locale}/dashboard`,
+      languages: {
+        en: `https://advocat-easy.com/en/dashboard`,
+        hi: `https://advocat-easy.com/hi/dashboard`,
+        mr: `https://advocat-easy.com/mr/dashboard`,
+        te: `https://advocat-easy.com/te/dashboard`
+      }
+    }
+  };
+}</code></pre>
+
+        <h3>2. Server Components for Speed</h3>
+        <p>Server Components render on the server, not the browser. This:</p>
+        <ul>
+          <li>Reduces JavaScript sent to browser (faster)</li>
+          <li>Improves Core Web Vitals (Google's ranking factor)</li>
+          <li>Makes pages more SEO-friendly</li>
+        </ul>
+
+        <p>ADVOCAT-Easy pages are Server Components by default. Client Components wrap them for interactivity.</p>
+
+        <h3>3. Robots.txt and Sitemap</h3>
+        <p>Tell Google which pages to crawl:</p>
+
+        <pre><code class="language-text">// public/robots.txt
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+
+Sitemap: https://advocat-easy.com/sitemap.xml</code></pre>
+
+        <pre><code class="language-javascript">// app/sitemap.ts
+import { MetadataRoute } from 'next';
+
+export default function sitemap(): MetadataRoute.Sitemap {
+  const baseUrl = 'https://advocat-easy.com';
+  const locales = ['en', 'hi', 'mr', 'te'];
+
+  return [
+    {
+      url: baseUrl,
+      lastModified: new Date(),
+      priority: 1.0
+    },
+    ...locales.flatMap(locale => [
+      { url: `${baseUrl}/${locale}`, lastModified: new Date(), priority: 0.9 },
+      { url: `${baseUrl}/${locale}/dashboard`, lastModified: new Date(), priority: 0.8 },
+      { url: `${baseUrl}/${locale}/general-queries`, lastModified: new Date(), priority: 0.8 },
+      { url: `${baseUrl}/${locale}/case-advisor`, lastModified: new Date(), priority: 0.8 }
+    ])
+  ];
+}</code></pre>
+
+        <h3>4. Structured Data (JSON-LD)</h3>
+        <p>Help Google understand your content:</p>
+
+        <pre><code class="language-javascript">// In next/head or metadata
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "ADVOCAT-Easy",
+  "description": "AI-powered legal guidance for Indian laws",
+  "applicationCategory": "Legal",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "INR"
+  }
+}</code></pre>
+
+        <h3>5. OpenGraph Tags (Social Sharing)</h3>
+        <p>Control how your pages look when shared on Facebook, Twitter, etc.:</p>
+
+        <pre><code class="language-javascript">export async function generateMetadata({ params }) {
+  return {
+    title: "ADVOCAT-Easy",
+    openGraph: {
+      title: "Get Legal Guidance Instantly",
+      description: "Free AI-powered legal advice",
+      images: [
+        {
+          url: 'https://advocat-easy.com/og-image.png',
+          width: 1200,
+          height: 630
+        }
+      ],
+      url: 'https://advocat-easy.com'
+    }
+  };
+}</code></pre>
+
+        <h3>6. hreflang Tags (Multi-language)</h3>
+        <p>Tell Google different language versions exist:</p>
+
+        <pre><code class="language-javascript">export async function generateMetadata({ params }) {
+  return {
+    alternates: {
+      languages: {
+        en: 'https://advocat-easy.com/en/dashboard',
+        hi: 'https://advocat-easy.com/hi/dashboard',
+        mr: 'https://advocat-easy.com/mr/dashboard',
+        te: 'https://advocat-easy.com/te/dashboard'
+      }
+    }
+  };
+}</code></pre>
+
+        <h2>SEO Checklist</h2>
+        <div class="checklist">
+          <div class="item">
+            <input type="checkbox"> Unique title (50-60 chars) per page
+          </div>
+          <div class="item">
+            <input type="checkbox"> Meta description (150-160 chars)
+          </div>
+          <div class="item">
+            <input type="checkbox"> H1 tag with primary keyword
+          </div>
+          <div class="item">
+            <input type="checkbox"> Image alt text for all images
+          </div>
+          <div class="item">
+            <input type="checkbox"> Fast page load (use Server Components)
+          </div>
+          <div class="item">
+            <input type="checkbox"> Mobile responsive design (Tailwind)
+          </div>
+          <div class="item">
+            <input type="checkbox"> Sitemap.xml submitted to Google Search Console
+          </div>
+          <div class="item">
+            <input type="checkbox"> robots.txt for crawl rules
+          </div>
+          <div class="item">
+            <input type="checkbox"> OpenGraph tags for social sharing
+          </div>
+        </div>
+
+        <p class="success">✅ SEO makes your site discoverable. Chapter 11 shows API integration!</p>
+      </section>
+
+      <!-- CHAPTER 11: API Integration -->
+      <section id="chapter-11" class="chapter">
+        <h1>🔗 Chapter 11: API Integration</h1>
+        <p class="intro">APIs let your app talk to other services. ADVOCAT-Easy uses the Google Gemini API for AI, and Apify for lawyer data. Let's see how to integrate APIs safely.</p>
+
+        <h2>What's an API?</h2>
+        <p>An API (Application Programming Interface) is a contract: "Give me X data with Y parameters, I'll return Z response."</p>
+
+        <pre><code class="language-text">Example: Google Gemini API
+  Request: { "prompt": "What is Article 21?" }
+  Response: { "reply": "Article 21 protects right to life..." }</code></pre>
+
+        <h2>Types of APIs</h2>
+
+        <div class="concept">
+          <h4>REST API</h4>
+          <p>Uses HTTP methods: GET (read), POST (create), PUT (update), DELETE (remove)</p>
+          <pre><code class="language-bash">POST /api/chat → Ask legal question
+GET /api/history → Get past questions
+DELETE /api/session/123 → End session</code></pre>
+        </div>
+
+        <div class="concept">
+          <h4>GraphQL API</h4>
+          <p>More flexible—ask for exactly what fields you need.</p>
+          <pre><code class="language-graphql">query {
+  user(id: 123) {
+    name
+    email
+    consultations {
+      question
+      answer
+    }
+  }
+}</code></pre>
+        </div>
+
+        <h2>Calling External APIs from Next.js</h2>
+
+        <h3>From Server Components</h3>
+        <p>Safe to do in server components (secrets never leak to browser):</p>
+
+        <pre><code class="language-javascript">// app/[locale]/page.js (Server Component)
+async function HomePage() {
+  // Call API server-side
+  const res = await fetch('https://api.example.com/data', {
+    headers: { 'Authorization': `Bearer ${process.env.API_KEY}` }
+  });
+  const data = await res.json();
+
+  return &lt;div&gt;{data.title}&lt;/div&gt;;
+}</code></pre>
+
+        <h3>From Client Components (via Your Backend)</h3>
+        <p>Never put API keys in client code. Instead, create a route that calls the API:</p>
+
+        <pre><code class="language-javascript">// app/api/chat/route.js (Your backend)
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;  // Secret, not exposed
+
+export async function POST(request) {
+  const { message } = await request.json();
+
+  // Call Gemini server-side
+  const res = await fetch('https://api.google.com/v1/models/gemini:generateContent', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-goog-api-key': GEMINI_API_KEY
+    },
+    body: JSON.stringify({ contents: [{ parts: [{ text: message }] }] })
+  });
+
+  const geminiData = await res.json();
+
+  return new Response(JSON.stringify({
+    reply: geminiData.candidates[0].content.parts[0].text
+  }), { status: 200 });
+}
+
+// Client calls YOUR API (not Gemini directly)
+// 'use client'
+async function askQuestion(message) {
+  const res = await fetch('/api/chat', {
+    method: 'POST',
+    body: JSON.stringify({ message })
+  });
+  const { reply } = await res.json();
+  console.log(reply);
+}</code></pre>
+
+        <h2>ADVOCAT-Easy's Gemini Integration</h2>
+
+        <pre><code class="language-javascript">// app/api/chat/route.js
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+
+export async function POST(request) {
+  const { message, mode, token } = await request.json();
+
+  // 1. Validate user
+  const isValid = await validateToken(token);
+  if (!isValid) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
+
+  // 2. Build Gemini prompt
+  const systemPrompt = `You are an expert in Indian Constitutional Law and Acts.
+Provide accurate, cited legal guidance based on the Indian Constitution and relevant Acts.
+Always cite the specific Article or Act section.`;
+
+  const userPrompt = message;
+
+  // 3. Call Gemini
+  const res = await fetch('https://api.google.com/v1/models/gemini-2.5-flash:generateContent?key=' + GEMINI_API_KEY, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{
+        parts: [{ text: userPrompt }]
+      }],
+      systemInstruction: { parts: [{ text: systemPrompt }] },
+      generationConfig: { temperature: 0.7, maxOutputTokens: 1000 }
+    })
+  });
+
+  const data = await res.json();
+  const answer = data.candidates[0].content.parts[0].text;
+
+  // 4. Return response
+  return new Response(JSON.stringify({
+    response: answer,
+    creditsSaved: 702,
+    citations: extractCitations(answer)
+  }), { status: 200 });
+}</code></pre>
+
+        <h2>Error Handling</h2>
+        <p>Always handle API failures gracefully:</p>
+
+        <pre><code class="language-javascript">async function fetchUserData(userId) {
+  try {
+    const res = await fetch(`/api/users/${userId}`);
+
+    if (!res.ok) {
+      // 404, 500, etc.
+      throw new Error(`API error: ${res.status}`);
+    }
+
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    console.error('Failed to fetch user:', error);
+    // Return default or show error UI
+    return null;
+  }
+}</code></pre>
+
+        <h2>Environment Variables for APIs</h2>
+        <p>Store secrets securely:</p>
+
+        <pre><code class="language-bash"># .env.local (NEVER commit this!)
+GEMINI_API_KEY=sk-1234567890abcdef
+APIFY_API_TOKEN=apify_xyz123
+MONGODB_URI=mongodb://localhost:27017</code></pre>
+
+        <p>Access in code:</p>
+
+        <pre><code class="language-javascript">const apiKey = process.env.GEMINI_API_KEY;  // ✅ Secure (server-side only)
+const token = process.env.NEXT_PUBLIC_STRIPE_KEY;  // For client (less sensitive)</code></pre>
+
+        <p class="success">✅ APIs power your app's features. Chapter 12 adds professional styling!</p>
+      </section>
+
+      <!-- CHAPTER 12: Styling with Tailwind CSS -->
+      <section id="chapter-12" class="chapter">
+        <h1>🎨 Chapter 12: Styling with Tailwind CSS</h1>
+        <p class="intro">Tailwind CSS is a "utility-first" CSS framework. Instead of writing CSS files, you write classes directly in your HTML. It's fast, consistent, and scales well.</p>
+
+        <h2>What is Tailwind?</h2>
+        <p>Tailwind gives you pre-made CSS classes for everything: colors, spacing, typography, layouts.</p>
+
+        <h3>Old Way (Bad):</h3>
+        <pre><code class="language-css">/* styles.css */
+.button {
+  background-color: #FF5B33;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: bold;
+}
+
+.button:hover {
+  background-color: #E84620;
+}</code></pre>
+
+        <pre><code class="language-html">&lt;button class="button"&gt;Click me&lt;/button&gt;</code></pre>
+
+        <h3>Tailwind Way (Good):</h3>
+        <pre><code class="language-html">&lt;button class="bg-orange-500 text-white px-6 py-3 rounded-lg font-bold hover:bg-orange-600"&gt;
+  Click me
+&lt;/button&gt;</code></pre>
+
+        <p><strong>Benefits:</strong> No CSS files, no naming conflicts, consistent colors, easy to customize.</p>
+
+        <h2>Tailwind Basics</h2>
+
+        <h3>Spacing (Padding & Margin)</h3>
+        <pre><code class="language-html">&lt;div class="p-4"&gt;...&lt;/div&gt;  &lt;!-- padding: 1rem --&gt;
+&lt;div class="m-2"&gt;...&lt;/div&gt;  &lt;!-- margin: 0.5rem --&gt;
+&lt;div class="px-8 py-4"&gt;...&lt;/div&gt;  &lt;!-- padding-left & right: 2rem, top & bottom: 1rem --&gt;</code></pre>
+
+        <h3>Colors</h3>
+        <pre><code class="language-html">&lt;div class="bg-blue-500"&gt;...&lt;/div&gt;  &lt;!-- Background blue --&gt;
+&lt;p class="text-red-600"&gt;Error&lt;/p&gt;  &lt;!-- Text red --&gt;
+&lt;button class="bg-green-500 hover:bg-green-600"&gt;Save&lt;/button&gt;  &lt;!-- Hover effect --&gt;</code></pre>
+
+        <h3>Typography</h3>
+        <pre><code class="language-html">&lt;h1 class="text-4xl font-bold"&gt;Big Title&lt;/h1&gt;
+&lt;p class="text-sm text-gray-600"&gt;Small description&lt;/p&gt;
+&lt;span class="text-center"&gt;Centered text&lt;/span&gt;</code></pre>
+
+        <h3>Layout (Flexbox & Grid)</h3>
+        <pre><code class="language-html">&lt;!-- Flexbox (row) --&gt;
+&lt;div class="flex justify-between items-center"&gt;
+  &lt;div&gt;Left&lt;/div&gt;
+  &lt;div&gt;Right&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- Flexbox (column) --&gt;
+&lt;div class="flex flex-col space-y-4"&gt;
+  &lt;div&gt;Item 1&lt;/div&gt;
+  &lt;div&gt;Item 2&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- Grid --&gt;
+&lt;div class="grid grid-cols-3 gap-4"&gt;
+  &lt;div&gt;Col 1&lt;/div&gt;
+  &lt;div&gt;Col 2&lt;/div&gt;
+  &lt;div&gt;Col 3&lt;/div&gt;
+&lt;/div&gt;</code></pre>
+
+        <h2>Responsive Design</h2>
+        <p>Change styles on different screen sizes:</p>
+
+        <pre><code class="language-html">&lt;!-- Mobile: 1 column, Tablet: 2 columns, Desktop: 3 columns --&gt;
+&lt;div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3"&gt;
+  ...
+&lt;/div&gt;
+
+&lt;!-- Hide on mobile, show on desktop --&gt;
+&lt;div class="hidden lg:block"&gt;Desktop only content&lt;/div&gt;
+
+&lt;!-- Large text on desktop, small on mobile --&gt;
+&lt;h1 class="text-xl md:text-2xl lg:text-4xl"&gt;Responsive Title&lt;/h1&gt;</code></pre>
+
+        <p><strong>Breakpoints:</strong> sm (640px), md (768px), lg (1024px), xl (1280px)</p>
+
+        <h2>Components with Tailwind</h2>
+        <p>Create reusable component patterns:</p>
+
+        <pre><code class="language-javascript">// app/components/Card.jsx
+export default function Card({ title, children }) {
+  return (
+    &lt;div class="bg-white rounded-lg shadow-md p-6 border border-gray-200"&gt;
+      &lt;h2 class="text-2xl font-bold mb-4"&gt;{title}&lt;/h2&gt;
+      &lt;div class="text-gray-700"&gt;{children}&lt;/div&gt;
+    &lt;/div&gt;
+  );
+}
+
+// Usage
+&lt;Card title="Welcome"&gt;
+  &lt;p&gt;This is a card component&lt;/p&gt;
+&lt;/Card&gt;</code></pre>
+
+        <h2>Customizing Tailwind</h2>
+        <p>Add custom colors, fonts, spacing in <code>tailwind.config.js</code>:</p>
+
+        <pre><code class="language-javascript">// tailwind.config.js
+export default {
+  theme: {
+    extend: {
+      colors: {
+        brand: {
+          primary: '#FF5B33',    // ADVOCAT-Easy orange
+          dark: '#171717'
+        }
+      },
+      spacing: {
+        '128': '32rem'
+      }
+    }
+  }
+};
+
+// Use in HTML
+&lt;button class="bg-brand-primary"&gt;Click me&lt;/button&gt;</code></pre>
+
+        <h2>ADVOCAT-Easy Color Scheme</h2>
+        <pre><code class="language-html">&lt;!-- Primary (Orange) --&gt;
+&lt;button class="bg-orange-500 hover:bg-orange-600"&gt;...&lt;/button&gt;
+
+&lt;!-- Dark (Nearly Black) --&gt;
+&lt;div class="bg-slate-900 text-white"&gt;...&lt;/div&gt;
+
+&lt;!-- Light Background --&gt;
+&lt;div class="bg-gray-50"&gt;...&lt;/div&gt;</code></pre>
+
+        <p class="success">✅ Tailwind makes beautiful UIs fast. Chapter 13 covers databases!</p>
+      </section>
+
+      <!-- CHAPTER 13: Database & APIs -->
+      <section id="chapter-13" class="chapter">
+        <h1>💾 Chapter 13: Database & APIs</h1>
+        <p class="intro">A database stores your data permanently. ADVOCAT-Easy uses in-memory storage for development, but you can add MongoDB or PostgreSQL for production.</p>
+
+        <h2>What's a Database?</h2>
+        <p>A database is organized storage that persists data across sessions.</p>
+
+        <pre><code class="language-text">Without DB: Data lost when server restarts
+With DB: Data survives, can be queried, indexed, backed up</code></pre>
+
+        <h2>Types of Databases</h2>
+
+        <div class="concept">
+          <h4>Relational (SQL)</h4>
+          <p><strong>Example:</strong> PostgreSQL, MySQL. Data in tables with rows and columns.</p>
+          <pre><code class="language-sql">-- Table: users
+CREATE TABLE users (
+  id INT PRIMARY KEY,
+  email VARCHAR(255),
+  password_hash VARCHAR(255),
+  created_at TIMESTAMP
+);
+
+SELECT * FROM users WHERE email = 'alice@example.com';</code></pre>
+        </div>
+
+        <div class="concept">
+          <h4>Document (NoSQL)</h4>
+          <p><strong>Example:</strong> MongoDB. Data in JSON-like documents.</p>
+          <pre><code class="language-javascript">// Collection: users
+db.users.insertOne({
+  email: 'alice@example.com',
+  password_hash: 'hashed...',
+  created_at: new Date()
+});
+
+db.users.findOne({ email: 'alice@example.com' });</code></pre>
+        </div>
+
+        <h2>ADVOCAT-Easy: In-Memory Storage</h2>
+        <p>For development, ADVOCAT-Easy uses in-memory Maps (lose data on restart):</p>
+
+        <pre><code class="language-javascript">// lib/authStore.js
+const users = new Map();
+const sessions = new Map();
+
+// Create user
+users.set('alice@example.com', { email: 'alice@example.com', password_hash: '...' });
+
+// Find user
+const user = users.get('alice@example.com');
+
+// Delete user
+users.delete('alice@example.com');</code></pre>
+
+        <h2>Adding MongoDB (Production)</h2>
+        <p>Switch to MongoDB for persistent storage:</p>
+
+        <p><strong>1. Install:</strong></p>
+        <pre><code class="language-bash">npm install mongodb</code></pre>
+
+        <p><strong>2. Create connection:</strong></p>
+        <pre><code class="language-javascript">// lib/db.js
+import { MongoClient } from 'mongodb';
+
+const uri = process.env.MONGODB_URI;
+let client = null;
+
+async function getDb() {
+  if (!client) {
+    client = new MongoClient(uri);
+    await client.connect();
+  }
+  return client.db('advocat_db');
+}
+
+export default getDb;</code></pre>
+
+        <p><strong>3. Use in API:</strong></p>
+        <pre><code class="language-javascript">// app/api/auth/login/route.js
+import getDb from '@/lib/db';
+
+export async function POST(request) {
+  const { email, password } = await request.json();
+  const db = await getDb();
+
+  const user = await db.collection('users').findOne({ email });
+
+  if (!user) {
+    return new Response(JSON.stringify({ message: 'User not found' }), { status: 401 });
+  }
+
+  // ... validate password, create session
+}</code></pre>
+
+        <h2>Data Modeling</h2>
+        <p>Plan what data you'll store:</p>
+
+        <pre><code class="language-javascript">// Users collection
+{
+  _id: ObjectId(...),
+  email: 'alice@example.com',
+  password_hash: 'bcrypt...',
+  created_at: 2025-04-11T10:00:00Z,
+  updated_at: 2025-04-11T10:00:00Z
+}
+
+// Sessions collection
+{
+  _id: ObjectId(...),
+  token: 'uuid-token-here',
+  email: 'alice@example.com',
+  created_at: 2025-04-11T10:00:00Z,
+  expires_at: 2025-04-18T10:00:00Z
+}
+
+// Conversations collection
+{
+  _id: ObjectId(...),
+  email: 'alice@example.com',
+  messages: [
+    { role: 'user', content: 'Can my landlord...?' },
+    { role: 'assistant', content: 'According to Article 21...' }
+  ],
+  created_at: 2025-04-11T10:00:00Z
+}</code></pre>
+
+        <h2>Querying Data</h2>
+        <p>Common patterns:</p>
+
+        <pre><code class="language-javascript">const db = await getDb();
+
+// Find one
+const user = await db.collection('users').findOne({ email });
+
+// Find many
+const allUsers = await db.collection('users').find({}).toArray();
+
+// Update
+await db.collection('users').updateOne(
+  { _id: userId },
+  { $set: { updated_at: new Date() } }
+);
+
+// Delete
+await db.collection('users').deleteOne({ _id: userId });
+
+// Count
+const count = await db.collection('users').countDocuments();</code></pre>
+
+        <h2>Securing Data</h2>
+        <div class="checklist">
+          <div class="item">
+            <input type="checkbox"> Always hash passwords (bcryptjs)
+          </div>
+          <div class="item">
+            <input type="checkbox"> Use indexes on frequently queried fields
+          </div>
+          <div class="item">
+            <input type="checkbox"> Validate all input before storing
+          </div>
+          <div class="item">
+            <input type="checkbox"> Don't expose database IDs in URLs
+          </div>
+          <div class="item">
+            <input type="checkbox"> Backup regularly
+          </div>
+          <div class="item">
+            <input type="checkbox"> Use environment variables for connection strings
+          </div>
+        </div>
+
+        <p class="success">✅ Your data is secure. Chapter 14 shows how to deploy and fork this template!</p>
+      </section>
+
+      <!-- CHAPTER 14: Reusable Template: Building SaaS -->
+      <section id="chapter-14" class="chapter">
+        <h1>🚀 Chapter 14: Reusable Template - Building Your Own SaaS</h1>
+        <p class="intro">ADVOCAT-Easy is a complete, production-ready template. Now you know how to fork it, customize it, and build your own SaaS product. Let's finish strong.</p>
+
+        <h2>What Makes This a Great Template?</h2>
+        <ul>
+          <li>✅ <strong>Modern Stack:</strong> Next.js 15, React 19, Tailwind CSS v4</li>
+          <li>✅ <strong>Best Practices:</strong> Server Components, SEO, Auth, i18n</li>
+          <li>✅ <strong>Production-Ready:</strong> Error handling, validation, security</li>
+          <li>✅ <strong>Scalable:</strong> Component-based, API routes, database-ready</li>
+          <li>✅ <strong>Documented:</strong> Code comments, this guide, architecture examples</li>
+        </ul>
+
+        <h2>How to Fork & Customize</h2>
+
+        <h3>Step 1: Fork on GitHub</h3>
+        <pre><code class="language-bash"># Clone the repo
+git clone https://github.com/soumil007-pdg/v7.git
+cd v7
+
+# Create your own repo
+git remote remove origin
+git remote add origin https://github.com/YOUR-USERNAME/YOUR-SAAS.git
+git push -u origin main</code></pre>
+
+        <h3>Step 2: Rename & Rebrand</h3>
+        <pre><code class="language-bash"># Update package.json
+# Change name, description, author
+
+# Update public assets
+# Replace logo in public/logo.png
+# Update favicon in public/favicon.ico
+
+# Update text
+# Find/replace "ADVOCAT-Easy" with "Your App Name"
+# Update messages/*.json with your content</code></pre>
+
+        <h3>Step 3: Remove Features You Don't Need</h3>
+        <pre><code class="language-bash"># If you don't need i18n (multi-language):
+# Delete messages/ folder
+# Remove [locale] routing
+# Simplify middleware.js
+
+# If you don't need auth:
+# Delete app/api/auth/
+# Delete hooks/useAuth.js
+# Remove auth pages
+
+# If you don't need AI:
+# Delete app/api/chat/
+# Remove Gemini API calls</code></pre>
+
+        <h3>Step 4: Customize the Database</h3>
+        <pre><code class="language-javascript">// Choose your database:
+// - MongoDB (document-based) ← Easy, flexible
+// - PostgreSQL (relational) ← Powerful, structured
+// - Firebase (BaaS) ← Quick, serverless
+// - Prisma ORM ← Works with any SQL database
+
+// Example with Prisma:
+npm install @prisma/client
+npx prisma init
+
+// Edit prisma/schema.prisma
+model User {
+  id    Int     @id @default(autoincrement())
+  email String  @unique
+  name  String?
+  posts Post[]
+}
+
+// Generate and push
+npx prisma migrate dev --name init</code></pre>
+
+        <h2>Adding New Features</h2>
+
+        <h3>Feature: User Profile Page</h3>
+        <pre><code class="language-bash"># 1. Create page
+mkdir app/[locale]/profile
+touch app/[locale]/profile/page.js
+touch app/[locale]/profile/ProfileClient.jsx
+
+# 2. Add route (server handles SEO, client handles UI)
+# 3. Use useAuth hook to protect it
+# 4. Add API endpoint if needed: app/api/user/profile/route.js
+# 5. Add translations to messages/en.json etc.
+# 6. Test!</code></pre>
+
+        <h3>Feature: Payment (Stripe)</h3>
+        <pre><code class="language-bash">npm install @stripe/stripe-js @stripe/react-stripe-js
+
+# 1. Set up Stripe account
+# 2. Add STRIPE_SECRET_KEY to .env.local
+# 3. Create app/api/payment/intent/route.js
+# 4. Add checkout page with Stripe elements
+# 5. Handle webhooks for payment confirmation</code></pre>
+
+        <h3>Feature: Email Notifications (SendGrid)</h3>
+        <pre><code class="language-bash">npm install @sendgrid/mail
+
+# 1. Get SendGrid API key
+# 2. Add SENDGRID_API_KEY to .env.local
+# 3. Create lib/email.js helper
+# 4. Send emails on signup, password reset, etc.</code></pre>
+
+        <h2>Deployment Checklist</h2>
+        <div class="checklist">
+          <div class="item">
+            <input type="checkbox"> Environment variables set (.env configured on hosting)
+          </div>
+          <div class="item">
+            <input type="checkbox"> Database connected and migrated
+          </div>
+          <div class="item">
+            <input type="checkbox"> API keys secured (never in git)
+          </div>
+          <div class="item">
+            <input type="checkbox"> Tests passing (npm run test)
+          </div>
+          <div class="item">
+            <input type="checkbox"> Build succeeds (npm run build)
+          </div>
+          <div class="item">
+            <input type="checkbox"> No console errors or warnings
+          </div>
+          <div class="item">
+            <input type="checkbox"> SEO metadata in place
+          </div>
+          <div class="item">
+            <input type="checkbox"> HTTPS enabled
+          </div>
+          <div class="item">
+            <input type="checkbox"> Analytics configured (Google Analytics, Vercel)
+          </div>
+        </div>
+
+        <h2>Deployment Options</h2>
+
+        <div class="concept">
+          <h4>Vercel (Recommended for Next.js)</h4>
+          <pre><code class="language-bash">npm install -g vercel
+vercel
+
+# Push to GitHub, auto-deploys on push</code></pre>
+        </div>
+
+        <div class="concept">
+          <h4>Docker (Any Server)</h4>
+          <pre><code class="language-dockerfile">FROM node:18
+WORKDIR /app
+COPY package.json .
+RUN npm install
+COPY . .
+RUN npm run build
+EXPOSE 3000
+CMD ["npm", "start"]</code></pre>
+        </div>
+
+        <div class="concept">
+          <h4>Traditional VPS (DigitalOcean, AWS, etc.)</h4>
+          <pre><code class="language-bash"># SSH into server
+npm install pm2 -g
+npm run build
+pm2 start npm --name "myapp" -- start
+pm2 startup</code></pre>
+        </div>
+
+        <h2>Monitoring & Maintenance</h2>
+        <pre><code class="language-text">Daily:
+  ✓ Check error logs
+  ✓ Monitor API latency
+  ✓ Verify critical features
+
+Weekly:
+  ✓ Review user feedback
+  ✓ Check analytics
+  ✓ Update dependencies: npm update
+
+Monthly:
+  ✓ Database backup
+  ✓ Security audit
+  ✓ Performance review</code></pre>
+
+        <h2>Resources for Continued Learning</h2>
+        <ul>
+          <li><strong>Next.js Docs:</strong> nextjs.org/docs</li>
+          <li><strong>React Docs:</strong> react.dev</li>
+          <li><strong>Tailwind CSS:</strong> tailwindcss.com</li>
+          <li><strong>next-intl:</strong> next-intl-docs.vercel.app</li>
+          <li><strong>MDN Web Docs:</strong> developer.mozilla.org</li>
+        </ul>
+
+        <h2>Final Thoughts</h2>
+        <p>You've learned:</p>
+        <ol>
+          <li>Web fundamentals (HTML, CSS, JavaScript)</li>
+          <li>React and component-based thinking</li>
+          <li>Next.js for modern web apps</li>
+          <li>Building pages and features</li>
+          <li>Authentication and security</li>
+          <li>Internationalization (multiple languages)</li>
+          <li>SEO optimization</li>
+          <li>API integration</li>
+          <li>Styling with Tailwind</li>
+          <li>Database fundamentals</li>
+          <li>How to fork and customize this template</li>
+        </ol>
+
+        <p style="font-size: 20px; font-weight: bold; color: #FF5B33;">🎓 You're now ready to build production SaaS applications.</p>
+
+        <p>The next step? <strong>Build something.</strong> Clone this repo, add a feature, deploy it. The best way to learn is by doing.</p>
+
+        <p class="success">✅ You've completed all 14 chapters! Now go build amazing things. 🚀</p>
+      </section>
+
       <!-- Quick Navigation at bottom -->
       <div class="chapter-nav">
         <button class="btn btn-prev" onclick="previousChapter()">← Previous</button>
