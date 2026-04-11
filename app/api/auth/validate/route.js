@@ -1,4 +1,4 @@
-import clientPromise from '@/lib/db';
+import { authStore } from '@/lib/authStore';
 
 export async function POST(req) {
   try {
@@ -8,22 +8,16 @@ export async function POST(req) {
       return new Response(JSON.stringify({ isValid: false, message: 'No token provided' }), { status: 400 });
     }
 
-    // Use the shared client
-    const client = await clientPromise;
-    const db = client.db('auth_db');
-    const sessions = db.collection('sessions');
+    const session = authStore.sessions.get(token);
 
-    const session = await sessions.findOne({ token });
-    
     if (!session) {
       return new Response(JSON.stringify({ isValid: false, message: 'Session not found' }), { status: 401 });
     }
 
-    // Check Expiration
+    // Check expiration
     if (session.expiresAt && new Date() > new Date(session.expiresAt)) {
-       // Token is expired, remove it
-       await sessions.deleteOne({ token });
-       return new Response(JSON.stringify({ isValid: false, message: 'Session expired' }), { status: 401 });
+      authStore.sessions.delete(token);
+      return new Response(JSON.stringify({ isValid: false, message: 'Session expired' }), { status: 401 });
     }
 
     return new Response(JSON.stringify({ isValid: true, email: session.email }), { status: 200 });
