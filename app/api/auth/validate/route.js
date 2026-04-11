@@ -1,4 +1,3 @@
-import { authStore } from '@/lib/authStore';
 import { getSessions, saveSessions } from '@/lib/localDb';
 
 export async function POST(req) {
@@ -9,7 +8,6 @@ export async function POST(req) {
       return new Response(JSON.stringify({ isValid: false, message: 'No token provided' }), { status: 400 });
     }
 
-    const session = authStore.sessions.get(token);
     const sessions = getSessions();
     const session = sessions.find(s => s.token === token);
 
@@ -17,9 +15,6 @@ export async function POST(req) {
       return new Response(JSON.stringify({ isValid: false, message: 'Session not found' }), { status: 401 });
     }
 
-    // Check expiration
-    if (session.expiresAt && new Date() > new Date(session.expiresAt)) {
-      authStore.sessions.delete(token);
     if (session.expiresAt && new Date() > new Date(session.expiresAt)) {
       saveSessions(sessions.filter(s => s.token !== token));
       return new Response(JSON.stringify({ isValid: false, message: 'Session expired' }), { status: 401 });

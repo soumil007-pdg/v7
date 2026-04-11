@@ -2,6 +2,11 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
+function getCookieToken() {
+  const match = document.cookie.match(/(?:^|;\s*)sessionToken=([^;]+)/);
+  return match ? match[1] : null;
+}
+
 export function useAuth(requireAuth = true) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userEmail, setUserEmail] = useState('');
@@ -11,7 +16,12 @@ export function useAuth(requireAuth = true) {
 
   useEffect(() => {
     const validate = async () => {
-      const token = localStorage.getItem('sessionToken');
+      // Check localStorage first, fall back to cookie (keeps them in sync)
+      let token = localStorage.getItem('sessionToken') || getCookieToken();
+      if (token && !localStorage.getItem('sessionToken')) {
+        localStorage.setItem('sessionToken', token);
+      }
+
       if (!token) {
         setLoading(false);
         if (requireAuth) router.push('/auth');
@@ -25,7 +35,7 @@ export function useAuth(requireAuth = true) {
           body: JSON.stringify({ token })
         });
         const data = await res.json();
-        
+
         if (res.ok && data.isValid) {
           setIsLoggedIn(true);
           setUserEmail(data.email);
@@ -36,13 +46,13 @@ export function useAuth(requireAuth = true) {
           if (requireAuth) router.push('/auth');
         }
       } catch (err) {
-        console.error("Auth check failed", err);
+        console.error('Auth check failed', err);
         if (requireAuth) router.push('/auth');
       } finally {
         setLoading(false);
       }
     };
-    
+
     validate();
   }, [router, requireAuth]);
 
