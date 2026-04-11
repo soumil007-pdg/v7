@@ -233,7 +233,7 @@
       </div>
 
       <div class="docs-grid">
-        <a href="frontend/index-modular.html" class="doc-card frontend" onclick="event.preventDefault(); window.location.href='frontend/index-modular.html';">
+        <a href="index.html" class="doc-card frontend">
           <div class="doc-icon">🎨</div>
           <h3>Frontend Documentation</h3>
           <div class="chapters">14 Chapters</div>
@@ -241,7 +241,7 @@
           <button class="cta">View Frontend Docs →</button>
         </a>
 
-        <a href="backend/index-modular.html" class="doc-card backend" onclick="event.preventDefault(); window.location.href='backend/index-modular.html';">
+        <a href="backend/index-modular.html" class="doc-card backend">
           <div class="doc-icon">⚙️</div>
           <h3>Backend Documentation</h3>
           <div class="chapters">18 Chapters</div>
@@ -321,12 +321,10 @@
   </div>
 
   <script>
-    // Simple navigation
-    document.querySelectorAll('.doc-card').forEach(card => {
-      card.addEventListener('click', (e) => {
-        e.preventDefault();
-        const link = card.getAttribute('href');
-        window.location.href = link;
+    // Let button clicks inside cards navigate without double-firing
+    document.querySelectorAll('.doc-card .cta').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
       });
     });
   </script>

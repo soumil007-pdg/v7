@@ -1,7 +1,7 @@
 'use client';
 import React from "react";
 import Link from "next/link";
-import { Scale, MessageSquare, FileText, LogOut, Globe, BookOpen } from 'lucide-react';
+import { Scale, MessageSquare, FileText, LogOut, Globe } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter, usePathname } from 'next/navigation';
 
@@ -38,17 +38,6 @@ const Navbar = ({ isLoggedIn, userEmail, userName, handleLogout }) => {
       {/* Right Side: User Info, Actions & Language Switcher */}
       <div className="flex items-center gap-4 text-white">
         
-        {/* --- DOCS BUTTON --- */}
-        <a
-          href="/docs/hub.html"
-          target="_blank"
-          rel="noreferrer"
-          title="Documentation"
-          className="flex items-center justify-center p-2 rounded hover:bg-white/10 transition-colors duration-150"
-        >
-          <BookOpen size={20} />
-        </a>
-
         {/* --- LANGUAGE SWITCHER --- */}
         <div className="flex items-center gap-1 bg-white/10 px-2 py-1 rounded">
           <Globe size={16} />
