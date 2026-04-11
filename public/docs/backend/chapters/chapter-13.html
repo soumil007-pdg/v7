@@ -1,0 +1,244 @@
+<!-- CHAPTER 13: API Testing & Debugging -->
+<section id="chapter-13" class="chapter">
+  <h1>🧪 Chapter 13: API Testing & Debugging</h1>
+
+  <p class="intro">Test your APIs before deploying! We'll use curl, browser DevTools, and logging to debug issues.</p>
+
+  <h2>Testing with curl</h2>
+  <p>curl is a command-line tool for making HTTP requests:</p>
+  <pre><code class="language-bash"># Simple GET request
+curl http://localhost:3000/api/users
+
+# POST request with data
+curl -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"user@example.com","password":"123456"}'
+
+# With authorization header
+curl -X POST http://localhost:3000/api/chat \
+  -H "Authorization: Bearer token-abc123" \
+  -H "Content-Type: application/json" \
+  -d '{"message":"Hello"}'
+
+# With query parameters
+curl "http://localhost:3000/api/users?page=1&limit=10"
+
+# Show response headers
+curl -i http://localhost:3000/api/users
+
+# Show request and response
+curl -v http://localhost:3000/api/users</code></pre>
+
+  <h2>Testing with Browser DevTools</h2>
+  <p>Open DevTools (F12) → Network tab:</p>
+  <pre><code class="language-text">1. Open DevTools (F12)
+2. Click "Network" tab
+3. Make a request (navigate, click button, submit form)
+4. Click the request to see:
+   - Status code (200, 400, 401, etc.)
+   - Request headers (Authorization, etc.)
+   - Request body (what was sent)
+   - Response headers
+   - Response body (what came back)
+5. Check Console tab for JavaScript errors</code></pre>
+
+  <h2>Server-Side Logging</h2>
+  <pre><code class="language-javascript">// app/api/auth/login/route.js
+export async function POST(request) {
+  // Log request details
+  console.log('=== LOGIN REQUEST ===');
+  console.log('Method:', request.method);
+  console.log('URL:', request.url);
+  console.log('Headers:', Object.fromEntries(request.headers));
+
+  const { email, password } = await request.json();
+  console.log('Email:', email);
+  console.log('Password:', password.substring(0, 2) + '***');  // Don't log full password!
+
+  // Log processing
+  console.log('Looking for user...');
+  const user = Array.from(users.values()).find(u => u.email === email);
+
+  if (!user) {
+    console.log('User not found:', email);
+    return Response.json({ error: 'Invalid credentials' }, { status: 401 });
+  }
+
+  console.log('User found:', user.id);
+
+  // Continue...
+  console.log('Login successful');
+  return Response.json({ success: true, token: '...' });
+}</code></pre>
+
+  <h2>Debugging with Console</h2>
+  <pre><code class="language-javascript">// app/api/chat/route.js
+export async function POST(request) {
+  try {
+    const token = request.headers.get('Authorization');
+    console.log('Token:', token);
+
+    const body = await request.json();
+    console.log('Request body:', body);
+
+    // Debug state
+    console.log('Current sessions:', sessions.size);
+    console.log('Current users:', users.size);
+
+    // Debug processing
+    const session = sessions.get(token);
+    console.log('Session found:', !!session);
+
+    if (session) {
+      const user = users.get(session.userId);
+      console.log('User:', user.email);
+    }
+
+    // Call API
+    const response = await callGemini(body.message);
+    console.log('Gemini response:', response);
+
+    return Response.json({ success: true });
+
+  } catch (error) {
+    console.error('ERROR:', error);
+    console.error('Stack:', error.stack);
+    return Response.json({ error: error.message }, { status: 500 });
+  }
+}</code></pre>
+
+  <h2>Testing Different Scenarios</h2>
+  <pre><code class="language-bash"># Test 1: Login with valid credentials
+curl -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"password123"}'
+# Expected: 200 with token
+
+# Test 2: Login with invalid email
+curl -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"wrong@example.com","password":"password123"}'
+# Expected: 401 Unauthorized
+
+# Test 3: Login with missing password
+curl -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com"}'
+# Expected: 400 Bad Request
+
+# Test 4: Use token in protected route
+curl -X POST http://localhost:3000/api/chat \
+  -H "Authorization: Bearer abc123" \
+  -H "Content-Type: application/json" \
+  -d '{"message":"Hello"}'
+# Expected: 200 Success
+
+# Test 5: Protected route without token
+curl -X POST http://localhost:3000/api/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message":"Hello"}'
+# Expected: 401 Unauthorized</code></pre>
+
+  <h2>Structured Logging</h2>
+  <pre><code class="language-javascript">// lib/logger.js
+export const logger = {
+  info: (action, details) => {
+    console.log(`[INFO] ${action}:`, details);
+  },
+  error: (action, error) => {
+    console.error(`[ERROR] ${action}:`, error.message);
+  },
+  debug: (action, details) => {
+    if (process.env.DEBUG) {
+      console.log(`[DEBUG] ${action}:`, details);
+    }
+  }
+};
+
+// Usage
+import { logger } from '@/lib/logger';
+
+export async function POST(request) {
+  logger.info('Login attempt', { email: 'user@example.com' });
+
+  try {
+    const result = await authenticate();
+    logger.info('Login success', { userId: result.id });
+    return Response.json(result);
+
+  } catch (error) {
+    logger.error('Login failed', error);
+    return Response.json({ error: 'Login failed' }, { status: 500 });
+  }
+}</code></pre>
+
+  <h2>Performance Debugging</h2>
+  <pre><code class="language-javascript">export async function POST(request) {
+  const start = Date.now();
+
+  // Process request
+  const body = await request.json();
+  const result = await expensiveOperation(body);
+
+  const duration = Date.now() - start;
+  console.log(`Request took ${duration}ms`);
+
+  if (duration > 1000) {
+    console.warn('Slow request detected!');
+  }
+
+  return Response.json(result);
+}</code></pre>
+
+  <h2>Common Issues & Solutions</h2>
+  <table class="info-table">
+    <tr>
+      <th>Issue</th>
+      <th>Solution</th>
+    </tr>
+    <tr>
+      <td>401 Unauthorized on protected route</td>
+      <td>Check Authorization header in DevTools Network tab</td>
+    </tr>
+    <tr>
+      <td>404 Not Found</td>
+      <td>Check the URL path matches the file path</td>
+    </tr>
+    <tr>
+      <td>400 Bad Request</td>
+      <td>Check request body JSON syntax</td>
+    </tr>
+    <tr>
+      <td>500 Server Error</td>
+      <td>Check server console for error logs</td>
+    </tr>
+    <tr>
+      <td>CORS error in browser</td>
+      <td>Check browser console, add CORS headers</td>
+    </tr>
+  </table>
+
+  <h2>Postman for API Testing</h2>
+  <p>Postman is a GUI for testing APIs:</p>
+  <pre><code class="language-text">1. Download Postman (free)
+2. Create new request
+3. Set method (GET, POST, etc.)
+4. Enter URL (http://localhost:3000/api/...)
+5. Add headers (Authorization, Content-Type)
+6. Add body (JSON)
+7. Click Send
+8. View response, status code, headers
+</code></pre>
+
+  <h2>Key Concepts</h2>
+  <ul>
+    <li><strong>curl:</strong> Command-line API testing</li>
+    <li><strong>DevTools Network:</strong> Browser request/response inspection</li>
+    <li><strong>console.log:</strong> Print debug info to server console</li>
+    <li><strong>Status code:</strong> Indicates success/failure</li>
+    <li><strong>Headers:</strong> Authorization, Content-Type, etc.</li>
+    <li><strong>Postman:</strong> GUI for API testing</li>
+  </ul>
+
+  <p class="success">✅ You can test and debug APIs! Next: Rate limiting.</p>
+</section>

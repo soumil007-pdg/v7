@@ -1,0 +1,216 @@
+<!-- CHAPTER 6: Session Management (In-Memory Store) -->
+<section id="chapter-6" class="chapter">
+  <h1>💾 Chapter 6: Session Management (In-Memory Store)</h1>
+
+  <p class="intro">A session is a record on the server that says "this token belongs to this user." ADVOCAT-Easy uses an in-memory Map to store sessions.</p>
+
+  <h2>What is a Session?</h2>
+  <p>A session links a token to a user:</p>
+  <pre><code class="language-javascript">// When user logs in, create a session
+token: 'abc123-token'  ← This token belongs to...
+userId: 'user-999'     ← This user
+
+// When user sends token in request, lookup the session
+const token = request.headers.get('Authorization').replace('Bearer ', '');
+const session = sessions.get(token);  // { userId: 'user-999', ... }
+const user = users.get(session.userId);  // Get user data</code></pre>
+
+  <h2>In-Memory Store Structure</h2>
+  <pre><code class="language-javascript">// lib/authStore.js
+export const users = new Map();
+export const sessions = new Map();
+
+// Users: userId → user data
+users.set('user-123', {
+  id: 'user-123',
+  email: 'john@example.com',
+  password: '$2b$10$hashed...',
+  createdAt: 1234567890
+});
+
+// Sessions: token → session data
+sessions.set('token-abc', {
+  userId: 'user-123',
+  createdAt: 1234567890,
+  expiresAt: 1234567890 + 86400000  // 24 hours later
+});</code></pre>
+
+  <h2>Creating a Session at Login</h2>
+  <pre><code class="language-javascript">// app/api/auth/login/route.js
+import crypto from 'crypto';
+import { users, sessions } from '@/lib/authStore';
+
+export async function POST(request) {
+  const { email, password } = await request.json();
+
+  // Find user and validate password (see chapter 5)
+  const user = Array.from(users.values()).find(u => u.email === email);
+  const passwordValid = await bcrypt.compare(password, user.password);
+
+  if (!passwordValid) {
+    return Response.json({ error: 'Invalid credentials' }, { status: 401 });
+  }
+
+  // Create unique token
+  const token = crypto.randomUUID();
+
+  // Store session
+  sessions.set(token, {
+    userId: user.id,
+    createdAt: Date.now(),
+    expiresAt: Date.now() + 24 * 60 * 60 * 1000  // 24 hours
+  });
+
+  return Response.json({
+    success: true,
+    token: token
+  });
+}</code></pre>
+
+  <h2>Validating a Session</h2>
+  <pre><code class="language-javascript">// Helper function to validate token
+export function validateSession(token) {
+  const session = sessions.get(token);
+
+  if (!session) {
+    return { valid: false, error: 'Token not found' };
+  }
+
+  // Check expiration
+  if (Date.now() > session.expiresAt) {
+    sessions.delete(token);  // Clean up expired session
+    return { valid: false, error: 'Token expired' };
+  }
+
+  return { valid: true, session };
+}</code></pre>
+
+  <h2>Using Sessions in Protected Routes</h2>
+  <pre><code class="language-javascript">// app/api/chat/route.js (protected endpoint)
+import { validateSession } from '@/lib/auth';
+
+export async function POST(request) {
+  // Get token from header
+  const authHeader = request.headers.get('Authorization');
+  const token = authHeader?.replace('Bearer ', '');
+
+  if (!token) {
+    return Response.json({ error: 'No token provided' }, { status: 401 });
+  }
+
+  // Validate session
+  const { valid, session, error } = validateSession(token);
+
+  if (!valid) {
+    return Response.json({ error }, { status: 401 });
+  }
+
+  // Now we know who the user is!
+  const userId = session.userId;
+  const user = users.get(userId);
+
+  // Process the chat message for this user
+  console.log(`Chat from ${user.email}: ...`);
+
+  return Response.json({ success: true });
+}</code></pre>
+
+  <h2>Session Expiration</h2>
+  <pre><code class="language-javascript">// Clean up expired sessions periodically
+setInterval(() => {
+  const now = Date.now();
+
+  // Find and delete expired sessions
+  for (const [token, session] of sessions.entries()) {
+    if (session.expiresAt < now) {
+      sessions.delete(token);
+      console.log('Cleaned up expired session:', token);
+    }
+  }
+}, 60000);  // Check every minute</code></pre>
+
+  <h2>Logout (Destroy Session)</h2>
+  <pre><code class="language-javascript">// app/api/auth/logout/route.js
+import { sessions } from '@/lib/authStore';
+
+export async function POST(request) {
+  const { token } = await request.json();
+
+  // Delete the session
+  const deleted = sessions.delete(token);
+
+  if (!deleted) {
+    return Response.json(
+      { error: 'Session not found' },
+      { status: 404 }
+    );
+  }
+
+  return Response.json({
+    success: true,
+    message: 'Logged out'
+  });
+}</code></pre>
+
+  <h2>Session Timeout</h2>
+  <p>Sessions can be "sliding" (reset expiry on activity) or "absolute" (expire after fixed time):</p>
+  <pre><code class="language-javascript">// Sliding expiration (reset on each request)
+export function refreshSession(token) {
+  const session = sessions.get(token);
+  if (session) {
+    session.expiresAt = Date.now() + 24 * 60 * 60 * 1000;  // Reset timer
+  }
+}
+
+// Use in protected routes
+validateSession(token);
+refreshSession(token);  // Reset expiration</code></pre>
+
+  <h2>In-Memory vs Database</h2>
+  <table class="info-table">
+    <tr>
+      <th>In-Memory (Current)</th>
+      <th>Database (Future)</th>
+    </tr>
+    <tr>
+      <td>Data lost on server restart</td>
+      <td>Data persists</td>
+    </tr>
+    <tr>
+      <td>Fast (data in RAM)</td>
+      <td>Slower (disk I/O)</td>
+    </tr>
+    <tr>
+      <td>Good for development</td>
+      <td>Good for production</td>
+    </tr>
+    <tr>
+      <td>Can't scale across servers</td>
+      <td>Works across multiple servers</td>
+    </tr>
+  </table>
+
+  <h2>Current ADVOCAT-Easy Setup</h2>
+  <pre><code class="language-javascript">// lib/authStore.js (shared across all routes)
+export const users = new Map();
+export const sessions = new Map();
+
+// All routes import from here:
+// import { users, sessions } from '@/lib/authStore';
+
+// This ensures:
+// ✅ Same data across all endpoints
+// ✅ User created in signup/route.js is found in login/route.js
+// ✅ Token created in login/route.js is validated in validate/route.js</code></pre>
+
+  <h2>Key Concepts</h2>
+  <ul>
+    <li><strong>Session:</strong> Server-side record linking token to user</li>
+    <li><strong>Token:</strong> Unique string sent by client</li>
+    <li><strong>Expiration:</strong> Sessions expire for security</li>
+    <li><strong>In-Memory:</strong> Sessions stored in RAM (fast but temporary)</li>
+    <li><strong>Cleanup:</strong> Expired sessions should be deleted</li>
+  </ul>
+
+  <p class="success">✅ You understand session management! Next: Authorization & access control.</p>
+</section>

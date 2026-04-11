@@ -1,0 +1,259 @@
+<!-- CHAPTER 7: Authorization & Access Control -->
+<section id="chapter-7" class="chapter">
+  <h1>🛡️ Chapter 7: Authorization & Access Control</h1>
+
+  <p class="intro">Authentication proves WHO you are. Authorization decides WHAT you can do. This chapter covers controlling access to protected resources.</p>
+
+  <h2>Authentication vs Authorization</h2>
+  <table class="info-table">
+    <tr>
+      <th>Authentication</th>
+      <th>Authorization</th>
+    </tr>
+    <tr>
+      <td>Are you who you claim?</td>
+      <td>What are you allowed to do?</td>
+    </tr>
+    <tr>
+      <td>Login with email/password</td>
+      <td>Can access /dashboard?</td>
+    </tr>
+    <tr>
+      <td>"Prove you're John"</td>
+      <td>"What can John do?"</td>
+    </tr>
+  </table>
+
+  <h2>Protecting Routes</h2>
+  <p>Some endpoints should only work if you're logged in:</p>
+  <pre><code class="language-javascript">// app/api/chat/route.js (Protected - requires login)
+export async function POST(request) {
+  // Get token from header
+  const authHeader = request.headers.get('Authorization');
+  const token = authHeader?.replace('Bearer ', '');
+
+  if (!token) {
+    return Response.json(
+      { error: 'Authentication required' },
+      { status: 401 }  // Unauthorized
+    );
+  }
+
+  // Validate token
+  const session = sessions.get(token);
+  if (!session) {
+    return Response.json(
+      { error: 'Invalid token' },
+      { status: 401 }
+    );
+  }
+
+  // User is authenticated! Continue...
+  const userId = session.userId;
+  const user = users.get(userId);
+
+  console.log(`${user.email} is using chat`);
+  return Response.json({ success: true });
+}</code></pre>
+
+  <h2>Public vs Protected Routes</h2>
+  <pre><code class="language-javascript">// Public routes (no authentication needed)
+export async function POST(request) {
+  // Anyone can access
+  const { email, password } = await request.json();
+  // POST /api/auth/signup
+  // POST /api/auth/login
+}
+
+// Protected routes (authentication required)
+export async function POST(request) {
+  // Only authenticated users
+  const token = getTokenFromRequest(request);
+  if (!validateToken(token)) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  // POST /api/chat
+  // POST /api/case-advisor
+}</code></pre>
+
+  <h2>Role-Based Access Control (RBAC)</h2>
+  <p>Different users have different roles (admin, user, lawyer):</p>
+  <pre><code class="language-javascript">// User data with role
+users.set('user-1', {
+  id: 'user-1',
+  email: 'admin@example.com',
+  role: 'admin',  // Can do everything
+  password: '...'
+});
+
+users.set('user-2', {
+  id: 'user-2',
+  email: 'lawyer@example.com',
+  role: 'lawyer',  // Can see cases
+  password: '...'
+});
+
+users.set('user-3', {
+  id: 'user-3',
+  email: 'client@example.com',
+  role: 'user',    // Limited access
+  password: '...'
+});</code></pre>
+
+  <h2>Checking Roles</h2>
+  <pre><code class="language-javascript">// app/api/admin/stats/route.js (Admin only)
+export async function GET(request) {
+  const token = getToken(request);
+  const session = validateToken(token);
+
+  if (!session) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const user = users.get(session.userId);
+
+  // Check if admin
+  if (user.role !== 'admin') {
+    return Response.json(
+      { error: 'Admin access required' },
+      { status: 403 }  // Forbidden
+    );
+  }
+
+  // User is admin! Return stats
+  return Response.json({
+    totalUsers: users.size,
+    totalSessions: sessions.size
+  });
+}</code></pre>
+
+  <h2>Resource-Level Authorization</h2>
+  <p>Users can only access their own data:</p>
+  <pre><code class="language-javascript">// User can only see their own profile
+// GET /api/user/profile/:userId
+
+export async function GET(request) {
+  const token = getToken(request);
+  const session = validateToken(token);
+
+  if (!session) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  // Get requested user ID from URL
+  const url = new URL(request.url);
+  const requestedUserId = url.pathname.split('/').pop();
+
+  // Check: Can THIS user access THAT user's data?
+  if (session.userId !== requestedUserId) {
+    return Response.json(
+      { error: 'Cannot access other users data' },
+      { status: 403 }
+    );
+  }
+
+  // User is requesting their own data
+  const user = users.get(requestedUserId);
+  return Response.json({
+    id: user.id,
+    email: user.email
+  });
+}</code></pre>
+
+  <h2>HTTP Status Codes for Access</h2>
+  <table class="info-table">
+    <tr>
+      <th>Code</th>
+      <th>Meaning</th>
+      <th>When</th>
+    </tr>
+    <tr>
+      <td>401</td>
+      <td>Unauthorized</td>
+      <td>Not logged in / invalid token</td>
+    </tr>
+    <tr>
+      <td>403</td>
+      <td>Forbidden</td>
+      <td>Logged in but don't have permission</td>
+    </tr>
+    <tr>
+      <td>404</td>
+      <td>Not Found</td>
+      <td>Resource doesn't exist</td>
+    </tr>
+  </table>
+
+  <h2>Middleware for Authorization</h2>
+  <p>Check authentication for multiple routes at once:</p>
+  <pre><code class="language-javascript">// middleware.js
+export function middleware(request) {
+  const path = request.nextUrl.pathname;
+
+  // Routes that require authentication
+  const protectedRoutes = [
+    '/api/chat',
+    '/api/case-advisor',
+    '/api/user/profile'
+  ];
+
+  const isProtected = protectedRoutes.some(route => path.startsWith(route));
+
+  if (isProtected) {
+    const token = request.headers.get('Authorization')?.replace('Bearer ', '');
+
+    if (!token) {
+      return Response.json({ error: 'No token' }, { status: 401 });
+    }
+
+    // Continue if token is valid
+  }
+
+  return null;  // Continue normally
+}</code></pre>
+
+  <h2>Audit Logging</h2>
+  <p>Track who did what (for security):</p>
+  <pre><code class="language-javascript">const auditLog = [];
+
+function logAction(userId, action, resource) {
+  auditLog.push({
+    userId,
+    action,
+    resource,
+    timestamp: Date.now()
+  });
+}
+
+// In protected route
+export async function POST(request) {
+  const token = getToken(request);
+  const session = validateToken(token);
+  const userId = session.userId;
+
+  // Do the action
+  logAction(userId, 'DELETE', 'case-123');
+
+  return Response.json({ success: true });
+}</code></pre>
+
+  <h2>Common Authorization Patterns</h2>
+  <ul>
+    <li><strong>Public:</strong> No authentication needed</li>
+    <li><strong>Authenticated:</strong> Must be logged in</li>
+    <li><strong>Role-based:</strong> Must have specific role (admin, lawyer)</li>
+    <li><strong>Owner-only:</strong> Can only access own data</li>
+    <li><strong>Admin-only:</strong> Only administrators</li>
+  </ul>
+
+  <h2>Key Concepts</h2>
+  <ul>
+    <li><strong>Authorization:</strong> Deciding what users can do</li>
+    <li><strong>Role:</strong> User classification (admin, user, lawyer)</li>
+    <li><strong>401:</strong> Unauthorized (not logged in)</li>
+    <li><strong>403:</strong> Forbidden (logged in but no permission)</li>
+    <li><strong>Audit log:</strong> Recording who did what</li>
+  </ul>
+
+  <p class="success">✅ You understand authorization! Next: Error handling.</p>
+</section>

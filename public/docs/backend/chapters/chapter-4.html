@@ -1,0 +1,232 @@
+<!-- CHAPTER 4: Authentication System (Local & Token-Based) -->
+<section id="chapter-4" class="chapter">
+  <h1>🔐 Chapter 4: Authentication System (Local & Token-Based)</h1>
+
+  <p class="intro">Authentication is how we verify that a user is who they claim to be. ADVOCAT-Easy uses token-based authentication: when you log in, you get a token (unique string) that proves you're authenticated.</p>
+
+  <h2>Authentication Flow</h2>
+  <pre><code class="language-text">1. User enters email & password
+   ↓
+2. Frontend sends POST /api/auth/login with credentials
+   ↓
+3. Backend validates email & password
+   ↓
+4. If valid: Create a token (unique string)
+   ↓
+5. Send token back to frontend
+   ↓
+6. Frontend stores token (localStorage)
+   ↓
+7. For future requests: Send token in header
+   ↓
+8. Backend checks: "Is this token valid?"
+   ↓
+9. If valid: Allow the request. If not: Reject</code></pre>
+
+  <h2>Token-Based vs Session-Based</h2>
+  <table class="info-table">
+    <tr>
+      <th>Token-Based</th>
+      <th>Session-Based</th>
+    </tr>
+    <tr>
+      <td>Token stored on client</td>
+      <td>Session ID stored on server</td>
+    </tr>
+    <tr>
+      <td>Stateless (server doesn't track)</td>
+      <td>Stateful (server tracks sessions)</td>
+    </tr>
+    <tr>
+      <td>Good for mobile apps</td>
+      <td>Good for web apps</td>
+    </tr>
+    <tr>
+      <td>ADVOCAT-Easy uses this</td>
+      <td>Traditional approach</td>
+    </tr>
+  </table>
+
+  <h2>ADVOCAT-Easy's In-Memory Auth Store</h2>
+  <p>ADVOCAT-Easy stores users and sessions in memory (not a database):</p>
+  <pre><code class="language-javascript">// lib/authStore.js
+export const users = new Map();
+export const sessions = new Map();
+
+// users structure:
+// userId → { id, email, password, createdAt }
+
+// sessions structure:
+// token → { userId, createdAt }</code></pre>
+
+  <h2>Signup Flow</h2>
+  <pre><code class="language-javascript">// app/api/auth/signup/route.js
+import { users } from '@/lib/authStore';
+import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
+
+export async function POST(request) {
+  const { email, password } = await request.json();
+
+  // Check if user already exists
+  const existingUser = Array.from(users.values()).find(u => u.email === email);
+  if (existingUser) {
+    return Response.json(
+      { error: 'Email already registered' },
+      { status: 400 }
+    );
+  }
+
+  // Hash the password
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  // Create new user
+  const userId = crypto.randomUUID();
+  users.set(userId, {
+    id: userId,
+    email: email,
+    password: hashedPassword,
+    createdAt: Date.now()
+  });
+
+  return Response.json({
+    success: true,
+    message: 'Account created'
+  });
+}</code></pre>
+
+  <h2>Login Flow</h2>
+  <pre><code class="language-javascript">// app/api/auth/login/route.js
+import { users, sessions } from '@/lib/authStore';
+import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
+
+export async function POST(request) {
+  const { email, password } = await request.json();
+
+  // Find user by email
+  const user = Array.from(users.values()).find(u => u.email === email);
+
+  if (!user) {
+    return Response.json(
+      { error: 'Invalid email or password' },
+      { status: 401 }
+    );
+  }
+
+  // Compare password with hash
+  const passwordValid = await bcrypt.compare(password, user.password);
+
+  if (!passwordValid) {
+    return Response.json(
+      { error: 'Invalid email or password' },
+      { status: 401 }
+    );
+  }
+
+  // Create session token
+  const token = crypto.randomUUID();
+  sessions.set(token, {
+    userId: user.id,
+    createdAt: Date.now()
+  });
+
+  return Response.json({
+    success: true,
+    token: token
+  });
+}</code></pre>
+
+  <h2>Validating Tokens</h2>
+  <pre><code class="language-javascript">// app/api/auth/validate/route.js
+import { sessions } from '@/lib/authStore';
+
+export async function POST(request) {
+  const { token } = await request.json();
+
+  // Check if token exists
+  const session = sessions.get(token);
+
+  if (!session) {
+    return Response.json(
+      { error: 'Invalid token' },
+      { status: 401 }
+    );
+  }
+
+  // Check if token expired (24 hours)
+  const age = Date.now() - session.createdAt;
+  const maxAge = 24 * 60 * 60 * 1000; // 24 hours
+
+  if (age > maxAge) {
+    sessions.delete(token);
+    return Response.json(
+      { error: 'Token expired' },
+      { status: 401 }
+    );
+  }
+
+  return Response.json({
+    valid: true,
+    userId: session.userId
+  });
+}</code></pre>
+
+  <h2>Logout</h2>
+  <pre><code class="language-javascript">// app/api/auth/logout/route.js
+import { sessions } from '@/lib/authStore';
+
+export async function POST(request) {
+  const { token } = await request.json();
+
+  // Delete the session
+  sessions.delete(token);
+
+  return Response.json({
+    success: true,
+    message: 'Logged out'
+  });
+}</code></pre>
+
+  <h2>Frontend: Storing the Token</h2>
+  <pre><code class="language-javascript">// In browser, after successful login
+const response = await fetch('/api/auth/login', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ email, password })
+});
+
+const data = await response.json();
+
+if (response.ok) {
+  // Store token in localStorage
+  localStorage.setItem('authToken', data.token);
+  // Redirect to dashboard
+  window.location.href = '/dashboard';
+}</code></pre>
+
+  <h2>Frontend: Sending Token with Requests</h2>
+  <pre><code class="language-javascript">// Get token from localStorage
+const token = localStorage.getItem('authToken');
+
+// Send with API request
+const response = await fetch('/api/chat', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`
+  },
+  body: JSON.stringify({ message: 'Hello' })
+});</code></pre>
+
+  <h2>Key Concepts</h2>
+  <ul>
+    <li><strong>Token:</strong> Unique string that proves you're logged in</li>
+    <li><strong>Session:</strong> Server-side record linking token to user</li>
+    <li><strong>Hash:</strong> One-way encryption of password (can't reverse)</li>
+    <li><strong>Bearer Token:</strong> Token sent in Authorization header</li>
+    <li><strong>Expiration:</strong> Tokens expire after a time (security)</li>
+  </ul>
+
+  <p class="success">✅ You understand token-based authentication! Next: Password hashing.</p>
+</section>

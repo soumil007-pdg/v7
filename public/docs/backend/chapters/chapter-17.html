@@ -1,0 +1,409 @@
+<!-- CHAPTER 17: External API Integration -->
+<section id="chapter-17" class="chapter">
+  <h1>🔗 Chapter 17: External API Integration</h1>
+
+  <p class="intro">ADVOCAT-Easy integrates with external APIs: Apify for web scraping and a Lawyers API for finding lawyers. Let's learn how.</p>
+
+  <h2>What is an External API?</h2>
+  <p>An external API is a service provided by another company that you call from your backend:</p>
+  <pre><code class="language-text">Your Backend (ADVOCAT-Easy)
+        ↓
+    Makes Request
+        ↓
+External API (Apify, Google Gemini, etc.)
+        ↓
+    Sends Response
+        ↓
+Your Backend processes response</code></pre>
+
+  <h2>Basic Pattern</h2>
+  <pre><code class="language-javascript">// Call external API
+export async function POST(request) {
+  try {
+    const { query } = await request.json();
+
+    // 1. Prepare request
+    const apiUrl = 'https://api.example.com/search';
+    const apiKey = process.env.EXTERNAL_API_KEY;
+
+    // 2. Make request
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({ query })
+    });
+
+    // 3. Handle error
+    if (!response.ok) {
+      return Response.json(
+        { error: 'External API error' },
+        { status: response.status }
+      );
+    }
+
+    // 4. Parse response
+    const data = await response.json();
+
+    // 5. Return to frontend
+    return Response.json({
+      success: true,
+      data: data
+    });
+
+  } catch (error) {
+    console.error('API error:', error);
+    return Response.json(
+      { error: 'Failed to call external API' },
+      { status: 500 }
+    );
+  }
+}</code></pre>
+
+  <h2>Apify Integration (Web Scraping)</h2>
+  <p>Apify crawls websites to extract data:</p>
+  <pre><code class="language-javascript">// app/api/search/lawyer-finder/route.js
+export async function POST(request) {
+  try {
+    const { location, specialty } = await request.json();
+
+    const apifyApiUrl = 'https://api.apify.com/v2/acts';
+    const apifyToken = process.env.APIFY_API_KEY;
+
+    // Call Apify to scrape lawyer directories
+    const response = await fetch(apifyApiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apifyToken}`
+      },
+      body: JSON.stringify({
+        actId: 'apify/web-scraper',
+        input: {
+          startUrls: [
+            {
+              url: `https://lawyerdirectory.example.com?location=${location}&specialty=${specialty}`
+            }
+          ],
+          pageFunction: `
+            return {
+              name: $('h2.lawyer-name').text(),
+              specialty: $('span.specialty').text(),
+              location: $('span.location').text(),
+              phone: $('a.phone').text(),
+              email: $('a.email').text()
+            };
+          `
+        }
+      })
+    });
+
+    const result = await response.json();
+
+    return Response.json({
+      success: true,
+      lawyers: result.data.map(item => ({
+        name: item.name,
+        specialty: item.specialty,
+        location: item.location,
+        contact: {
+          phone: item.phone,
+          email: item.email
+        }
+      }))
+    });
+
+  } catch (error) {
+    console.error('Apify error:', error);
+    return Response.json(
+      { error: 'Failed to fetch lawyers' },
+      { status: 500 }
+    );
+  }
+}</code></pre>
+
+  <h2>Lawyers API Integration</h2>
+  <p>Call a dedicated lawyers database API:</p>
+  <pre><code class="language-javascript">// app/api/search/lawyers/route.js
+export async function GET(request) {
+  try {
+    const url = new URL(request.url);
+    const specialty = url.searchParams.get('specialty');
+    const location = url.searchParams.get('location');
+
+    const lawyersApiUrl = 'https://lawyersdb.example.com/api/search';
+    const apiKey = process.env.LAWYERS_API_KEY;
+
+    // Query the lawyers API
+    const response = await fetch(
+      `${lawyersApiUrl}?specialty=${specialty}&location=${location}`,
+      {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Accept': 'application/json'
+        }
+      }
+    );
+
+    if (!response.ok) {
+      console.error('Lawyers API error:', response.status);
+      return Response.json(
+        { error: 'Failed to fetch lawyers' },
+        { status: 500 }
+      );
+    }
+
+    const data = await response.json();
+
+    return Response.json({
+      success: true,
+      count: data.lawyers.length,
+      lawyers: data.lawyers.map(lawyer => ({
+        id: lawyer.id,
+        name: lawyer.name,
+        specialty: lawyer.specialties,
+        location: lawyer.address,
+        rating: lawyer.rating,
+        yearsOfExperience: lawyer.experience,
+        contact: {
+          phone: lawyer.phone,
+          email: lawyer.email,
+          website: lawyer.website
+        }
+      }))
+    });
+
+  } catch (error) {
+    console.error('Lawyer search error:', error);
+    return Response.json(
+      { error: 'Search failed' },
+      { status: 500 }
+    );
+  }
+}</code></pre>
+
+  <h2>Error Handling for External APIs</h2>
+  <pre><code class="language-javascript">export async function POST(request) {
+  try {
+    const response = await fetch('https://api.example.com/data', {
+      timeout: 5000  // 5 second timeout
+    });
+
+    // Handle different error scenarios
+    if (response.status === 401) {
+      console.error('API auth failed');
+      return Response.json(
+        { error: 'Service authentication failed' },
+        { status: 503 }  // Service unavailable
+      );
+    }
+
+    if (response.status === 429) {
+      console.error('Rate limited');
+      return Response.json(
+        { error: 'Service rate limited. Try again later.' },
+        { status: 429 }
+      );
+    }
+
+    if (response.status === 503) {
+      console.error('Service down');
+      return Response.json(
+        { error: 'Service unavailable' },
+        { status: 503 }
+      );
+    }
+
+    if (!response.ok) {
+      const error = await response.text();
+      console.error('API error:', error);
+      return Response.json(
+        { error: 'External service error' },
+        { status: 500 }
+      );
+    }
+
+    const data = await response.json();
+    return Response.json({ success: true, data });
+
+  } catch (error) {
+    if (error.name === 'AbortError') {
+      return Response.json(
+        { error: 'Request timeout' },
+        { status: 504 }
+      );
+    }
+
+    console.error('Request error:', error);
+    return Response.json(
+      { error: 'Failed to complete request' },
+      { status: 500 }
+    );
+  }
+}</code></pre>
+
+  <h2>Caching External API Responses</h2>
+  <p>Cache expensive API calls to reduce costs:</p>
+  <pre><code class="language-javascript">// lib/cache.js
+const apiCache = new Map();
+
+export function getCached(key) {
+  const cached = apiCache.get(key);
+  if (!cached) return null;
+
+  // Check if expired (1 hour)
+  if (Date.now() - cached.timestamp > 3600000) {
+    apiCache.delete(key);
+    return null;
+  }
+
+  return cached.data;
+}
+
+export function setCache(key, data) {
+  apiCache.set(key, {
+    data,
+    timestamp: Date.now()
+  });
+}
+
+// Usage
+export async function GET(request) {
+  const cacheKey = `lawyers-${specialty}-${location}`;
+
+  // Check cache first
+  const cached = getCached(cacheKey);
+  if (cached) {
+    return Response.json({
+      success: true,
+      lawyers: cached,
+      cached: true
+    });
+  }
+
+  // Call API
+  const response = await fetch('https://api.example.com/lawyers...');
+  const data = await response.json();
+
+  // Cache result
+  setCache(cacheKey, data);
+
+  return Response.json({
+    success: true,
+    lawyers: data,
+    cached: false
+  });
+}</code></pre>
+
+  <h2>Retry Logic</h2>
+  <p>Retry failed requests (sometimes APIs are temporarily down):</p>
+  <pre><code class="language-javascript">async function fetchWithRetry(url, options, maxRetries = 3) {
+  let lastError;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const response = await fetch(url, options);
+
+      if (response.ok) {
+        return response;
+      }
+
+      // Don't retry 4xx errors (bad request)
+      if (response.status >= 400 && response.status < 500) {
+        return response;
+      }
+
+      lastError = new Error(`HTTP ${response.status}`);
+
+    } catch (error) {
+      lastError = error;
+    }
+
+    // Wait before retrying (exponential backoff)
+    if (attempt < maxRetries) {
+      const delayMs = Math.pow(2, attempt) * 100;  // 200ms, 400ms, 800ms
+      await new Promise(r => setTimeout(r, delayMs));
+    }
+  }
+
+  throw lastError;
+}
+
+// Usage
+export async function GET(request) {
+  try {
+    const response = await fetchWithRetry('https://api.example.com/data', {
+      headers: { 'Authorization': `Bearer ${apiKey}` }
+    });
+
+    const data = await response.json();
+    return Response.json({ success: true, data });
+
+  } catch (error) {
+    console.error('Failed after retries:', error);
+    return Response.json(
+      { error: 'Service unavailable' },
+      { status: 503 }
+    );
+  }
+}</code></pre>
+
+  <h2>Environment Variables for API Keys</h2>
+  <pre><code class="language-bash"># .env.local
+APIFY_API_KEY=your-apify-token
+LAWYERS_API_KEY=your-lawyers-api-key
+GEMINI_API_KEY=your-gemini-key
+
+# Never commit .env.local to Git!
+# Add to .gitignore
+</code></pre>
+
+  <h2>Rate Limiting Your Own API Calls</h2>
+  <pre><code class="language-javascript">// Don't call expensive APIs too often
+const apiCallCounts = new Map();
+const MAX_CALLS_PER_HOUR = 100;
+
+function canCallExternalAPI(userId) {
+  const hour = Math.floor(Date.now() / 3600000);
+  const key = `${userId}-${hour}`;
+
+  const count = apiCallCounts.get(key) || 0;
+
+  if (count >= MAX_CALLS_PER_HOUR) {
+    return false;
+  }
+
+  apiCallCounts.set(key, count + 1);
+  return true;
+}
+
+export async function POST(request) {
+  const userId = getAuthenticatedUser(request).id;
+
+  if (!canCallExternalAPI(userId)) {
+    return Response.json(
+      { error: 'API call limit reached' },
+      { status: 429 }
+    );
+  }
+
+  // Call external API
+  const response = await fetch('https://api.example.com/...');
+  // ...
+}</code></pre>
+
+  <h2>Key Concepts</h2>
+  <ul>
+    <li><strong>External API:</strong> Service provided by another company</li>
+    <li><strong>Authentication:</strong> API key or token required</li>
+    <li><strong>Error handling:</strong> Handle timeouts, rate limits, service failures</li>
+    <li><strong>Caching:</strong> Store responses to reduce API calls</li>
+    <li><strong>Retry logic:</strong> Retry failed requests with backoff</li>
+    <li><strong>Rate limiting:</strong> Limit your own calls to external APIs</li>
+  </ul>
+
+  <p class="success">✅ You can integrate external APIs! Next: Complete implementation.</p>
+</section>

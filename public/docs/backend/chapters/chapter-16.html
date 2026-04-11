@@ -1,0 +1,332 @@
+<!-- CHAPTER 16: Google Gemini AI Integration -->
+<section id="chapter-16" class="chapter">
+  <h1>🤖 Chapter 16: Google Gemini AI Integration</h1>
+
+  <p class="intro">ADVOCAT-Easy uses Google's Gemini AI to provide legal guidance. Let's learn how to integrate and use it.</p>
+
+  <h2>What is Gemini?</h2>
+  <p>Gemini is Google's AI model that understands text and can generate intelligent responses. Perfect for legal advice!</p>
+
+  <h2>Setup</h2>
+  <pre><code class="language-bash"># Install Google Generative AI
+npm install @google/generative-ai
+
+# Add API key to .env
+GEMINI_API_KEY=your-api-key-here</code></pre>
+
+  <h2>Basic Usage</h2>
+  <pre><code class="language-javascript">// app/api/chat/route.js
+import { GoogleGenerativeAI } from '@google/generative-ai';
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+
+export async function POST(request) {
+  const { message } = await request.json();
+
+  const result = await model.generateContent(message);
+  const text = result.response.text();
+
+  return Response.json({
+    success: true,
+    response: text
+  });
+}</code></pre>
+
+  <h2>System Instructions</h2>
+  <p>Tell Gemini to act as a legal expert:</p>
+  <pre><code class="language-javascript">// app/api/chat/route.js
+const model = genAI.getGenerativeModel({
+  model: 'gemini-2.5-flash',
+  systemInstruction: `You are an expert legal advisor. Provide clear, professional legal guidance on Indian law. Always:
+1. Explain the relevant laws and statutes
+2. Outline the user's rights and responsibilities
+3. Suggest practical next steps
+4. Recommend consulting a qualified lawyer for specific cases
+5. Be impartial and factual
+6. Avoid making absolute predictions about case outcomes
+7. Consider multiple perspectives`
+});
+
+export async function POST(request) {
+  const { message } = await request.json();
+
+  const result = await model.generateContent(message);
+  const response = result.response.text();
+
+  return Response.json({ success: true, response });
+}</code></pre>
+
+  <h2>Multi-Turn Conversation</h2>
+  <p>Keep conversation history for context:</p>
+  <pre><code class="language-javascript">// app/api/chat/route.js
+export async function POST(request) {
+  const { conversationId, message } = await request.json();
+
+  // Get conversation history from database
+  const conversation = conversations.get(conversationId);
+  const history = conversation?.messages || [];
+
+  // Build conversation history for Gemini
+  const contents = history.map(msg => ({
+    role: msg.role === 'user' ? 'user' : 'model',
+    parts: [{ text: msg.content }]
+  }));
+
+  // Add new message
+  contents.push({
+    role: 'user',
+    parts: [{ text: message }]
+  });
+
+  // Get response from Gemini
+  const chat = model.startChat({ history: contents });
+  const result = await chat.sendMessage(message);
+  const response = result.response.text();
+
+  // Save to conversation
+  if (!conversation) {
+    conversations.set(conversationId, {
+      id: conversationId,
+      userId: userId,
+      messages: []
+    });
+  }
+
+  conversations.get(conversationId).messages.push({
+    role: 'user',
+    content: message,
+    timestamp: Date.now()
+  });
+
+  conversations.get(conversationId).messages.push({
+    role: 'assistant',
+    content: response,
+    timestamp: Date.now()
+  });
+
+  return Response.json({
+    success: true,
+    response: response
+  });
+}</code></pre>
+
+  <h2>Safety Settings</h2>
+  <p>Configure Gemini to avoid harmful content:</p>
+  <pre><code class="language-javascript">import { HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
+
+const model = genAI.getGenerativeModel({
+  model: 'gemini-2.5-flash',
+  safetySettings: [
+    {
+      category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+      threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE
+    },
+    {
+      category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+      threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE
+    },
+    {
+      category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+      threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE
+    },
+    {
+      category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+      threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE
+    }
+  ]
+});
+
+export async function POST(request) {
+  try {
+    const { message } = await request.json();
+    const result = await model.generateContent(message);
+
+    // Check if content was blocked
+    if (!result.response.text()) {
+      return Response.json(
+        { error: 'Response was blocked by safety settings' },
+        { status: 400 }
+      );
+    }
+
+    return Response.json({
+      success: true,
+      response: result.response.text()
+    });
+
+  } catch (error) {
+    console.error('Gemini error:', error);
+    return Response.json(
+      { error: 'Failed to generate response' },
+      { status: 500 }
+    );
+  }
+}</code></pre>
+
+  <h2>Case Advisor with Gemini</h2>
+  <pre><code class="language-javascript">// app/api/case-advisor/route.js
+export async function POST(request) {
+  const { caseDetails, legalQuery } = await request.json();
+
+  const prompt = `You are an expert legal advisor specializing in Indian law.
+
+A client has provided the following case details:
+${JSON.stringify(caseDetails, null, 2)}
+
+Legal Question: ${legalQuery}
+
+Please provide:
+1. Relevant laws and statutes
+2. Legal analysis
+3. Potential outcomes
+4. Recommended next steps
+5. Warning: Is this serious enough to need a qualified lawyer?`;
+
+  const result = await model.generateContent(prompt);
+  const analysis = result.response.text();
+
+  return Response.json({
+    success: true,
+    analysis: analysis,
+    caseId: caseDetails.id
+  });
+}</code></pre>
+
+  <h2>Error Handling</h2>
+  <pre><code class="language-javascript">export async function POST(request) {
+  try {
+    const { message } = await request.json();
+
+    if (!message) {
+      return Response.json(
+        { error: 'Message is required' },
+        { status: 400 }
+      );
+    }
+
+    if (message.length > 5000) {
+      return Response.json(
+        { error: 'Message is too long (max 5000 characters)' },
+        { status: 400 }
+      );
+    }
+
+    const result = await model.generateContent(message);
+    const response = result.response.text();
+
+    if (!response) {
+      return Response.json(
+        { error: 'No response from AI' },
+        { status: 500 }
+      );
+    }
+
+    return Response.json({ success: true, response });
+
+  } catch (error) {
+    console.error('Gemini error:', error.message);
+
+    // Handle rate limiting
+    if (error.message.includes('429') || error.message.includes('too many')) {
+      return Response.json(
+        { error: 'Too many requests. Please try again later.' },
+        { status: 429 }
+      );
+    }
+
+    // Handle API errors
+    if (error.message.includes('API') || error.message.includes('auth')) {
+      return Response.json(
+        { error: 'AI service error. Please try again.' },
+        { status: 503 }
+      );
+    }
+
+    return Response.json(
+      { error: 'Failed to process request' },
+      { status: 500 }
+    );
+  }
+}</code></pre>
+
+  <h2>Streaming Responses</h2>
+  <p>Stream Gemini responses word-by-word:</p>
+  <pre><code class="language-javascript">export async function POST(request) {
+  const { message } = await request.json();
+
+  const stream = new ReadableStream({
+    async start(controller) {
+      try {
+        const result = await model.generateContentStream(message);
+
+        for await (const chunk of result.stream) {
+          const text = chunk.text();
+          controller.enqueue(text);
+          // Small delay for demo (remove in production)
+          await new Promise(r => setTimeout(r, 10));
+        }
+
+        controller.close();
+      } catch (error) {
+        controller.error(error);
+      }
+    }
+  });
+
+  return new Response(stream, {
+    headers: {
+      'Content-Type': 'text/plain',
+      'Transfer-Encoding': 'chunked'
+    }
+  });
+}</code></pre>
+
+  <h2>Cost Optimization</h2>
+  <pre><code class="language-javascript">// Cache responses for similar queries
+const responseCache = new Map();
+
+export async function POST(request) {
+  const { message } = await request.json();
+
+  // Check cache
+  if (responseCache.has(message)) {
+    const cached = responseCache.get(message);
+    // Check if cache is fresh (1 hour)
+    if (Date.now() - cached.timestamp < 3600000) {
+      return Response.json({
+        success: true,
+        response: cached.response,
+        cached: true
+      });
+    }
+  }
+
+  // Get fresh response
+  const result = await model.generateContent(message);
+  const response = result.response.text();
+
+  // Cache it
+  responseCache.set(message, {
+    response,
+    timestamp: Date.now()
+  });
+
+  return Response.json({
+    success: true,
+    response: response
+  });
+}</code></pre>
+
+  <h2>Key Concepts</h2>
+  <ul>
+    <li><strong>Gemini:</strong> Google's AI model</li>
+    <li><strong>System Instruction:</strong> Tell AI how to behave</li>
+    <li><strong>Safety Settings:</strong> Block harmful content</li>
+    <li><strong>Multi-turn:</strong> Keep conversation history</li>
+    <li><strong>Streaming:</strong> Send response in chunks</li>
+    <li><strong>Caching:</strong> Reuse responses for cost savings</li>
+  </ul>
+
+  <p class="success">✅ You can integrate Gemini! Next: External APIs.</p>
+</section>

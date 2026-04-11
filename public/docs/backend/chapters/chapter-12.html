@@ -1,0 +1,306 @@
+<!-- CHAPTER 12: Status Codes & Error Responses -->
+<section id="chapter-12" class="chapter">
+  <h1>✅ Chapter 12: Status Codes & Error Responses</h1>
+
+  <p class="intro">HTTP status codes tell the client what happened. Let's master them.</p>
+
+  <h2>Status Code Categories</h2>
+  <table class="info-table">
+    <tr>
+      <th>Code</th>
+      <th>Category</th>
+      <th>Meaning</th>
+    </tr>
+    <tr>
+      <td>2xx</td>
+      <td>Success</td>
+      <td>Request succeeded</td>
+    </tr>
+    <tr>
+      <td>3xx</td>
+      <td>Redirect</td>
+      <td>Must do something else</td>
+    </tr>
+    <tr>
+      <td>4xx</td>
+      <td>Client Error</td>
+      <td>Client made a mistake</td>
+    </tr>
+    <tr>
+      <td>5xx</td>
+      <td>Server Error</td>
+      <td>Server made a mistake</td>
+    </tr>
+  </table>
+
+  <h2>2xx Success Codes</h2>
+  <table class="info-table">
+    <tr>
+      <th>Code</th>
+      <th>Meaning</th>
+      <th>When</th>
+    </tr>
+    <tr>
+      <td>200</td>
+      <td>OK</td>
+      <td>Request succeeded, returning data</td>
+    </tr>
+    <tr>
+      <td>201</td>
+      <td>Created</td>
+      <td>New resource created (POST)</td>
+    </tr>
+    <tr>
+      <td>202</td>
+      <td>Accepted</td>
+      <td>Request accepted, processing async</td>
+    </tr>
+    <tr>
+      <td>204</td>
+      <td>No Content</td>
+      <td>Success, no data to return (DELETE)</td>
+    </tr>
+  </table>
+
+  <h2>4xx Client Error Codes</h2>
+  <table class="info-table">
+    <tr>
+      <th>Code</th>
+      <th>Meaning</th>
+      <th>When</th>
+    </tr>
+    <tr>
+      <td>400</td>
+      <td>Bad Request</td>
+      <td>Invalid data, missing fields</td>
+    </tr>
+    <tr>
+      <td>401</td>
+      <td>Unauthorized</td>
+      <td>Not logged in, invalid token</td>
+    </tr>
+    <tr>
+      <td>403</td>
+      <td>Forbidden</td>
+      <td>Logged in but no permission</td>
+    </tr>
+    <tr>
+      <td>404</td>
+      <td>Not Found</td>
+      <td>Resource doesn't exist</td>
+    </tr>
+    <tr>
+      <td>409</td>
+      <td>Conflict</td>
+      <td>Data conflicts (email already exists)</td>
+    </tr>
+    <tr>
+      <td>429</td>
+      <td>Too Many Requests</td>
+      <td>Rate limit exceeded</td>
+    </tr>
+  </table>
+
+  <h2>5xx Server Error Codes</h2>
+  <table class="info-table">
+    <tr>
+      <th>Code</th>
+      <th>Meaning</th>
+      <th>When</th>
+    </tr>
+    <tr>
+      <td>500</td>
+      <td>Internal Server Error</td>
+      <td>Unexpected server error</td>
+    </tr>
+    <tr>
+      <td>502</td>
+      <td>Bad Gateway</td>
+      <td>Server unreachable</td>
+    </tr>
+    <tr>
+      <td>503</td>
+      <td>Service Unavailable</td>
+      <td>Server down for maintenance</td>
+    </tr>
+  </table>
+
+  <h2>Using Status Codes Correctly</h2>
+  <pre><code class="language-javascript">// GET existing resource
+export async function GET(request, { params }) {
+  const { id } = await params;
+  const user = users.get(id);
+
+  if (!user) {
+    return Response.json(
+      { error: 'User not found' },
+      { status: 404 }  // ← Not Found
+    );
+  }
+
+  return Response.json(user, { status: 200 });  // ← OK
+}
+
+// CREATE new resource
+export async function POST(request) {
+  const { email, password } = await request.json();
+
+  // Validation error
+  if (!email) {
+    return Response.json(
+      { error: 'Email required' },
+      { status: 400 }  // ← Bad Request
+    );
+  }
+
+  // Conflict (email already exists)
+  const exists = Array.from(users.values()).find(u => u.email === email);
+  if (exists) {
+    return Response.json(
+      { error: 'Email already registered' },
+      { status: 409 }  // ← Conflict
+    );
+  }
+
+  // Success - created
+  const newUser = { id: uuid(), email, password };
+  users.set(newUser.id, newUser);
+
+  return Response.json(newUser, { status: 201 });  // ← Created
+}
+
+// UPDATE resource
+export async function PUT(request, { params }) {
+  const { id } = await params;
+  const user = users.get(id);
+
+  if (!user) {
+    return Response.json(
+      { error: 'User not found' },
+      { status: 404 }  // ← Not Found
+    );
+  }
+
+  const updates = await request.json();
+  const updated = { ...user, ...updates };
+  users.set(id, updated);
+
+  return Response.json(updated, { status: 200 });  // ← OK
+}
+
+// DELETE resource
+export async function DELETE(request, { params }) {
+  const { id } = await params;
+
+  if (!users.has(id)) {
+    return Response.json(
+      { error: 'User not found' },
+      { status: 404 }  // ← Not Found
+    );
+  }
+
+  users.delete(id);
+  return Response.json(null, { status: 204 });  // ← No Content
+}</code></pre>
+
+  <h2>Error Response Format</h2>
+  <pre><code class="language-javascript">// Consistent error format
+return Response.json(
+  {
+    success: false,
+    error: 'Email already registered',
+    errorCode: 'DUPLICATE_EMAIL',
+    details: {
+      field: 'email',
+      value: 'john@example.com'
+    }
+  },
+  { status: 409 }
+);</code></pre>
+
+  <h2>Handling Errors in Try/Catch</h2>
+  <pre><code class="language-javascript">export async function POST(request) {
+  try {
+    const { email, password } = await request.json();
+
+    if (!email) {
+      // Client's fault
+      return Response.json(
+        { error: 'Email required' },
+        { status: 400 }  // 4xx
+      );
+    }
+
+    // Authenticate with external service
+    const result = await authenticateWithGoogle(email);
+
+    if (!result) {
+      // Server's fault (external service failed)
+      return Response.json(
+        { error: 'Authentication failed' },
+        { status: 502 }  // 5xx
+      );
+    }
+
+    return Response.json(result, { status: 200 });
+
+  } catch (error) {
+    // Unexpected error
+    console.error('Unexpected error:', error);
+
+    return Response.json(
+      { error: 'Something went wrong' },
+      { status: 500 }  // 5xx
+    );
+  }
+}</code></pre>
+
+  <h2>Redirect Status Codes</h2>
+  <pre><code class="language-javascript">import { redirect } from 'next/navigation';
+
+// Temporary redirect (307)
+export async function GET(request) {
+  const url = new URL(request.url);
+  if (url.pathname === '/api/old-endpoint') {
+    return Response.redirect('/api/new-endpoint', 307);
+  }
+}
+
+// Permanent redirect (301)
+export async function GET(request) {
+  return Response.redirect('https://newdomain.com', 301);
+}</code></pre>
+
+  <h2>Status Code Decision Tree</h2>
+  <pre><code class="language-text">Is request valid?
+  ├─ No → 400 (Bad Request)
+  │
+  └─ Yes → Is user authenticated?
+    ├─ No → 401 (Unauthorized)
+    │
+    └─ Yes → Does user have permission?
+      ├─ No → 403 (Forbidden)
+      │
+      └─ Yes → Does resource exist?
+        ├─ No → 404 (Not Found)
+        │
+        └─ Yes → Success!
+          ├─ GET → 200 (OK)
+          ├─ POST → 201 (Created)
+          ├─ PUT → 200 (OK)
+          └─ DELETE → 204 (No Content)</code></pre>
+
+  <h2>Key Concepts</h2>
+  <ul>
+    <li><strong>2xx:</strong> Success</li>
+    <li><strong>4xx:</strong> Client error (user's fault)</li>
+    <li><strong>5xx:</strong> Server error (our fault)</li>
+    <li><strong>400:</strong> Bad request (validation failed)</li>
+    <li><strong>401:</strong> Unauthorized (not logged in)</li>
+    <li><strong>403:</strong> Forbidden (no permission)</li>
+    <li><strong>404:</strong> Not found</li>
+    <li><strong>500:</strong> Server error</li>
+  </ul>
+
+  <p class="success">✅ You understand status codes! Next: API testing.</p>
+</section>

@@ -1,0 +1,144 @@
+<!-- CHAPTER 2: Node.js Fundamentals & Async Patterns -->
+<section id="chapter-2" class="chapter">
+  <h1>⚙️ Chapter 2: Node.js Fundamentals & Async Patterns</h1>
+
+  <p class="intro">Node.js is JavaScript running on the server. It allows us to build backends without learning a new language. Let's understand how Node.js works and the patterns used in backend development.</p>
+
+  <h2>What is Node.js?</h2>
+  <p>Node.js is a JavaScript runtime built on Chrome's V8 engine. It lets you run JavaScript outside the browser (on a server).</p>
+  <pre><code class="language-javascript">// This runs on the server, not in a browser!
+console.log('Hello from Node.js');
+const sum = 5 + 3;
+console.log('Sum:', sum);</code></pre>
+
+  <h2>Synchronous vs Asynchronous</h2>
+  <p><strong>Synchronous:</strong> Code runs one line at a time, waits for each to finish.</p>
+  <pre><code class="language-javascript">// Synchronous - slow!
+console.log('Start');
+// Imagine this takes 10 seconds
+doSomethingSlow();
+console.log('End');  // Waits for doSomethingSlow() to finish</code></pre>
+
+  <p><strong>Asynchronous:</strong> Code doesn't wait. Other code runs while waiting for slow operations.</p>
+  <pre><code class="language-javascript">// Asynchronous - faster!
+console.log('Start');
+doSomethingSlowAsync().then(() => {
+  console.log('Done!');
+});
+console.log('End');  // Runs immediately, doesn't wait</code></pre>
+
+  <h2>Promises</h2>
+  <p>A Promise represents a value that will exist in the future (or might fail).</p>
+  <pre><code class="language-javascript">// Promise with .then() and .catch()
+fetch('/api/auth/login', {
+  method: 'POST',
+  body: JSON.stringify({ email: 'user@example.com', password: '123' })
+})
+.then(response => response.json())  // Success path
+.catch(error => console.log('Error:', error));  // Error path</code></pre>
+
+  <h2>Async/Await (Modern Way)</h2>
+  <p>Async/await makes asynchronous code look like synchronous code (easier to read).</p>
+  <pre><code class="language-javascript">async function login(email, password) {
+  try {
+    const response = await fetch('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password })
+    });
+    const data = await response.json();
+    console.log('Logged in!', data);
+  } catch (error) {
+    console.log('Login failed:', error);
+  }
+}</code></pre>
+
+  <h2>Callbacks</h2>
+  <p>A callback is a function passed to another function. Used when operation completes.</p>
+  <pre><code class="language-javascript">// Reading a file with callback
+fs.readFile('data.json', 'utf8', (error, data) => {
+  if (error) {
+    console.log('Error reading file:', error);
+  } else {
+    console.log('File contents:', data);
+  }
+});</code></pre>
+
+  <h2>Event Loop</h2>
+  <p>Node.js uses an event loop to handle asynchronous operations:</p>
+  <pre><code class="language-text">1. Execute synchronous code
+2. Check for async operations (timers, promises)
+3. Execute callbacks when ready
+4. Repeat until no more code</code></pre>
+
+  <h2>Common Node.js APIs</h2>
+  <table class="info-table">
+    <tr>
+      <th>API</th>
+      <th>Purpose</th>
+      <th>Example</th>
+    </tr>
+    <tr>
+      <td><code>console.log()</code></td>
+      <td>Print to console</td>
+      <td><code>console.log('Debug info')</code></td>
+    </tr>
+    <tr>
+      <td><code>setTimeout()</code></td>
+      <td>Run code after delay</td>
+      <td><code>setTimeout(() => {}, 1000)</code></td>
+    </tr>
+    <tr>
+      <td><code>fs</code> (File System)</td>
+      <td>Read/write files</td>
+      <td><code>fs.readFile('file.txt')</code></td>
+    </tr>
+    <tr>
+      <td><code>http</code></td>
+      <td>Handle HTTP requests</td>
+      <td><code>http.createServer()</code></td>
+    </tr>
+  </table>
+
+  <h2>Environment Variables</h2>
+  <p>Store sensitive data (API keys, secrets) in environment variables, not in code:</p>
+  <pre><code class="language-javascript">// In .env file
+GEMINI_API_KEY=sk-abc123...
+
+// In your code
+const apiKey = process.env.GEMINI_API_KEY;</code></pre>
+
+  <h2>Modules & Imports</h2>
+  <p>Node.js uses modules to organize code:</p>
+  <pre><code class="language-javascript">// Exporting from authStore.js
+export const users = new Map();
+
+// Importing in login/route.js
+import { users } from '@/lib/authStore';</code></pre>
+
+  <h2>Error Handling</h2>
+  <p>Always handle errors gracefully:</p>
+  <pre><code class="language-javascript">async function processRequest(data) {
+  try {
+    // Code that might fail
+    const result = await fetch('https://api.example.com/data');
+    const json = await result.json();
+    return json;
+  } catch (error) {
+    // Handle error
+    console.error('Request failed:', error.message);
+    return null;
+  }
+}</code></pre>
+
+  <h2>Key Takeaways</h2>
+  <ul>
+    <li>Node.js runs JavaScript on the server</li>
+    <li>Always use async/await for operations that take time</li>
+    <li>The event loop keeps Node.js responsive</li>
+    <li>Handle errors with try/catch</li>
+    <li>Use environment variables for secrets</li>
+    <li>Organize code into modules for reusability</li>
+  </ul>
+
+  <p class="success">✅ You understand Node.js fundamentals! Next: API Routes.</p>
+</section>

@@ -1,0 +1,274 @@
+<!-- CHAPTER 10: RESTful API Design Principles -->
+<section id="chapter-10" class="chapter">
+  <h1>📐 Chapter 10: RESTful API Design Principles</h1>
+
+  <p class="intro">REST is a standard way to design APIs. It makes APIs predictable and easy to use. Let's learn the principles.</p>
+
+  <h2>What is REST?</h2>
+  <p>REST = Representational State Transfer. It's a set of rules for designing APIs.</p>
+  <pre><code class="language-text">REST Principles:
+1. Resources are identified by URLs
+2. Operations use HTTP methods (GET, POST, PUT, DELETE)
+3. Responses are stateless
+4. Standard response formats (JSON)</code></pre>
+
+  <h2>Resources and URLs</h2>
+  <p>Each URL represents a resource:</p>
+  <pre><code class="language-text">/api/users              ← Collection of users
+/api/users/123          ← Specific user (ID 123)
+/api/cases              ← Collection of cases
+/api/cases/456          ← Specific case (ID 456)
+/api/users/123/cases    ← User 123's cases</code></pre>
+
+  <h2>HTTP Methods (CRUD)</h2>
+  <table class="info-table">
+    <tr>
+      <th>Method</th>
+      <th>Operation</th>
+      <th>Example</th>
+    </tr>
+    <tr>
+      <td>GET</td>
+      <td>Read</td>
+      <td>GET /api/users/123</td>
+    </tr>
+    <tr>
+      <td>POST</td>
+      <td>Create</td>
+      <td>POST /api/users</td>
+    </tr>
+    <tr>
+      <td>PUT</td>
+      <td>Update</td>
+      <td>PUT /api/users/123</td>
+    </tr>
+    <tr>
+      <td>DELETE</td>
+      <td>Delete</td>
+      <td>DELETE /api/users/123</td>
+    </tr>
+  </table>
+
+  <h2>RESTful Examples</h2>
+  <pre><code class="language-text">// Get all users
+GET /api/users
+Response: [{ id: 1, name: "John" }, ...]
+
+// Get specific user
+GET /api/users/1
+Response: { id: 1, name: "John", email: "john@example.com" }
+
+// Create new user
+POST /api/users
+Body: { name: "Jane", email: "jane@example.com" }
+Response: { id: 2, name: "Jane", ... }
+
+// Update user
+PUT /api/users/1
+Body: { name: "John Updated" }
+Response: { id: 1, name: "John Updated", ... }
+
+// Delete user
+DELETE /api/users/1
+Response: { success: true }
+</code></pre>
+
+  <h2>Status Codes (REST)</h2>
+  <table class="info-table">
+    <tr>
+      <th>Code</th>
+      <th>Meaning</th>
+      <th>When</th>
+    </tr>
+    <tr>
+      <td>200</td>
+      <td>OK</td>
+      <td>Success (GET, PUT, DELETE)</td>
+    </tr>
+    <tr>
+      <td>201</td>
+      <td>Created</td>
+      <td>Resource created (POST)</td>
+    </tr>
+    <tr>
+      <td>204</td>
+      <td>No Content</td>
+      <td>Success with no data (DELETE)</td>
+    </tr>
+    <tr>
+      <td>400</td>
+      <td>Bad Request</td>
+      <td>Invalid data</td>
+    </tr>
+    <tr>
+      <td>401</td>
+      <td>Unauthorized</td>
+      <td>Not logged in</td>
+    </tr>
+    <tr>
+      <td>404</td>
+      <td>Not Found</td>
+      <td>Resource doesn't exist</td>
+    </tr>
+    <tr>
+      <td>500</td>
+      <td>Server Error</td>
+      <td>Unexpected error</td>
+    </tr>
+  </table>
+
+  <h2>Example: User API</h2>
+  <pre><code class="language-javascript">// GET /api/users (list all)
+export async function GET(request) {
+  const userList = Array.from(users.values());
+  return Response.json(userList, { status: 200 });
+}
+
+// POST /api/users (create new)
+export async function POST(request) {
+  const { name, email } = await request.json();
+
+  if (!name || !email) {
+    return Response.json(
+      { error: 'Name and email required' },
+      { status: 400 }
+    );
+  }
+
+  const newUser = {
+    id: crypto.randomUUID(),
+    name,
+    email,
+    createdAt: Date.now()
+  };
+
+  users.set(newUser.id, newUser);
+
+  return Response.json(newUser, { status: 201 });
+}</code></pre>
+
+  <h2>Example: Specific User</h2>
+  <pre><code class="language-javascript">// GET /api/users/[id] (get one)
+export async function GET(request, { params }) {
+  const { id } = await params;
+  const user = users.get(id);
+
+  if (!user) {
+    return Response.json(
+      { error: 'User not found' },
+      { status: 404 }
+    );
+  }
+
+  return Response.json(user, { status: 200 });
+}
+
+// PUT /api/users/[id] (update)
+export async function PUT(request, { params }) {
+  const { id } = await params;
+  const user = users.get(id);
+
+  if (!user) {
+    return Response.json(
+      { error: 'User not found' },
+      { status: 404 }
+    );
+  }
+
+  const updates = await request.json();
+  const updated = { ...user, ...updates };
+  users.set(id, updated);
+
+  return Response.json(updated, { status: 200 });
+}
+
+// DELETE /api/users/[id] (delete)
+export async function DELETE(request, { params }) {
+  const { id } = await params;
+
+  if (!users.has(id)) {
+    return Response.json(
+      { error: 'User not found' },
+      { status: 404 }
+    );
+  }
+
+  users.delete(id);
+  return Response.json({ success: true }, { status: 204 });
+}</code></pre>
+
+  <h2>Response Consistency</h2>
+  <p>Always return responses in a consistent format:</p>
+  <pre><code class="language-javascript">// Successful response
+{
+  success: true,
+  data: { ... }
+}
+
+// Error response
+{
+  success: false,
+  error: "What went wrong",
+  errorCode: "USER_NOT_FOUND"
+}
+
+// List response
+{
+  success: true,
+  data: [{ ... }, { ... }],
+  count: 2,
+  page: 1,
+  totalPages: 5
+}</code></pre>
+
+  <h2>Filtering and Pagination</h2>
+  <pre><code class="language-javascript">// GET /api/users?page=1&limit=10&role=admin
+export async function GET(request) {
+  const url = new URL(request.url);
+  const page = parseInt(url.searchParams.get('page')) || 1;
+  const limit = parseInt(url.searchParams.get('limit')) || 10;
+  const role = url.searchParams.get('role');
+
+  let results = Array.from(users.values());
+
+  // Filter by role
+  if (role) {
+    results = results.filter(u => u.role === role);
+  }
+
+  // Pagination
+  const start = (page - 1) * limit;
+  const paginated = results.slice(start, start + limit);
+
+  return Response.json({
+    success: true,
+    data: paginated,
+    page,
+    limit,
+    total: results.length,
+    totalPages: Math.ceil(results.length / limit)
+  });
+}</code></pre>
+
+  <h2>REST Best Practices</h2>
+  <ul>
+    <li>Use nouns for resources, not verbs: <code>/users</code> not <code>/get-users</code></li>
+    <li>Use HTTP methods correctly (GET for read, POST for create, etc.)</li>
+    <li>Return appropriate status codes</li>
+    <li>Keep URLs consistent and predictable</li>
+    <li>Use JSON for responses</li>
+    <li>Version your API: <code>/api/v1/users</code></li>
+    <li>Support filtering and pagination</li>
+  </ul>
+
+  <h2>Key Concepts</h2>
+  <ul>
+    <li><strong>REST:</strong> Standardized API design</li>
+    <li><strong>Resources:</strong> Data accessible via URLs</li>
+    <li><strong>Methods:</strong> GET, POST, PUT, DELETE for operations</li>
+    <li><strong>Stateless:</strong> Each request is independent</li>
+    <li><strong>JSON:</strong> Standard response format</li>
+  </ul>
+
+  <p class="success">✅ You understand REST! Next: Request/response handling.</p>
+</section>

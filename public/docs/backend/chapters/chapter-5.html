@@ -1,0 +1,202 @@
+<!-- CHAPTER 5: Password Hashing & Security -->
+<section id="chapter-5" class="chapter">
+  <h1>🔒 Chapter 5: Password Hashing & Security</h1>
+
+  <p class="intro">Never store passwords as plain text! If your database is hacked, attackers get all passwords. We use hashing: a one-way encryption that can't be reversed.</p>
+
+  <h2>Why Hash Passwords?</h2>
+  <table class="info-table">
+    <tr>
+      <th>Bad (Plain Text)</th>
+      <th>Good (Hashed)</th>
+    </tr>
+    <tr>
+      <td>Stored: <code>password123</code></td>
+      <td>Stored: <code>$2b$10$aB9cD2e...</code></td>
+    </tr>
+    <tr>
+      <td>If hacked: All passwords visible</td>
+      <td>If hacked: Passwords unrecoverable</td>
+    </tr>
+    <tr>
+      <td>Never do this!</td>
+      <td>Always do this!</td>
+    </tr>
+  </table>
+
+  <h2>How Bcryptjs Works</h2>
+  <p>ADVOCAT-Easy uses bcryptjs, which hashes passwords securely:</p>
+  <pre><code class="language-javascript">import bcrypt from 'bcryptjs';
+
+// Hashing a password
+const password = 'user123!';
+const hashedPassword = await bcrypt.hash(password, 10);
+// Result: $2b$10$aB9cD2e3fG4hI5jK6lM7nOpQrStUvWxYzAbCdEfGhIjKlMnOpQrS
+
+// The hash is different every time, even for same password
+const hash1 = await bcrypt.hash('user123!', 10);
+const hash2 = await bcrypt.hash('user123!', 10);
+// hash1 !== hash2, but both match the original password</code></pre>
+
+  <h2>Hashing at Signup</h2>
+  <pre><code class="language-javascript">// app/api/auth/signup/route.js
+import bcrypt from 'bcryptjs';
+import { users } from '@/lib/authStore';
+import crypto from 'crypto';
+
+export async function POST(request) {
+  const { email, password } = await request.json();
+
+  // Validate password strength
+  if (password.length < 6) {
+    return Response.json(
+      { error: 'Password must be at least 6 characters' },
+      { status: 400 }
+    );
+  }
+
+  // Hash the password with salt rounds 10
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  // Store the hash, NOT the plain password
+  const userId = crypto.randomUUID();
+  users.set(userId, {
+    id: userId,
+    email: email,
+    password: hashedPassword,  // Store hash!
+    createdAt: Date.now()
+  });
+
+  return Response.json({
+    success: true,
+    message: 'Account created'
+  });
+}</code></pre>
+
+  <h2>Verifying at Login</h2>
+  <pre><code class="language-javascript">// app/api/auth/login/route.js
+import bcrypt from 'bcryptjs';
+import { users, sessions } from '@/lib/authStore';
+import crypto from 'crypto';
+
+export async function POST(request) {
+  const { email, password } = await request.json();
+
+  // Find user by email
+  const user = Array.from(users.values()).find(u => u.email === email);
+
+  if (!user) {
+    return Response.json(
+      { error: 'Invalid email or password' },
+      { status: 401 }
+    );
+  }
+
+  // Compare plain password with hash
+  const passwordValid = await bcrypt.compare(password, user.password);
+  //                      ↑ plain text        ↑ stored hash
+
+  if (!passwordValid) {
+    return Response.json(
+      { error: 'Invalid email or password' },
+      { status: 401 }
+    );
+  }
+
+  // Password is correct! Create session
+  const token = crypto.randomUUID();
+  sessions.set(token, {
+    userId: user.id,
+    createdAt: Date.now()
+  });
+
+  return Response.json({
+    success: true,
+    token: token
+  });
+}</code></pre>
+
+  <h2>Password Security Best Practices</h2>
+  <ul>
+    <li><strong>Minimum length:</strong> At least 8 characters</li>
+    <li><strong>Complexity:</strong> Uppercase, lowercase, numbers, symbols</li>
+    <li><strong>Don't send in URLs:</strong> Use POST with HTTPS</li>
+    <li><strong>Don't log passwords:</strong> Never console.log(password)</li>
+    <li><strong>Hash with salt rounds 10+:</strong> More rounds = more secure but slower</li>
+    <li><strong>Use HTTPS:</strong> Encrypt data in transit</li>
+  </ul>
+
+  <h2>Common Security Mistakes</h2>
+  <pre><code class="language-javascript">// ❌ WRONG - Storing plain text
+users.set(userId, {
+  password: 'user123!'  // NEVER!
+});
+
+// ❌ WRONG - Using weak hash
+const hash = simpleHash(password);  // Don't use simple hashing
+
+// ✅ CORRECT - Using bcryptjs
+const hash = await bcrypt.hash(password, 10);
+users.set(userId, { password: hash });</code></pre>
+
+  <h2>Rate Limiting for Login</h2>
+  <p>Prevent brute-force attacks by limiting login attempts:</p>
+  <pre><code class="language-javascript">// Simple rate limiting (more advanced later)
+const loginAttempts = new Map();
+
+export async function POST(request) {
+  const ip = request.headers.get('x-forwarded-for') || 'unknown';
+
+  // Check attempts from this IP
+  const attempts = loginAttempts.get(ip) || 0;
+  if (attempts > 5) {
+    return Response.json(
+      { error: 'Too many login attempts. Try again later.' },
+      { status: 429 }  // Too Many Requests
+    );
+  }
+
+  // Continue with login...
+  loginAttempts.set(ip, attempts + 1);
+}</code></pre>
+
+  <h2>Changing Password</h2>
+  <pre><code class="language-javascript">export async function POST(request) {
+  const { token, oldPassword, newPassword } = await request.json();
+
+  // Validate token
+  const session = sessions.get(token);
+  if (!session) {
+    return Response.json({ error: 'Not authenticated' }, { status: 401 });
+  }
+
+  // Get user
+  const user = users.get(session.userId);
+
+  // Verify old password
+  const oldValid = await bcrypt.compare(oldPassword, user.password);
+  if (!oldValid) {
+    return Response.json(
+      { error: 'Old password is incorrect' },
+      { status: 401 }
+    );
+  }
+
+  // Hash new password
+  const newHash = await bcrypt.hash(newPassword, 10);
+  user.password = newHash;
+
+  return Response.json({ success: true });
+}</code></pre>
+
+  <h2>Key Concepts</h2>
+  <ul>
+    <li><strong>Hash:</strong> One-way encryption (can't reverse)</li>
+    <li><strong>Salt:</strong> Random data added before hashing (makes hashes unique)</li>
+    <li><strong>bcryptjs:</strong> Industry-standard for password hashing</li>
+    <li><strong>Compare:</strong> Hashing plain password and comparing with stored hash</li>
+    <li><strong>Round:</strong> Number of iterations (higher = more secure)</li>
+  </ul>
+
+  <p class="success">✅ You understand password hashing! Next: Session management.</p>
+</section>

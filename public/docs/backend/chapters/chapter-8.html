@@ -1,0 +1,269 @@
+<!-- CHAPTER 8: Error Handling & Validation -->
+<section id="chapter-8" class="chapter">
+  <h1>⚠️ Chapter 8: Error Handling & Validation</h1>
+
+  <p class="intro">Every API endpoint should validate input and handle errors gracefully. Never let bad data crash your server!</p>
+
+  <h2>Why Validate Input?</h2>
+  <ul>
+    <li><strong>Security:</strong> Prevent injection attacks</li>
+    <li><strong>Data Integrity:</strong> Ensure data is correct</li>
+    <li><strong>User Experience:</strong> Tell users what went wrong</li>
+    <li><strong>Stability:</strong> Prevent crashes</li>
+  </ul>
+
+  <h2>Basic Validation</h2>
+  <pre><code class="language-javascript">// app/api/auth/login/route.js
+export async function POST(request) {
+  const { email, password } = await request.json();
+
+  // Validate email
+  if (!email) {
+    return Response.json(
+      { error: 'Email is required' },
+      { status: 400 }
+    );
+  }
+
+  // Validate email format
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return Response.json(
+      { error: 'Email is invalid' },
+      { status: 400 }
+    );
+  }
+
+  // Validate password
+  if (!password) {
+    return Response.json(
+      { error: 'Password is required' },
+      { status: 400 }
+    );
+  }
+
+  if (password.length < 6) {
+    return Response.json(
+      { error: 'Password must be at least 6 characters' },
+      { status: 400 }
+    );
+  }
+
+  // Proceed with login...
+}</code></pre>
+
+  <h2>Try/Catch for Error Handling</h2>
+  <pre><code class="language-javascript">export async function POST(request) {
+  try {
+    const { email, password } = await request.json();
+
+    // Validation
+    if (!email || !password) {
+      return Response.json(
+        { error: 'Missing fields' },
+        { status: 400 }
+      );
+    }
+
+    // Process login
+    const user = findUser(email);
+    const valid = await bcrypt.compare(password, user.password);
+
+    if (!valid) {
+      return Response.json(
+        { error: 'Invalid credentials' },
+        { status: 401 }
+      );
+    }
+
+    return Response.json({ success: true, token: createToken() });
+
+  } catch (error) {
+    console.error('Login error:', error);
+
+    // Don't expose internal errors to users
+    return Response.json(
+      { error: 'Something went wrong' },
+      { status: 500 }
+    );
+  }
+}</code></pre>
+
+  <h2>Specific Error Messages</h2>
+  <pre><code class="language-javascript">// Good: Specific errors help users fix problems
+export async function POST(request) {
+  try {
+    const body = await request.json();
+
+    if (!body.email) {
+      return Response.json(
+        { error: 'Email field is required' },
+        { status: 400 }
+      );
+    }
+
+    if (!body.password) {
+      return Response.json(
+        { error: 'Password field is required' },
+        { status: 400 }
+      );
+    }
+
+    // ...more validation...
+
+  } catch (error) {
+    // Bad: Don't expose internal errors
+    // return Response.json({ error: error.message }, { status: 500 });
+
+    // Good: Return generic error
+    return Response.json(
+      { error: 'Invalid request' },
+      { status: 400 }
+    );
+  }
+}</code></pre>
+
+  <h2>Validation Helpers</h2>
+  <pre><code class="language-javascript">// lib/validation.js
+export function validateEmail(email) {
+  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return regex.test(email);
+}
+
+export function validatePassword(password) {
+  return password && password.length >= 6;
+}
+
+export function validateRequest(data, schema) {
+  const errors = [];
+
+  if (!data.email) errors.push('Email required');
+  else if (!validateEmail(data.email)) errors.push('Invalid email');
+
+  if (!data.password) errors.push('Password required');
+  else if (!validatePassword(data.password)) errors.push('Password too short');
+
+  return {
+    valid: errors.length === 0,
+    errors
+  };
+}
+
+// Usage in route
+import { validateRequest } from '@/lib/validation';
+
+export async function POST(request) {
+  const body = await request.json();
+  const { valid, errors } = validateRequest(body);
+
+  if (!valid) {
+    return Response.json(
+      { errors },
+      { status: 400 }
+    );
+  }
+
+  // Proceed...
+}</code></pre>
+
+  <h2>Common Error Types</h2>
+  <table class="info-table">
+    <tr>
+      <th>Error</th>
+      <th>Status</th>
+      <th>Example</th>
+    </tr>
+    <tr>
+      <td>Missing field</td>
+      <td>400</td>
+      <td>Email is required</td>
+    </tr>
+    <tr>
+      <td>Invalid format</td>
+      <td>400</td>
+      <td>Email is invalid</td>
+    </tr>
+    <tr>
+      <td>Not authenticated</td>
+      <td>401</td>
+      <td>No token provided</td>
+    </tr>
+    <tr>
+      <td>No permission</td>
+      <td>403</td>
+      <td>Cannot access</td>
+    </tr>
+    <tr>
+      <td>Not found</td>
+      <td>404</td>
+      <td>User not found</td>
+    </tr>
+    <tr>
+      <td>Server error</td>
+      <td>500</td>
+      <td>Database crashed</td>
+    </tr>
+  </table>
+
+  <h2>Logging Errors</h2>
+  <pre><code class="language-javascript">// Always log errors for debugging
+export async function POST(request) {
+  try {
+    const result = await processRequest(request);
+    return Response.json(result);
+
+  } catch (error) {
+    // Log the full error internally
+    console.error('ERROR in POST /api/auth/login:', {
+      message: error.message,
+      stack: error.stack,
+      timestamp: new Date()
+    });
+
+    // Return generic error to user
+    return Response.json(
+      { error: 'Something went wrong' },
+      { status: 500 }
+    );
+  }
+}</code></pre>
+
+  <h2>Never Trust User Input</h2>
+  <pre><code class="language-javascript">// ❌ WRONG - Trust user input
+const email = request.body.email;
+
+// ✅ CORRECT - Validate everything
+const { email } = await request.json();
+if (!validateEmail(email)) {
+  return Response.json({ error: 'Invalid email' }, { status: 400 });
+}
+
+// Use validated email...</code></pre>
+
+  <h2>Response Structure</h2>
+  <p>Consistent error responses help frontend developers:</p>
+  <pre><code class="language-javascript">// Success
+Response.json({
+  success: true,
+  data: { ... }
+})
+
+// Error
+Response.json({
+  success: false,
+  error: 'What went wrong',
+  errorCode: 'INVALID_EMAIL'  // Machine-readable
+}, { status: 400 })</code></pre>
+
+  <h2>Key Concepts</h2>
+  <ul>
+    <li><strong>Validation:</strong> Check data is correct</li>
+    <li><strong>400:</strong> Bad Request (validation failed)</li>
+    <li><strong>401:</strong> Unauthorized (not logged in)</li>
+    <li><strong>403:</strong> Forbidden (no permission)</li>
+    <li><strong>500:</strong> Server Error (unexpected failure)</li>
+    <li><strong>Try/Catch:</strong> Catch unexpected errors</li>
+  </ul>
+
+  <p class="success">✅ You understand error handling! Next: Middleware.</p>
+</section>
