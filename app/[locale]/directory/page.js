@@ -21,13 +21,14 @@ export async function generateMetadata({ params }) {
   };
 }
 
-export default async function DirectoryPage({ params }) {
+export default async function DirectoryPage({ params, searchParams }) {
   const { locale } = await params;
+  const { city } = await searchParams;
   setRequestLocale(locale);
 
   return (
     <Suspense fallback={<div className="min-h-screen bg-[#121212] flex items-center justify-center text-white">Loading directory...</div>}>
-      <DirectoryClient initialCity="Pitampura" />
+      <DirectoryClient initialCity={city || 'Delhi'} />
     </Suspense>
   );
 }

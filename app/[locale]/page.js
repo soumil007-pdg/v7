@@ -1,4 +1,4 @@
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import Link from 'next/link';
 import { Clock, RefreshCw, Layers, MessageSquare, Scale, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 export async function generateMetadata({ params }) {
   const resolvedParams = await params;
   const locale = resolvedParams.locale;
+  setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'HomePage' });
 
   return {
@@ -17,6 +18,7 @@ export async function generateMetadata({ params }) {
 export default async function HomePage({ params }) {
   const resolvedParams = await params;
   const locale = resolvedParams.locale;
+  setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'HomePage' });
 
   return (

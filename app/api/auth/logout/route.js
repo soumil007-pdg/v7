@@ -1,27 +1,20 @@
-import { MongoClient } from 'mongodb';
-
-const uri = 'mongodb://localhost:27017';
-const client = new MongoClient(uri);
-const dbName = 'auth_db';
-const sessionCollection = 'sessions';
+import { getSessions, saveSessions } from '@/lib/localDb';
 
 export async function POST(req) {
   const { token } = await req.json();
 
   try {
-    await client.connect();
-    const db = client.db(dbName);
-    const sessions = db.collection(sessionCollection);
-
-    const result = await sessions.deleteOne({ token });
-    if (result.deletedCount === 0) {
+    const sessions = getSessions();
+    const index = sessions.findIndex(s => s.token === token);
+    if (index === -1) {
       return new Response(JSON.stringify({ message: 'Session not found' }), { status: 404 });
     }
+
+    sessions.splice(index, 1);
+    saveSessions(sessions);
 
     return new Response(JSON.stringify({ message: 'Logout successful' }), { status: 200 });
   } catch (err) {
     return new Response(JSON.stringify({ message: 'Server error' }), { status: 500 });
-  } finally {
-    await client.close();
   }
 }

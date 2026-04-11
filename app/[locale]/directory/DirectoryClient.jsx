@@ -7,13 +7,14 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
-export default function DirectoryClient({ initialCity = 'Pitampura' }) {
+export default function DirectoryClient({ initialCity = 'Delhi' }) {
   const searchParams = useSearchParams();
   const router = useRouter();
 
   const category = searchParams.get('category') || 'legal';
+  const urlCity = searchParams.get('city');
 
-  const [city, setCity] = useState(initialCity);
+  const [city, setCity] = useState(urlCity || initialCity);
   const [lawyers, setLawyers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

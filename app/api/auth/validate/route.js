@@ -1,4 +1,4 @@
-import clientPromise from '@/lib/db';
+import { getSessions, saveSessions } from '@/lib/localDb';
 
 export async function POST(req) {
   try {
@@ -8,22 +8,16 @@ export async function POST(req) {
       return new Response(JSON.stringify({ isValid: false, message: 'No token provided' }), { status: 400 });
     }
 
-    // Use the shared client
-    const client = await clientPromise;
-    const db = client.db('auth_db');
-    const sessions = db.collection('sessions');
+    const sessions = getSessions();
+    const session = sessions.find(s => s.token === token);
 
-    const session = await sessions.findOne({ token });
-    
     if (!session) {
       return new Response(JSON.stringify({ isValid: false, message: 'Session not found' }), { status: 401 });
     }
 
-    // Check Expiration
     if (session.expiresAt && new Date() > new Date(session.expiresAt)) {
-       // Token is expired, remove it
-       await sessions.deleteOne({ token });
-       return new Response(JSON.stringify({ isValid: false, message: 'Session expired' }), { status: 401 });
+      saveSessions(sessions.filter(s => s.token !== token));
+      return new Response(JSON.stringify({ isValid: false, message: 'Session expired' }), { status: 401 });
     }
 
     return new Response(JSON.stringify({ isValid: true, email: session.email, name: session.name || '' }), { status: 200 });

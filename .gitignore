@@ -42,3 +42,6 @@ next-env.d.ts
 
 #api keys
 .env*
+
+# local data storage
+/data
