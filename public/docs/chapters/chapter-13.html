@@ -1,0 +1,81 @@
+<!-- CHAPTER 13: Database & APIs -->
+<section id="chapter-13" class="chapter">
+  <h1>💾 Chapter 13: Database & APIs</h1>
+  <p class="intro">A database stores your data permanently. ADVOCAT-Easy uses in-memory storage for development, but you can add MongoDB or PostgreSQL for production.</p>
+
+  <h2>What's a Database?</h2>
+  <p>A database is organized storage that persists data across sessions.</p>
+
+  <h2>Types of Databases</h2>
+
+  <div class="concept">
+    <h4>Relational (SQL)</h4>
+    <p><strong>Example:</strong> PostgreSQL, MySQL. Data in tables with rows and columns.</p>
+    <pre><code class="language-sql">CREATE TABLE users (
+  id INT PRIMARY KEY,
+  email VARCHAR(255),
+  password_hash VARCHAR(255)
+);
+
+SELECT * FROM users WHERE email = 'alice@example.com';</code></pre>
+  </div>
+
+  <div class="concept">
+    <h4>Document (NoSQL)</h4>
+    <p><strong>Example:</strong> MongoDB. Data in JSON-like documents.</p>
+    <pre><code class="language-javascript">db.users.insertOne({
+  email: 'alice@example.com',
+  password_hash: 'hashed...'
+});
+
+db.users.findOne({ email: 'alice@example.com' });</code></pre>
+  </div>
+
+  <h2>ADVOCAT-Easy: In-Memory Storage</h2>
+  <p>For development, ADVOCAT-Easy uses in-memory Maps:</p>
+
+  <pre><code class="language-javascript">// lib/authStore.js
+const users = new Map();
+
+// Create user
+users.set('alice@example.com', { email: '...', password_hash: '...' });
+
+// Find user
+const user = users.get('alice@example.com');</code></pre>
+
+  <h2>Data Modeling</h2>
+  <pre><code class="language-javascript">// Users collection
+{
+  email: 'alice@example.com',
+  password_hash: 'bcrypt...',
+  created_at: 2025-04-11T10:00:00Z
+}
+
+// Sessions collection
+{
+  token: 'uuid-token-here',
+  email: 'alice@example.com',
+  expires_at: 2025-04-18T10:00:00Z
+}</code></pre>
+
+  <h2>Securing Data</h2>
+  <div class="checklist">
+    <div class="item">
+      <input type="checkbox"> Always hash passwords (bcryptjs)
+    </div>
+    <div class="item">
+      <input type="checkbox"> Use indexes on frequently queried fields
+    </div>
+    <div class="item">
+      <input type="checkbox"> Validate all input before storing
+    </div>
+    <div class="item">
+      <input type="checkbox"> Use environment variables for connection strings
+    </div>
+    <div class="item">
+      <input type="checkbox"> Backup regularly
+    </div>
+  </div>
+
+  <p class="success">✅ Your data is secure. Chapter 14 shows how to deploy and fork!</p>
+</section>

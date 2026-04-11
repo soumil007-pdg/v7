@@ -4,7 +4,7 @@
 
 // Track current chapter
 let currentChapter = 1;
-const totalChapters = 3; // We have 3 chapters for now (1-3)
+const totalChapters = 14;
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {

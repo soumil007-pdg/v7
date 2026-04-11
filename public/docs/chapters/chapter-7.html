@@ -1,0 +1,151 @@
+<!-- CHAPTER 7: Components & Reusability -->
+<section id="chapter-7" class="chapter">
+  <h1>🎨 Chapter 7: Components & Reusability</h1>
+  <p class="intro">Components are the building blocks. Let's learn to write DRY (Don't Repeat Yourself) components that you can use across pages.</p>
+
+  <h2>What Makes a Good Component?</h2>
+  <ul>
+    <li><strong>Single Responsibility:</strong> Does one thing well</li>
+    <li><strong>Reusable:</strong> Can be used in many places</li>
+    <li><strong>Configurable:</strong> Takes props to customize behavior</li>
+    <li><strong>Predictable:</strong> Same props = same output</li>
+  </ul>
+
+  <h2>Example: Button Component</h2>
+  <p>Instead of writing buttons inline everywhere, create a reusable Button:</p>
+
+  <pre><code class="language-javascript">// app/components/Button.jsx
+'use client';
+
+export default function Button({
+  children,           // Button text
+  onClick,            // Click handler
+  variant = 'primary',  // 'primary' or 'secondary'
+  disabled = false,
+  className = ''
+}) {
+  const baseStyles = 'px-6 py-3 rounded-lg font-bold transition-all';
+
+  const variants = {
+    primary: 'bg-orange-500 text-white hover:bg-orange-600',
+    secondary: 'bg-gray-200 text-gray-900 hover:bg-gray-300'
+  };
+
+  return (
+    &lt;button
+      onClick={onClick}
+      disabled={disabled}
+      className={`${baseStyles} ${variants[variant]} ${className}`}
+    &gt;
+      {children}
+    &lt;/button&gt;
+  );
+}</code></pre>
+
+  <p>Now use it everywhere:</p>
+
+  <pre><code class="language-javascript">'use client';
+import Button from '@/app/components/Button';
+
+export default function LoginForm() {
+  return (
+    &lt;form&gt;
+      &lt;Button variant="primary"&gt;Sign In&lt;/Button&gt;
+      &lt;Button variant="secondary"&gt;Forgot Password&lt;/Button&gt;
+    &lt;/form&gt;
+  );
+}</code></pre>
+
+  <h2>Card Component with Slots</h2>
+  <p>More advanced: a Card that wraps other components:</p>
+
+  <pre><code class="language-javascript">// app/components/Card.jsx
+'use client';
+
+export default function Card({
+  title,
+  subtitle,
+  children,
+  footer,
+  className = ''
+}) {
+  return (
+    &lt;div className={`bg-white rounded-lg shadow-md p-6 ${className}`}&gt;
+      {title && &lt;h2 className="text-2xl font-bold mb-2"&gt;{title}&lt;/h2&gt;}
+      {subtitle && &lt;p className="text-gray-600 mb-4"&gt;{subtitle}&lt;/p&gt;}
+
+      &lt;div className="mb-4"&gt;{children}&lt;/div&gt;
+
+      {footer && &lt;div className="border-t pt-4 mt-4"&gt;{footer}&lt;/div&gt;}
+    &lt;/div&gt;
+  );
+}</code></pre>
+
+  <p>Use it to build layouts:</p>
+
+  <pre><code class="language-javascript">&lt;Card
+  title="Case Strategist"
+  subtitle="Build your legal roadmap"
+  footer={&lt;Button&gt;Start Now&lt;/Button&gt;}
+&gt;
+  &lt;p&gt;Share your situation and get expert guidance...&lt;/p&gt;
+&lt;/Card&gt;</code></pre>
+
+  <h2>The Input Component</h2>
+  <p>Standardize form inputs:</p>
+
+  <pre><code class="language-javascript">// app/components/Input.jsx
+'use client';
+
+export default function Input({
+  label,
+  type = 'text',
+  placeholder,
+  value,
+  onChange,
+  error,
+  required
+}) {
+  return (
+    &lt;div className="mb-4"&gt;
+      {label && (
+        &lt;label className="block font-semibold mb-2"&gt;
+          {label}
+          {required && &lt;span className="text-red-500"&gt;*&lt;/span&gt;}
+        &lt;/label&gt;
+      )}
+
+      &lt;input
+        type={type}
+        placeholder={placeholder}
+        value={value}
+        onChange={onChange}
+        className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2
+          ${error ? 'border-red-500 ring-red-500' : 'border-gray-300 focus:ring-orange-500'}`}
+      /&gt;
+
+      {error && &lt;p className="text-red-500 text-sm mt-1"&gt;{error}&lt;/p&gt;}
+    &lt;/div&gt;
+  );
+}</code></pre>
+
+  <h2>Component Organization</h2>
+  <p>As your project grows, organize components:</p>
+
+  <pre><code class="language-text">app/components/
+├── UI/
+│   ├── Button.jsx
+│   ├── Input.jsx
+│   ├── Card.jsx
+│   └── Modal.jsx
+├── Layout/
+│   ├── Navbar.jsx
+│   ├── Footer.jsx
+│   └── Sidebar.jsx
+└── Features/
+    ├── ChatWindow.jsx
+    ├── AuthForm.jsx
+    └── FAQAccordion.jsx</code></pre>
+
+  <p class="success">✅ Good components make your codebase scalable. Chapter 8 adds authentication!</p>
+</section>

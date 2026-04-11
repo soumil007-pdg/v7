@@ -1,0 +1,52 @@
+<!-- CHAPTER 11: API Integration -->
+<section id="chapter-11" class="chapter">
+  <h1>🔗 Chapter 11: API Integration</h1>
+  <p class="intro">APIs let your app talk to other services. ADVOCAT-Easy uses Google Gemini for AI. Let's see how to integrate APIs safely.</p>
+
+  <h2>What's an API?</h2>
+  <p>An API is a contract: "Give me X data with Y parameters, I'll return Z response."</p>
+
+  <h2>Calling External APIs from Next.js</h2>
+
+  <h3>From Server Components (Safe)</h3>
+  <pre><code class="language-javascript">// app/[locale]/page.js (Server Component)
+async function HomePage() {
+  // Call API server-side
+  const res = await fetch('https://api.example.com/data', {
+    headers: { 'Authorization': `Bearer ${process.env.API_KEY}` }
+  });
+  const data = await res.json();
+
+  return &lt;div&gt;{data.title}&lt;/div&gt;;
+}</code></pre>
+
+  <h3>From Client Components (via Your Backend)</h3>
+  <p>Never put API keys in client code. Create a route that calls the API:</p>
+
+  <pre><code class="language-javascript">// app/api/chat/route.js (Your backend)
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+
+export async function POST(request) {
+  const { message } = await request.json();
+
+  // Call Gemini server-side
+  const res = await fetch('https://api.google.com/v1/models/gemini:generateContent', {
+    method: 'POST',
+    headers: { 'x-goog-api-key': GEMINI_API_KEY },
+    body: JSON.stringify({ contents: [{ parts: [{ text: message }] }] })
+  });
+
+  const data = await res.json();
+
+  return new Response(JSON.stringify({
+    reply: data.candidates[0].content.parts[0].text
+  }), { status: 200 });
+}</code></pre>
+
+  <h2>Environment Variables for APIs</h2>
+  <pre><code class="language-bash"># .env.local (NEVER commit this!)
+GEMINI_API_KEY=sk-1234567890abcdef
+APIFY_API_TOKEN=apify_xyz123</code></pre>
+
+  <p class="success">✅ APIs power your features. Chapter 12 adds professional styling!</p>
+</section>

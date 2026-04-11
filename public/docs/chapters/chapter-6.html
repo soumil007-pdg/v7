@@ -1,0 +1,148 @@
+<!-- CHAPTER 6: Building Your First Page -->
+<section id="chapter-6" class="chapter">
+  <h1>📄 Chapter 6: Building Your First Page</h1>
+  <p class="intro">Let's create a new page from scratch. You'll see how Server and Client Components work together, handle SEO, and add translations.</p>
+
+  <h2>Step 1: Create the Page Files</h2>
+  <p>Let's build a <strong>FAQ page</strong> at <code>/en/faq</code>.</p>
+
+  <pre><code class="language-bash"># Create the folder
+mkdir -p app/[locale]/faq
+
+# Create two files
+touch app/[locale]/faq/page.js
+touch app/[locale]/faq/FAQClient.jsx</code></pre>
+
+  <h2>Step 2: Write the Server Page (page.js)</h2>
+  <p>This handles SEO, translations, and auth checks:</p>
+
+  <pre><code class="language-javascript">// app/[locale]/faq/page.js
+import { getTranslations, setRequestLocale } from 'next-intl/server';
+import FAQClient from './FAQClient';
+
+export async function generateMetadata({ params }) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'FAQ' });
+
+  return {
+    title: t('metaTitle'),           // "Frequently Asked Questions"
+    description: t('metaDescription'),
+    alternates: {
+      canonical: `/${locale}/faq`,
+      languages: {
+        en: '/en/faq',
+        hi: '/hi/faq',
+        mr: '/mr/faq',
+        te: '/te/faq'
+      }
+    }
+  };
+}
+
+export default async function FAQPage({ params }) {
+  const { locale } = await params;
+  setRequestLocale(locale);  // For i18n
+
+  return &lt;FAQClient /&gt;;
+}</code></pre>
+
+  <h2>Step 3: Write the Client Component (FAQClient.jsx)</h2>
+  <p>This handles interactivity (opening/closing questions):</p>
+
+  <pre><code class="language-javascript">// app/[locale]/faq/FAQClient.jsx
+'use client';
+
+import { useState } from 'react';
+import { useTranslations } from 'next-intl';
+
+export default function FAQClient() {
+  const t = useTranslations('FAQ');
+  const [expandedId, setExpandedId] = useState(null);
+
+  const faqs = [
+    {
+      id: 1,
+      question: t('q1'),  // "Is this service free?"
+      answer: t('a1')      // "Yes, ADVOCAT-Easy is free..."
+    },
+    {
+      id: 2,
+      question: t('q2'),
+      answer: t('a2')
+    }
+  ];
+
+  return (
+    &lt;main className="min-h-screen bg-gray-50 p-8"&gt;
+      &lt;div className="max-w-2xl mx-auto"&gt;
+        &lt;h1 className="text-4xl font-bold mb-8"&gt;{t('title')}&lt;/h1&gt;
+
+        {faqs.map((faq) => (
+          &lt;div key={faq.id} className="bg-white p-6 mb-4 rounded-lg shadow"&gt;
+            &lt;button
+              onClick={() => setExpandedId(
+                expandedId === faq.id ? null : faq.id
+              )}
+              className="w-full text-left font-semibold text-lg hover:text-orange-500"
+            &gt;
+              {faq.question}
+            &lt;/button&gt;
+
+            {expandedId === faq.id && (
+              &lt;p className="mt-4 text-gray-700"&gt;{faq.answer}&lt;/p&gt;
+            )}
+          &lt;/div&gt;
+        ))}
+      &lt;/div&gt;
+    &lt;/main&gt;
+  );
+}</code></pre>
+
+  <h2>Step 4: Add Translations</h2>
+  <p>Add FAQ translations to each language file:</p>
+
+  <pre><code class="language-json">// messages/en.json
+{
+  "FAQ": {
+    "metaTitle": "Frequently Asked Questions - ADVOCAT-Easy",
+    "metaDescription": "Get answers to common questions about ADVOCAT-Easy.",
+    "title": "Frequently Asked Questions",
+    "q1": "Is this service free?",
+    "a1": "Yes, ADVOCAT-Easy is completely free to use...",
+    "q2": "How accurate is the AI?",
+    "a2": "Our AI uses the Indian Constitution and verified acts..."
+  }
+}</code></pre>
+
+  <h2>Step 5: Test the Page</h2>
+  <p>Start the dev server and test:</p>
+  <pre><code class="language-bash">npm run dev</code></pre>
+
+  <p>Visit:</p>
+  <ul>
+    <li><code>http://localhost:3000/en/faq</code> → English</li>
+    <li><code>http://localhost:3000/hi/faq</code> → हिन्दी</li>
+    <li>Click the questions to expand/collapse answers</li>
+  </ul>
+
+  <h2>Key Takeaways</h2>
+  <div class="checklist">
+    <div class="item">
+      <input type="checkbox"> Server page (page.js) = SEO, metadata, translations
+    </div>
+    <div class="item">
+      <input type="checkbox"> Client component (*Client.jsx) = state, hooks, interactivity
+    </div>
+    <div class="item">
+      <input type="checkbox"> Always add translations to messages/*.json
+    </div>
+    <div class="item">
+      <input type="checkbox"> Use useTranslations() in client components
+    </div>
+    <div class="item">
+      <input type="checkbox"> generateMetadata() for SEO titles and descriptions
+    </div>
+  </div>
+
+  <p class="success">✅ You've built your first page! Chapter 7 shows how to make reusable components.</p>
+</section>

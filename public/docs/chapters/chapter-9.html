@@ -1,0 +1,80 @@
+<!-- CHAPTER 9: Multilingual Support (i18n) -->
+<section id="chapter-9" class="chapter">
+  <h1>🌍 Chapter 9: Multilingual Support (i18n)</h1>
+  <p class="intro">ADVOCAT-Easy supports 4 languages: English, हिन्दी (Hindi), मराठी (Marathi), తెలుగు (Telugu). Here's how i18n (internationalization) works.</p>
+
+  <h2>What is i18n?</h2>
+  <p>i18n = making your app work in multiple languages. It involves:</p>
+  <ul>
+    <li><strong>Translation files:</strong> Store text in each language</li>
+    <li><strong>Language detection:</strong> Know which language user prefers</li>
+    <li><strong>URL routing:</strong> /en, /hi, /mr, /te (locale in URL)</li>
+    <li><strong>Dynamic rendering:</strong> Show correct language based on URL</li>
+  </ul>
+
+  <h2>Translation Files</h2>
+  <p>ADVOCAT-Easy uses <code>next-intl</code> library. Translations are in <code>messages/</code>:</p>
+
+  <pre><code class="language-json">// messages/en.json
+{
+  "Auth": {
+    "metaTitle": "Login or Sign Up - ADVOCAT-Easy",
+    "metaDescription": "Secure login to your legal guidance account",
+    "loginHeading": "Welcome back",
+    "signupHeading": "Get Started"
+  }
+}</code></pre>
+
+  <h2>Using Translations</h2>
+
+  <h3>Server Components</h3>
+  <pre><code class="language-javascript">// app/[locale]/auth/page.js
+import { getTranslations } from 'next-intl/server';
+
+export async function generateMetadata({ params }) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'Auth' });
+
+  return {
+    title: t('metaTitle')
+  };
+}</code></pre>
+
+  <h3>Client Components</h3>
+  <pre><code class="language-javascript">// app/[locale]/auth/AuthClient.jsx
+'use client';
+
+import { useTranslations } from 'next-intl';
+
+export default function AuthClient() {
+  const t = useTranslations('Auth');
+
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;{t('loginHeading')}&lt;/h1&gt;
+      &lt;p&gt;{t('metaDescription')}&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+
+  <h2>Key i18n Concepts</h2>
+  <div class="checklist">
+    <div class="item">
+      <input type="checkbox"> messages/*.json = translation files (one per language)
+    </div>
+    <div class="item">
+      <input type="checkbox"> Namespace = section in JSON (Auth, Dashboard, FAQ)
+    </div>
+    <div class="item">
+      <input type="checkbox"> Server: getTranslations() for SEO metadata
+    </div>
+    <div class="item">
+      <input type="checkbox"> Client: useTranslations() for display text
+    </div>
+    <div class="item">
+      <input type="checkbox"> URL has locale: /en, /hi, /mr, /te
+    </div>
+  </div>
+
+  <p class="success">✅ Your app speaks many languages. Chapter 10 makes it SEO-friendly!</p>
+</section>

@@ -1,0 +1,129 @@
+<!-- CHAPTER 8: Authentication System -->
+<section id="chapter-8" class="chapter">
+  <h1>🔐 Chapter 8: Authentication System</h1>
+  <p class="intro">Authentication (auth) verifies who the user is. ADVOCAT-Easy uses a simple token-based system. Let's see how it works.</p>
+
+  <h2>How Token-Based Auth Works</h2>
+
+  <pre><code class="language-text">SIGNUP:
+  User enters email + password
+    ↓
+  Server hashes password (never store plain passwords!)
+    ↓
+  Server creates user record
+    ↓
+  Redirects to login
+
+LOGIN:
+  User enters email + password
+    ↓
+  Server checks password matches hash
+    ↓
+  Server creates unique token (UUID)
+    ↓
+  Server stores: token → {email, createdAt, expiresAt}
+    ↓
+  Returns token to client
+    ↓
+  Client stores in localStorage
+
+ACCESSING PROTECTED PAGE:
+  Page loads → useAuth() hook runs
+    ↓
+  Hook reads token from localStorage
+    ↓
+  Sends token to /api/auth/validate
+    ↓
+  Server checks: is token valid? Not expired?
+    ↓
+  If valid: page renders
+  If invalid: redirects to /auth
+
+LOGOUT:
+  User clicks logout
+    ↓
+  Client calls /api/auth/logout with token
+    ↓
+  Server deletes the token from storage
+    ↓
+  Client removes token from localStorage</code></pre>
+
+  <h2>The useAuth Hook (Already Built)</h2>
+  <p>ADVOCAT-Easy has a custom hook to check auth. Use it in any component:</p>
+
+  <pre><code class="language-javascript">// hooks/useAuth.js
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+
+export function useAuth(requireAuth = true) {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    const token = localStorage.getItem('sessionToken');
+    if (!token) {
+      if (requireAuth) router.push('/auth');
+      return;
+    }
+
+    // Validate token
+    fetch('/api/auth/validate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token })
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.isValid) {
+          setIsLoggedIn(true);
+        } else if (requireAuth) {
+          router.push('/auth');
+        }
+      });
+  }, []);
+
+  return { isLoggedIn };
+}</code></pre>
+
+  <h2>Protecting a Page with Auth</h2>
+  <p>Make a page require login:</p>
+
+  <pre><code class="language-javascript">// app/[locale]/dashboard/DashboardClient.jsx
+'use client';
+
+import { useAuth } from '@/hooks/useAuth';
+
+export default function DashboardClient() {
+  const { isLoggedIn } = useAuth(true);  // true = must be logged in
+
+  if (!isLoggedIn) {
+    return &lt;p&gt;Loading...&lt;/p&gt;;  // Show loading until auth check done
+  }
+
+  return &lt;h1&gt;Welcome to your dashboard!&lt;/h1&gt;;
+}</code></pre>
+
+  <h2>Authentication Best Practices</h2>
+  <div class="checklist">
+    <div class="item">
+      <input type="checkbox"> Never store passwords in plain text—always hash
+    </div>
+    <div class="item">
+      <input type="checkbox"> Use HTTPS in production (tokens leak over HTTP)
+    </div>
+    <div class="item">
+      <input type="checkbox"> Set token expiration (ADVOCAT-Easy: 7 days)
+    </div>
+    <div class="item">
+      <input type="checkbox"> Use httpOnly cookies for extra security (not localStorage)
+    </div>
+    <div class="item">
+      <input type="checkbox"> Validate tokens on every protected API call
+    </div>
+    <div class="item">
+      <input type="checkbox"> Clear localStorage on logout
+    </div>
+  </div>
+
+  <p class="success">✅ Auth protects your app. Chapter 9 adds international support!</p>
+</section>

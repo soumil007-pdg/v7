@@ -1,0 +1,53 @@
+<!-- CHAPTER 12: Styling with Tailwind CSS -->
+<section id="chapter-12" class="chapter">
+  <h1>🎨 Chapter 12: Styling with Tailwind CSS</h1>
+  <p class="intro">Tailwind CSS is a "utility-first" CSS framework. Instead of writing CSS files, you write classes directly in your HTML. It's fast, consistent, and scales well.</p>
+
+  <h2>What is Tailwind?</h2>
+  <p>Tailwind gives you pre-made CSS classes for everything: colors, spacing, typography, layouts.</p>
+
+  <h3>Old Way:</h3>
+  <pre><code class="language-css">/* styles.css */
+.button {
+  background-color: #FF5B33;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+}</code></pre>
+
+  <h3>Tailwind Way:</h3>
+  <pre><code class="language-html">&lt;button class="bg-orange-500 text-white px-6 py-3 rounded-lg"&gt;
+  Click me
+&lt;/button&gt;</code></pre>
+
+  <h2>Tailwind Basics</h2>
+
+  <h3>Spacing</h3>
+  <pre><code class="language-html">&lt;div class="p-4"&gt;...&lt;/div&gt;  &lt;!-- padding: 1rem --&gt;
+&lt;div class="px-8 py-4"&gt;...&lt;/div&gt;  &lt;!-- padding left & right --&gt;</code></pre>
+
+  <h3>Colors</h3>
+  <pre><code class="language-html">&lt;div class="bg-blue-500"&gt;...&lt;/div&gt;  &lt;!-- Background blue --&gt;
+&lt;p class="text-red-600"&gt;Error&lt;/p&gt;  &lt;!-- Text red --&gt;</code></pre>
+
+  <h3>Layout (Flexbox & Grid)</h3>
+  <pre><code class="language-html">&lt;!-- Flexbox (row) --&gt;
+&lt;div class="flex justify-between items-center"&gt;
+  &lt;div&gt;Left&lt;/div&gt;
+  &lt;div&gt;Right&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- Grid --&gt;
+&lt;div class="grid grid-cols-3 gap-4"&gt;
+  &lt;div&gt;Col 1&lt;/div&gt;
+  &lt;div&gt;Col 2&lt;/div&gt;
+&lt;/div&gt;</code></pre>
+
+  <h2>Responsive Design</h2>
+  <pre><code class="language-html">&lt;!-- Mobile: 1 column, Desktop: 3 columns --&gt;
+&lt;div class="grid grid-cols-1 lg:grid-cols-3"&gt;
+  ...
+&lt;/div&gt;</code></pre>
+
+  <p class="success">✅ Tailwind makes beautiful UIs fast. Chapter 13 covers databases!</p>
+</section>

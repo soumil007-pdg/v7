@@ -1,0 +1,62 @@
+<!-- CHAPTER 10: SEO Optimization -->
+<section id="chapter-10" class="chapter">
+  <h1>🔍 Chapter 10: SEO Optimization</h1>
+  <p class="intro">SEO (Search Engine Optimization) makes your site appear in Google results. ADVOCAT-Easy implements best practices for rankings and visibility.</p>
+
+  <h2>Core SEO Elements</h2>
+
+  <h3>1. Metadata (generateMetadata)</h3>
+  <p>Titles and descriptions shown in Google search results:</p>
+
+  <pre><code class="language-javascript">// app/[locale]/dashboard/page.js
+export async function generateMetadata({ params }) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'Dashboard' });
+
+  return {
+    title: t('metaTitle'),
+    description: t('metaDescription'),
+    alternates: {
+      canonical: `https://advocat-easy.com/${locale}/dashboard`,
+      languages: {
+        en: `https://advocat-easy.com/en/dashboard`,
+        hi: `https://advocat-easy.com/hi/dashboard`
+      }
+    }
+  };
+}</code></pre>
+
+  <h3>2. Server Components for Speed</h3>
+  <p>Server Components render on the server, making pages faster and more SEO-friendly.</p>
+
+  <h3>3. Robots.txt and Sitemap</h3>
+  <pre><code class="language-text">// public/robots.txt
+User-agent: *
+Allow: /
+Disallow: /api/
+Sitemap: https://advocat-easy.com/sitemap.xml</code></pre>
+
+  <h2>SEO Checklist</h2>
+  <div class="checklist">
+    <div class="item">
+      <input type="checkbox"> Unique title (50-60 chars) per page
+    </div>
+    <div class="item">
+      <input type="checkbox"> Meta description (150-160 chars)
+    </div>
+    <div class="item">
+      <input type="checkbox"> H1 tag with primary keyword
+    </div>
+    <div class="item">
+      <input type="checkbox"> Fast page load (use Server Components)
+    </div>
+    <div class="item">
+      <input type="checkbox"> Mobile responsive design
+    </div>
+    <div class="item">
+      <input type="checkbox"> Sitemap.xml submitted to Google
+    </div>
+  </div>
+
+  <p class="success">✅ SEO makes your site discoverable. Chapter 11 shows API integration!</p>
+</section>
