@@ -1,0 +1,284 @@
+<!-- CHAPTER 11: Request/Response Handling -->
+<section id="chapter-11" class="chapter">
+  <h1>📨 Chapter 11: Request/Response Handling</h1>
+
+  <p class="intro">Every API interaction involves a request (from client) and a response (from server). Let's master handling both.</p>
+
+  <h2>Anatomy of a Request</h2>
+  <pre><code class="language-javascript">export async function POST(request) {
+  // Method: GET, POST, PUT, DELETE
+  console.log(request.method);  // "POST"
+
+  // URL and query params
+  const url = new URL(request.url);
+  console.log(url.pathname);  // "/api/auth/login"
+  console.log(url.searchParams.get('page'));  // Query param
+
+  // Headers (metadata)
+  const contentType = request.headers.get('Content-Type');
+  const token = request.headers.get('Authorization');
+
+  // Body (the actual data)
+  const body = await request.json();
+  console.log(body);  // { email: "...", password: "..." }
+}</code></pre>
+
+  <h2>Extracting Request Data</h2>
+  <pre><code class="language-javascript">// JSON body
+export async function POST(request) {
+  const { email, password } = await request.json();
+  return Response.json({ success: true });
+}
+
+// Form data
+export async function POST(request) {
+  const formData = await request.formData();
+  const email = formData.get('email');
+  const file = formData.get('file');  // File upload
+}
+
+// Query parameters
+export async function GET(request) {
+  const url = new URL(request.url);
+  const page = url.searchParams.get('page');
+  const limit = url.searchParams.get('limit');
+}
+
+// Headers
+export async function GET(request) {
+  const token = request.headers.get('Authorization');
+  const userAgent = request.headers.get('User-Agent');
+}
+
+// Path parameters (from route)
+export async function GET(request, { params }) {
+  const { userId } = await params;
+}</code></pre>
+
+  <h2>Building Responses</h2>
+  <pre><code class="language-javascript">// JSON response
+export async function GET(request) {
+  return Response.json({ message: 'Hello' });
+}
+
+// With status code
+export async function POST(request) {
+  return Response.json(
+    { message: 'Created' },
+    { status: 201 }
+  );
+}
+
+// With headers
+export async function GET(request) {
+  return Response.json(
+    { data: 'content' },
+    {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'max-age=3600'
+      }
+    }
+  );
+}
+
+// Plain text response
+export async function GET(request) {
+  return new Response('Hello, world!', {
+    status: 200,
+    headers: { 'Content-Type': 'text/plain' }
+  });
+}
+
+// HTML response
+export async function GET(request) {
+  return new Response('<h1>Hello</h1>', {
+    headers: { 'Content-Type': 'text/html' }
+  });
+}</code></pre>
+
+  <h2>Real-World Example: Complete Request/Response</h2>
+  <pre><code class="language-javascript">// app/api/auth/login/route.js
+import { users, sessions } from '@/lib/authStore';
+import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
+
+export async function POST(request) {
+  try {
+    // 1. EXTRACT: Get request data
+    const { email, password } = await request.json();
+
+    // 2. VALIDATE: Check data is correct
+    if (!email || !password) {
+      return Response.json(
+        { error: 'Email and password required' },
+        { status: 400 }
+      );
+    }
+
+    // 3. PROCESS: Find user, verify password
+    const user = Array.from(users.values()).find(u => u.email === email);
+
+    if (!user) {
+      return Response.json(
+        { error: 'Invalid credentials' },
+        { status: 401 }
+      );
+    }
+
+    const isValid = await bcrypt.compare(password, user.password);
+
+    if (!isValid) {
+      return Response.json(
+        { error: 'Invalid credentials' },
+        { status: 401 }
+      );
+    }
+
+    // 4. CREATE: Generate session
+    const token = crypto.randomUUID();
+    sessions.set(token, {
+      userId: user.id,
+      createdAt: Date.now()
+    });
+
+    // 5. RESPOND: Send success response
+    return Response.json(
+      {
+        success: true,
+        token: token,
+        user: {
+          id: user.id,
+          email: user.email
+        }
+      },
+      { status: 200 }
+    );
+
+  } catch (error) {
+    // 6. ERROR: Handle unexpected errors
+    console.error('Login error:', error);
+    return Response.json(
+      { error: 'Something went wrong' },
+      { status: 500 }
+    );
+  }
+}</code></pre>
+
+  <h2>Streaming Responses</h2>
+  <p>For large responses, stream data gradually:</p>
+  <pre><code class="language-javascript">export async function GET(request) {
+  // For AI chat streaming (chunks of text as they arrive)
+  const stream = new ReadableStream({
+    async start(controller) {
+      controller.enqueue('Hello ');
+      await new Promise(r => setTimeout(r, 100));
+
+      controller.enqueue('from ');
+      await new Promise(r => setTimeout(r, 100));
+
+      controller.enqueue('server!');
+      controller.close();
+    }
+  });
+
+  return new Response(stream, {
+    headers: { 'Content-Type': 'text/plain' }
+  });
+}</code></pre>
+
+  <h2>Handling Different Content Types</h2>
+  <pre><code class="language-javascript">// JSON (default for APIs)
+return Response.json({ data: 'value' });
+
+// Plain text
+return new Response('plain text', {
+  headers: { 'Content-Type': 'text/plain' }
+});
+
+// HTML
+return new Response('<h1>Hello</h1>', {
+  headers: { 'Content-Type': 'text/html' }
+});
+
+// Binary (images, files)
+return new Response(fileBuffer, {
+  headers: { 'Content-Type': 'image/png' }
+});
+
+// CSV
+return new Response('name,email\nJohn,john@example.com', {
+  headers: { 'Content-Type': 'text/csv' }
+});</code></pre>
+
+  <h2>Request Validation Pattern</h2>
+  <pre><code class="language-javascript">async function validateLoginRequest(request) {
+  try {
+    const body = await request.json();
+
+    const { email, password } = body;
+
+    if (!email) throw new Error('Email required');
+    if (!password) throw new Error('Password required');
+
+    if (typeof email !== 'string') throw new Error('Email must be string');
+    if (typeof password !== 'string') throw new Error('Password must be string');
+
+    return { valid: true, data: { email, password } };
+
+  } catch (error) {
+    return {
+      valid: false,
+      error: error.message
+    };
+  }
+}
+
+export async function POST(request) {
+  const { valid, error, data } = await validateLoginRequest(request);
+
+  if (!valid) {
+    return Response.json({ error }, { status: 400 });
+  }
+
+  // Continue with validated data...
+}</code></pre>
+
+  <h2>Response Caching</h2>
+  <pre><code class="language-javascript">// Tell client to cache for 1 hour
+export async function GET(request) {
+  return Response.json(
+    { data: 'cacheable' },
+    {
+      headers: {
+        'Cache-Control': 'public, max-age=3600'
+      }
+    }
+  );
+}
+
+// Don't cache (sensitive data)
+export async function GET(request) {
+  return Response.json(
+    { data: 'user-sensitive' },
+    {
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate'
+      }
+    }
+  );
+}</code></pre>
+
+  <h2>Key Concepts</h2>
+  <ul>
+    <li><strong>Request:</strong> Data sent from client to server</li>
+    <li><strong>Response:</strong> Data sent from server back to client</li>
+    <li><strong>Headers:</strong> Metadata in request/response</li>
+    <li><strong>Body:</strong> The actual data (JSON, text, binary)</li>
+    <li><strong>Status code:</strong> Indicates success or failure</li>
+    <li><strong>Content-Type:</strong> Describes what kind of data</li>
+  </ul>
+
+  <p class="success">✅ You master request/response handling! Next: Status codes.</p>
+</section>

@@ -1,0 +1,264 @@
+<!-- CHAPTER 15: Database Design & Models -->
+<section id="chapter-15" class="chapter">
+  <h1>🗄️ Chapter 15: Database Design & Models</h1>
+
+  <p class="intro">Data is the heart of any application. Let's learn how to structure it effectively. ADVOCAT-Easy currently uses in-memory storage, but the patterns apply to databases too.</p>
+
+  <h2>What is a Database?</h2>
+  <p>A database is organized storage for data. Types:</p>
+  <ul>
+    <li><strong>Relational (SQL):</strong> Tables with rows and columns (PostgreSQL, MySQL)</li>
+    <li><strong>NoSQL (Document):</strong> Flexible JSON-like documents (MongoDB, Firebase)</li>
+    <li><strong>In-Memory:</strong> Data in RAM (Redis, our authStore)</li>
+  </ul>
+
+  <h2>ADVOCAT-Easy's Current Structure</h2>
+  <pre><code class="language-javascript">// lib/authStore.js - In-memory storage
+export const users = new Map();
+export const sessions = new Map();
+
+// Users table structure
+users.set('user-123', {
+  id: 'user-123',
+  email: 'john@example.com',
+  password: '$2b$10$hashed...',
+  role: 'user',
+  createdAt: 1234567890,
+  updatedAt: 1234567890
+});
+
+// Sessions table structure
+sessions.set('token-abc', {
+  userId: 'user-123',
+  createdAt: 1234567890,
+  expiresAt: 1234567890 + 86400000  // 24 hours
+});</code></pre>
+
+  <h2>User Model</h2>
+  <pre><code class="language-javascript">// A user should have:
+{
+  id: string,              // Unique identifier
+  email: string,           // Email address (unique)
+  password: string,        // Hashed password
+  name: string,            // Full name
+  role: 'user' | 'lawyer' | 'admin',  // User type
+  createdAt: number,       // Creation timestamp
+  updatedAt: number,       // Last modified
+  lastLogin: number,       // Last login timestamp
+  isActive: boolean        // Account active?
+}
+
+// Example:
+{
+  id: 'uuid-123',
+  email: 'john@example.com',
+  password: '$2b$10$...',
+  name: 'John Doe',
+  role: 'user',
+  createdAt: 1704067200000,
+  updatedAt: 1704067200000,
+  lastLogin: null,
+  isActive: true
+}</code></pre>
+
+  <h2>Case Model</h2>
+  <pre><code class="language-javascript">// A legal case should have:
+{
+  id: string,              // Unique ID
+  userId: string,          // Who owns this case
+  title: string,           // Case title
+  description: string,     // Detailed description
+  category: string,        // Type (civil, criminal, etc.)
+  status: 'open' | 'closed' | 'pending',
+  priority: 'low' | 'medium' | 'high',
+  lawyerId: string | null, // Assigned lawyer
+  createdAt: number,
+  updatedAt: number
+}
+
+// Example:
+{
+  id: 'case-456',
+  userId: 'user-123',
+  title: 'Property Dispute',
+  description: 'Neighbor encroached on my property...',
+  category: 'property',
+  status: 'open',
+  priority: 'high',
+  lawyerId: 'lawyer-789',
+  createdAt: 1704067200000,
+  updatedAt: 1704067200000
+}</code></pre>
+
+  <h2>Conversation Model</h2>
+  <pre><code class="language-javascript">// A chat conversation should have:
+{
+  id: string,              // Unique ID
+  userId: string,          // Who is chatting
+  messages: [
+    {
+      id: string,          // Message ID
+      role: 'user' | 'assistant',  // Who sent
+      content: string,     // Message text
+      timestamp: number
+    }
+  ],
+  createdAt: number,
+  updatedAt: number
+}
+
+// Example:
+{
+  id: 'conv-111',
+  userId: 'user-123',
+  messages: [
+    {
+      id: 'msg-1',
+      role: 'user',
+      content: 'What should I do about...',
+      timestamp: 1704067200000
+    },
+    {
+      id: 'msg-2',
+      role: 'assistant',
+      content: 'Based on the law...',
+      timestamp: 1704067210000
+    }
+  ],
+  createdAt: 1704067200000,
+  updatedAt: 1704067210000
+}</code></pre>
+
+  <h2>Relationships</h2>
+  <pre><code class="language-text">User (1) ──→ (Many) Cases
+User (1) ──→ (Many) Conversations
+User (1) ──→ (Many) Sessions
+Case (1) ──→ (1 or 0) Lawyer
+Lawyer (1) ──→ (Many) Cases</code></pre>
+
+  <h2>Implementing Models with Maps</h2>
+  <pre><code class="language-javascript">// lib/db.js
+export const users = new Map();
+export const cases = new Map();
+export const conversations = new Map();
+export const lawyers = new Map();
+
+// Create user
+export function createUser(data) {
+  const user = {
+    id: crypto.randomUUID(),
+    email: data.email,
+    password: data.password,
+    name: data.name,
+    role: 'user',
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+    lastLogin: null,
+    isActive: true
+  };
+
+  users.set(user.id, user);
+  return user;
+}
+
+// Get user by email
+export function getUserByEmail(email) {
+  return Array.from(users.values()).find(u => u.email === email);
+}
+
+// Update user
+export function updateUser(userId, updates) {
+  const user = users.get(userId);
+  if (!user) return null;
+
+  const updated = {
+    ...user,
+    ...updates,
+    updatedAt: Date.now()
+  };
+
+  users.set(userId, updated);
+  return updated;
+}
+
+// Delete user
+export function deleteUser(userId) {
+  return users.delete(userId);
+}</code></pre>
+
+  <h2>Data Validation</h2>
+  <pre><code class="language-javascript">// lib/validation.js
+export function validateUserData(data) {
+  const errors = [];
+
+  // Email validation
+  if (!data.email) {
+    errors.push('Email is required');
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
+    errors.push('Email is invalid');
+  }
+
+  // Password validation
+  if (!data.password) {
+    errors.push('Password is required');
+  } else if (data.password.length < 6) {
+    errors.push('Password must be at least 6 characters');
+  }
+
+  // Name validation
+  if (!data.name) {
+    errors.push('Name is required');
+  } else if (data.name.length < 2) {
+    errors.push('Name must be at least 2 characters');
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors
+  };
+}</code></pre>
+
+  <h2>Indexing for Performance</h2>
+  <p>For large datasets, create indexes for fast lookups:</p>
+  <pre><code class="language-javascript">// Create an email index
+const emailIndex = new Map();
+
+export function addUserWithIndex(user) {
+  users.set(user.id, user);
+  emailIndex.set(user.email, user.id);  // Fast email lookup
+}
+
+// Fast email lookup (O(1) instead of O(n))
+export function getUserByEmail(email) {
+  const userId = emailIndex.get(email);
+  return userId ? users.get(userId) : null;
+}</code></pre>
+
+  <h2>Migrations</h2>
+  <p>When changing data structure, you need migrations:</p>
+  <pre><code class="language-javascript">// Before: User had firstName, lastName
+// After: User has name
+
+export function migrateUsers() {
+  for (const user of users.values()) {
+    if (user.firstName && user.lastName) {
+      user.name = `${user.firstName} ${user.lastName}`;
+      delete user.firstName;
+      delete user.lastName;
+    }
+  }
+  console.log('Migration complete');
+}</code></pre>
+
+  <h2>Key Concepts</h2>
+  <ul>
+    <li><strong>Model:</strong> Structure of data (what fields)</li>
+    <li><strong>Schema:</strong> Definition of model fields</li>
+    <li><strong>Relationship:</strong> How data connects (1-to-many, many-to-many)</li>
+    <li><strong>Index:</strong> Fast lookup structure</li>
+    <li><strong>Validation:</strong> Ensuring data is correct</li>
+    <li><strong>Migration:</strong> Changing schema over time</li>
+  </ul>
+
+  <p class="success">✅ You understand database design! Next: Gemini integration.</p>
+</section>

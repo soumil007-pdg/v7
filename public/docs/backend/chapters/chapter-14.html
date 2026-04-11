@@ -1,0 +1,258 @@
+<!-- CHAPTER 14: Rate Limiting & Throttling -->
+<section id="chapter-14" class="chapter">
+  <h1>⏱️ Chapter 14: Rate Limiting & Throttling</h1>
+
+  <p class="intro">Rate limiting prevents abuse by restricting how many requests a user can make. Let's implement it.</p>
+
+  <h2>Why Rate Limiting?</h2>
+  <ul>
+    <li><strong>Prevent abuse:</strong> Stop attackers from hammering your API</li>
+    <li><strong>Fair usage:</strong> Ensure one user doesn't monopolize resources</li>
+    <li><strong>Cost control:</strong> Limit expensive API calls (Gemini, Apify)</li>
+    <li><strong>Server stability:</strong> Prevent overwhelming the server</li>
+  </ul>
+
+  <h2>Simple Rate Limiting</h2>
+  <pre><code class="language-javascript">// lib/rateLimit.js
+const requestCounts = new Map();
+
+export function isRateLimited(identifier, limit = 10, windowMs = 60000) {
+  const now = Date.now();
+  const key = identifier;
+
+  if (!requestCounts.has(key)) {
+    requestCounts.set(key, []);
+  }
+
+  const requests = requestCounts.get(key);
+
+  // Remove old requests (older than window)
+  const recentRequests = requests.filter(time => now - time < windowMs);
+
+  if (recentRequests.length >= limit) {
+    return true;  // Rate limited
+  }
+
+  // Add this request
+  recentRequests.push(now);
+  requestCounts.set(key, recentRequests);
+
+  return false;  // Not rate limited
+}</code></pre>
+
+  <h2>Using Rate Limiting in Routes</h2>
+  <pre><code class="language-javascript">// app/api/auth/login/route.js
+import { isRateLimited } from '@/lib/rateLimit';
+
+export async function POST(request) {
+  // Get client identifier (IP address)
+  const ip = request.headers.get('x-forwarded-for') || 'unknown';
+
+  // Rate limit: 5 attempts per minute
+  if (isRateLimited(ip, 5, 60000)) {
+    return Response.json(
+      { error: 'Too many login attempts. Try again in 1 minute.' },
+      { status: 429 }  // Too Many Requests
+    );
+  }
+
+  // Continue with login...
+  const { email, password } = await request.json();
+  // ... rest of login logic
+}</code></pre>
+
+  <h2>Per-User Rate Limiting</h2>
+  <p>Limit based on user ID instead of IP (for authenticated endpoints):</p>
+  <pre><code class="language-javascript">// app/api/chat/route.js
+import { isRateLimited } from '@/lib/rateLimit';
+
+export async function POST(request) {
+  const token = request.headers.get('Authorization')?.replace('Bearer ', '');
+  const session = sessions.get(token);
+
+  if (!session) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const userId = session.userId;
+
+  // Rate limit: 50 messages per hour
+  if (isRateLimited(`chat-${userId}`, 50, 3600000)) {
+    return Response.json(
+      { error: 'Message limit reached. Try again later.' },
+      { status: 429 }
+    );
+  }
+
+  // Continue with chat...
+}</code></pre>
+
+  <h2>Different Limits for Different Routes</h2>
+  <pre><code class="language-javascript">// app/api/chat/route.js - Moderate limit
+// 50 messages per hour
+if (isRateLimited(`chat-${userId}`, 50, 3600000)) { ... }
+
+// app/api/case-advisor/route.js - Strict limit (expensive)
+// 5 requests per hour
+if (isRateLimited(`case-${userId}`, 5, 3600000)) { ... }
+
+// app/api/auth/login/route.js - Strict limit (security)
+// 5 attempts per minute
+if (isRateLimited(`login-${ip}`, 5, 60000)) { ... }
+
+// app/api/public/data/route.js - Generous limit
+// 1000 requests per day
+if (isRateLimited(`public-${ip}`, 1000, 86400000)) { ... }</code></pre>
+
+  <h2>Response with Retry Info</h2>
+  <pre><code class="language-javascript">// Return when rate limited
+export function createRateLimitError(resetAt) {
+  const now = Date.now();
+  const secondsUntilReset = Math.ceil((resetAt - now) / 1000);
+
+  return Response.json(
+    {
+      error: 'Rate limit exceeded',
+      retryAfter: secondsUntilReset
+    },
+    {
+      status: 429,
+      headers: {
+        'Retry-After': secondsUntilReset.toString()
+      }
+    }
+  );
+}</code></pre>
+
+  <h2>Advanced Rate Limiting</h2>
+  <p>Track remaining requests and reset time:</p>
+  <pre><code class="language-javascript">// lib/rateLimit.js (advanced)
+export function checkRateLimit(identifier, limit = 10, windowMs = 60000) {
+  const now = Date.now();
+
+  if (!requestCounts.has(identifier)) {
+    requestCounts.set(identifier, { count: 0, resetAt: now + windowMs });
+  }
+
+  const record = requestCounts.get(identifier);
+
+  // Reset window?
+  if (now > record.resetAt) {
+    record.count = 0;
+    record.resetAt = now + windowMs;
+  }
+
+  // Check limit
+  const isLimited = record.count >= limit;
+
+  if (!isLimited) {
+    record.count += 1;
+  }
+
+  const remaining = Math.max(0, limit - record.count);
+  const resetIn = record.resetAt - now;
+
+  return {
+    isLimited,
+    remaining,
+    resetIn,
+    resetAt: record.resetAt
+  };
+}
+
+// Usage
+export async function POST(request) {
+  const userId = 'user-123';
+  const { isLimited, remaining, resetIn } = checkRateLimit(
+    `chat-${userId}`,
+    50,
+    3600000
+  );
+
+  if (isLimited) {
+    return Response.json(
+      {
+        error: 'Rate limit exceeded',
+        resetIn: Math.ceil(resetIn / 1000)
+      },
+      {
+        status: 429,
+        headers: {
+          'X-RateLimit-Remaining': '0',
+          'X-RateLimit-Reset': (Date.now() + resetIn).toString()
+        }
+      }
+    );
+  }
+
+  // Return response with rate limit info
+  return Response.json(
+    { success: true, data: '...' },
+    {
+      status: 200,
+      headers: {
+        'X-RateLimit-Remaining': remaining.toString(),
+        'X-RateLimit-Reset': (Date.now() + resetIn).toString()
+      }
+    }
+  );
+}</code></pre>
+
+  <h2>Cleanup Expired Records</h2>
+  <p>Periodically clean up old rate limit records:</p>
+  <pre><code class="language-javascript">// Clean every hour
+setInterval(() => {
+  const now = Date.now();
+
+  for (const [key, record] of requestCounts.entries()) {
+    if (now > record.resetAt) {
+      requestCounts.delete(key);
+    }
+  }
+}, 3600000);  // 1 hour</code></pre>
+
+  <h2>Rate Limit Headers</h2>
+  <p>Standard HTTP headers for rate limiting:</p>
+  <pre><code class="language-javascript">return Response.json(
+  { data: '...' },
+  {
+    headers: {
+      'X-RateLimit-Limit': '50',           // Total limit
+      'X-RateLimit-Remaining': '45',       // Remaining requests
+      'X-RateLimit-Reset': '1234567890'    // Reset timestamp
+    }
+  }
+);</code></pre>
+
+  <h2>Sliding Window vs Fixed Window</h2>
+  <table class="info-table">
+    <tr>
+      <th>Fixed Window</th>
+      <th>Sliding Window</th>
+    </tr>
+    <tr>
+      <td>Reset at fixed times (0:00, 1:00, 2:00)</td>
+      <td>Reset 60 seconds after each request</td>
+    </tr>
+    <tr>
+      <td>Simpler to implement</td>
+      <td>More fair to users</td>
+    </tr>
+    <tr>
+      <td>Can allow spike at boundary</td>
+      <td>Prevents spikes</td>
+    </tr>
+  </table>
+
+  <h2>Key Concepts</h2>
+  <ul>
+    <li><strong>Rate limiting:</strong> Restrict request frequency</li>
+    <li><strong>Throttling:</strong> Slow down requests</li>
+    <li><strong>429:</strong> Too Many Requests status code</li>
+    <li><strong>Window:</strong> Time period for counting requests</li>
+    <li><strong>Identifier:</strong> IP address or user ID</li>
+    <li><strong>Retry-After:</strong> Header telling client when to retry</li>
+  </ul>
+
+  <p class="success">✅ You can rate limit requests! Next: Database design.</p>
+</section>

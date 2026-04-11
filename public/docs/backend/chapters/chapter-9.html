@@ -1,0 +1,252 @@
+<!-- CHAPTER 9: Middleware & Request Pipeline -->
+<section id="chapter-9" class="chapter">
+  <h1>🔄 Chapter 9: Middleware & Request Pipeline</h1>
+
+  <p class="intro">Middleware is code that runs BEFORE your route handlers. It's perfect for authentication, logging, and request processing.</p>
+
+  <h2>What is Middleware?</h2>
+  <p>Middleware intercepts requests before they reach your route handlers:</p>
+  <pre><code class="language-text">Request comes in
+  ↓
+Middleware 1 runs (check locale)
+  ↓
+Middleware 2 runs (check auth)
+  ↓
+Route handler runs (/api/chat)
+  ↓
+Response sent back</code></pre>
+
+  <h2>ADVOCAT-Easy's Middleware</h2>
+  <pre><code class="language-javascript">// middleware.js (runs on every request)
+import { NextResponse } from 'next/server';
+
+export function middleware(request) {
+  // Get the pathname
+  const pathname = request.nextUrl.pathname;
+
+  // Check locale routing
+  const locales = ['en', 'hi', 'mr', 'te'];
+  const hasLocale = locales.some(locale => pathname.startsWith(`/${locale}`));
+
+  if (!hasLocale) {
+    // Redirect to English if no locale
+    return NextResponse.redirect(new URL('/en' + pathname, request.url));
+  }
+
+  return NextResponse.next();
+}
+
+// config: Tell Next.js which paths use middleware
+export const config = {
+  matcher: ['/((?!_next).*)']
+};
+</code></pre>
+
+  <h2>Custom Middleware for Auth</h2>
+  <pre><code class="language-javascript">// middleware.js
+export function middleware(request) {
+  const pathname = request.nextUrl.pathname;
+
+  // Routes that need authentication
+  const protectedPaths = [
+    '/api/chat',
+    '/api/case-advisor',
+    '/api/user'
+  ];
+
+  const needsAuth = protectedPaths.some(path => pathname.startsWith(path));
+
+  if (needsAuth) {
+    const authHeader = request.headers.get('Authorization');
+    const token = authHeader?.replace('Bearer ', '');
+
+    if (!token) {
+      return new Response(
+        JSON.stringify({ error: 'No token' }),
+        { status: 401, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Continue if token exists
+  }
+
+  return NextResponse.next();
+}</code></pre>
+
+  <h2>Request Logging Middleware</h3>
+  <pre><code class="language-javascript">// middleware.js
+export function middleware(request) {
+  const start = Date.now();
+  const pathname = request.nextUrl.pathname;
+  const method = request.method;
+
+  console.log(`→ ${method} ${pathname}`);
+
+  const response = NextResponse.next();
+
+  const duration = Date.now() - start;
+  console.log(`← ${method} ${pathname} (${duration}ms)`);
+
+  return response;
+}</code></pre>
+
+  <h2>Adding Custom Headers</h2>
+  <pre><code class="language-javascript">// middleware.js
+export function middleware(request) {
+  const response = NextResponse.next();
+
+  // Add security headers
+  response.headers.set('X-Content-Type-Options', 'nosniff');
+  response.headers.set('X-Frame-Options', 'DENY');
+  response.headers.set('X-XSS-Protection', '1; mode=block');
+
+  // Add custom header
+  response.headers.set('X-Custom-Middleware', 'processed');
+
+  return response;
+}</code></pre>
+
+  <h2>Middleware in Route Handlers</h2>
+  <p>You can also create middleware-like functions in your routes:</p>
+  <pre><code class="language-javascript">// app/api/chat/route.js
+function authenticateRequest(request) {
+  const authHeader = request.headers.get('Authorization');
+  const token = authHeader?.replace('Bearer ', '');
+
+  if (!token) {
+    throw new Error('No token');
+  }
+
+  return token;
+}
+
+function validateRequestBody(body) {
+  if (!body.message) {
+    throw new Error('Message required');
+  }
+
+  return body;
+}
+
+export async function POST(request) {
+  try {
+    const token = authenticateRequest(request);
+    const body = await request.json();
+    validateRequestBody(body);
+
+    // Process chat...
+    return Response.json({ success: true });
+
+  } catch (error) {
+    return Response.json(
+      { error: error.message },
+      { status: 400 }
+    );
+  }
+}</code></pre>
+
+  <h2>Middleware Chain</h2>
+  <p>Multiple middleware can run in sequence:</p>
+  <pre><code class="language-javascript">// lib/middleware.js
+export const middlewares = {
+  // Check authentication
+  async authenticate(request) {
+    const token = request.headers.get('Authorization')?.replace('Bearer ', '');
+    if (!token) throw new Error('No token');
+    return token;
+  },
+
+  // Check rate limit
+  async rateLimit(request, token) {
+    const ip = request.headers.get('x-forwarded-for');
+    if (isRateLimited(ip)) throw new Error('Rate limited');
+  },
+
+  // Log request
+  async log(request) {
+    console.log(`${request.method} ${request.nextUrl.pathname}`);
+  }
+};
+
+// Usage in route
+export async function POST(request) {
+  try {
+    await middlewares.log(request);
+    const token = await middlewares.authenticate(request);
+    await middlewares.rateLimit(request, token);
+
+    // Continue...
+
+  } catch (error) {
+    return Response.json({ error: error.message }, { status: 400 });
+  }
+}</code></pre>
+
+  <h2>Global Middleware vs Route Middleware</h2>
+  <table class="info-table">
+    <tr>
+      <th>Global (middleware.js)</th>
+      <th>Route (in handler)</th>
+    </tr>
+    <tr>
+      <td>Runs for ALL requests</td>
+      <td>Runs for specific route</td>
+    </tr>
+    <tr>
+      <td>Can't access request body</td>
+      <td>Can access body</td>
+    </tr>
+    <tr>
+      <td>Good for auth, logging</td>
+      <td>Good for validation</td>
+    </tr>
+    <tr>
+      <td>Centralized control</td>
+      <td>Route-specific logic</td>
+    </tr>
+  </table>
+
+  <h2>CORS Middleware</h2>
+  <pre><code class="language-javascript">// Allow frontend to call your API
+export async function middleware(request) {
+  // Handle preflight requests
+  if (request.method === 'OPTIONS') {
+    return new Response(null, {
+      headers: {
+        'Access-Control-Allow-Origin': 'http://localhost:3000',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+      }
+    });
+  }
+
+  return NextResponse.next();
+}</code></pre>
+
+  <h2>Error Handling in Middleware</h2>
+  <pre><code class="language-javascript">export function middleware(request) {
+  try {
+    // Validate request
+    if (request.method !== 'GET' && request.method !== 'POST') {
+      return new Response('Method not allowed', { status: 405 });
+    }
+
+    return NextResponse.next();
+
+  } catch (error) {
+    console.error('Middleware error:', error);
+    return new Response('Internal error', { status: 500 });
+  }
+}</code></pre>
+
+  <h2>Key Concepts</h2>
+  <ul>
+    <li><strong>Middleware:</strong> Code that runs before route handlers</li>
+    <li><strong>Global middleware:</strong> middleware.js runs for all requests</li>
+    <li><strong>Route middleware:</strong> Custom functions in handlers</li>
+    <li><strong>Request pipeline:</strong> Order of operations</li>
+    <li><strong>Intercepting:</strong> Examining and modifying requests</li>
+  </ul>
+
+  <p class="success">✅ You understand middleware! Next: RESTful API design.</p>
+</section>
