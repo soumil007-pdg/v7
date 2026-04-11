@@ -1,4 +1,5 @@
 import { authStore } from '@/lib/authStore';
+import { getSessions, saveSessions } from '@/lib/localDb';
 
 export async function POST(req) {
   try {
@@ -15,6 +16,16 @@ export async function POST(req) {
     }
 
     return new Response(JSON.stringify({ message: 'Session not found' }), { status: 404 });
+    const sessions = getSessions();
+    const index = sessions.findIndex(s => s.token === token);
+    if (index === -1) {
+      return new Response(JSON.stringify({ message: 'Session not found' }), { status: 404 });
+    }
+
+    sessions.splice(index, 1);
+    saveSessions(sessions);
+
+    return new Response(JSON.stringify({ message: 'Logout successful' }), { status: 200 });
   } catch (err) {
     console.error('Logout error:', err);
     return new Response(JSON.stringify({ message: 'Server error' }), { status: 500 });

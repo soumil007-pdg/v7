@@ -1,4 +1,4 @@
-import clientPromise from '@/lib/db';
+import { getCases } from '@/lib/localDb';
 
 export async function POST(req) {
   try {
@@ -8,13 +8,9 @@ export async function POST(req) {
       return new Response('Missing email', { status: 400 });
     }
 
-    const client = await clientPromise;
-    const db = client.db('auth_db');
-    const collection = db.collection('user_cases');
-    
-    const record = await collection.findOne({ email });
+    const allCases = getCases();
+    const record = allCases.find(c => c.email === email);
 
-    // Return empty object if no cases found
     return new Response(JSON.stringify({ cases: record ? record.cases : {} }), { status: 200 });
   } catch (error) {
     console.error('Load error:', error);

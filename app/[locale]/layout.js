@@ -11,7 +11,7 @@ import { getMessages, setRequestLocale, getTranslations } from 'next-intl/server
 import { notFound } from 'next/navigation';
 import '../globals.css'; 
 
-import Navbar from '../components/Navbar'; 
+import NavbarClient from '../components/NavbarClient';
 import Footer from '../components/Footer';
 
 const locales = ['en', 'hi', 'mr', 'te'];
@@ -97,7 +97,7 @@ export default async function RootLayout({ children, params }) {
     <html lang={locale}>
       <body>
         <NextIntlClientProvider locale={locale} messages={messages}>
-          <Navbar />
+          <NavbarClient />
           {children}
           <Footer />
         </NextIntlClientProvider>

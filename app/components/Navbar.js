@@ -1,11 +1,11 @@
 'use client';
 import React from "react";
 import Link from "next/link";
-import { Scale, MessageSquare, FileText, LogOut, Globe } from 'lucide-react'; 
+import { Scale, MessageSquare, FileText, LogOut, Globe, BookOpen } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter, usePathname } from 'next/navigation';
 
-const Navbar = ({ isLoggedIn, userEmail, handleLogout }) => {
+const Navbar = ({ isLoggedIn, userEmail, userName, handleLogout }) => {
   const t = useTranslations('Navbar');
   const router = useRouter();
   const pathname = usePathname();
@@ -38,6 +38,17 @@ const Navbar = ({ isLoggedIn, userEmail, handleLogout }) => {
       {/* Right Side: User Info, Actions & Language Switcher */}
       <div className="flex items-center gap-4 text-white">
         
+        {/* --- DOCS BUTTON --- */}
+        <a
+          href="/docs/index.html"
+          target="_blank"
+          rel="noreferrer"
+          title="Documentation"
+          className="flex items-center justify-center p-2 rounded hover:bg-white/10 transition-colors duration-150"
+        >
+          <BookOpen size={20} />
+        </a>
+
         {/* --- LANGUAGE SWITCHER --- */}
         <div className="flex items-center gap-1 bg-white/10 px-2 py-1 rounded">
           <Globe size={16} />
@@ -55,7 +66,7 @@ const Navbar = ({ isLoggedIn, userEmail, handleLogout }) => {
 
         {isLoggedIn ? (
           <>
-            <span className="text-sm hidden lg:block text-white/80">{t('welcome')}, {userEmail}</span>
+            <span className="text-sm hidden lg:block text-white/80">{t('welcome')}, {userName || userEmail}</span>
             <Link 
               href="/general-queries" 
               className="flex items-center gap-1 text-sm font-semibold hover:text-white/70 transition-colors duration-150"
