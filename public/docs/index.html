@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ADVOCAT-Easy & SaaS Frontend Documentation</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <!-- LEFT SIDEBAR: Navigation -->
+    <aside class="sidebar-nav">
+      <div class="nav-header">
+        <h2>📚 Docs</h2>
+        <p class="nav-subtitle">Complete Frontend Guide</p>
+      </div>
+
+      <nav class="nav-list">
+        <div class="nav-section">
+          <h3>Foundations</h3>
+          <a href="#chapter-1" class="nav-item" data-chapter="1">🚀 Getting Started</a>
+          <a href="#chapter-2" class="nav-item" data-chapter="2">🌐 Web Basics for Beginners</a>
+          <a href="#chapter-3" class="nav-item" data-chapter="3">⚛️ React 101</a>
+        </div>
+
+        <div class="nav-section">
+          <h3>Next.js & Architecture</h3>
+          <a href="#chapter-4" class="nav-item" data-chapter="4">⚡ Next.js 15 Deep Dive</a>
+          <a href="#chapter-5" class="nav-item" data-chapter="5">🏗️ ADVOCAT-Easy Architecture</a>
+        </div>
+
+        <div class="nav-section">
+          <h3>Building Features</h3>
+          <a href="#chapter-6" class="nav-item" data-chapter="6">📄 Building Your First Page</a>
+          <a href="#chapter-7" class="nav-item" data-chapter="7">🎨 Components & Reusability</a>
+          <a href="#chapter-8" class="nav-item" data-chapter="8">🔐 Authentication System</a>
+        </div>
+
+        <div class="nav-section">
+          <h3>Advanced Topics</h3>
+          <a href="#chapter-9" class="nav-item" data-chapter="9">🌍 Multilingual Support (i18n)</a>
+          <a href="#chapter-10" class="nav-item" data-chapter="10">🔍 SEO Optimization</a>
+          <a href="#chapter-11" class="nav-item" data-chapter="11">🔗 API Integration</a>
+          <a href="#chapter-12" class="nav-item" data-chapter="12">🎨 Styling with Tailwind CSS</a>
+          <a href="#chapter-13" class="nav-item" data-chapter="13">💾 Database & APIs</a>
+        </div>
+
+        <div class="nav-section">
+          <h3>Beyond ADVOCAT-Easy</h3>
+          <a href="#chapter-14" class="nav-item" data-chapter="14">🚀 Reusable Template: Building SaaS</a>
+        </div>
+      </nav>
+
+      <div class="nav-footer">
+        <p>💡 Generated with care for beginners & developers alike</p>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="content">
+      <!-- CHAPTER 1: Getting Started -->
+      <section id="chapter-1" class="chapter">
+        <h1>🚀 Chapter 1: Getting Started</h1>
+        <p class="intro">Welcome! This guide takes you from zero to building a professional SaaS application. You don't need any prior coding experience — we'll explain everything from scratch.</p>
+
+        <h2>Prerequisites</h2>
+        <p>Before we start, you'll need three things installed on your computer:</p>
+
+        <div class="checklist">
+          <div class="item">
+            <h3>1. Node.js & npm</h3>
+            <p>Node.js is a runtime that lets JavaScript run outside the browser. npm is the package manager (like an app store for code).</p>
+            <p><strong>How to check:</strong></p>
+            <pre><code class="language-bash">node --version
+npm --version</code></pre>
+            <p>If these commands fail, download from <a href="https://nodejs.org" target="_blank">nodejs.org</a> (choose LTS version).</p>
+          </div>
+
+          <div class="item">
+            <h3>2. Git</h3>
+            <p>Git is a version control system (like "track changes" for code). It lets you save snapshots of your work and collaborate with others.</p>
+            <p><strong>How to check:</strong></p>
+            <pre><code class="language-bash">git --version</code></pre>
+            <p>If this fails, download from <a href="https://git-scm.com" target="_blank">git-scm.com</a>.</p>
+          </div>
+
+          <div class="item">
+            <h3>3. A Code Editor</h3>
+            <p>You'll write code in a text editor. We recommend <strong>VS Code</strong> (free, powerful, beginner-friendly).</p>
+            <p>Download from <a href="https://code.visualstudio.com" target="_blank">code.visualstudio.com</a>.</p>
+          </div>
+        </div>
+
+        <h2>Setting Up ADVOCAT-Easy Locally</h2>
+        <p>Now let's clone the project and get it running on your computer.</p>
+
+        <h3>Step 1: Clone the Repository</h3>
+        <p>A repository is a folder that contains all the code for a project. Cloning means making a copy on your computer.</p>
+        <pre><code class="language-bash">git clone https://github.com/soumil007-pdg/v7.git
+cd v7/.claude/worktrees/flamboyant-solomon</code></pre>
+
+        <h3>Step 2: Install Dependencies</h3>
+        <p>The project depends on many libraries (React, Next.js, Tailwind, etc.). npm will download and install them all.</p>
+        <pre><code class="language-bash">npm install</code></pre>
+        <p><strong>⏳ This may take 2-5 minutes on first run.</strong></p>
+
+        <h3>Step 3: Start the Dev Server</h3>
+        <p>The dev server is a local web server that runs your app on your computer.</p>
+        <pre><code class="language-bash">npm run dev</code></pre>
+        <p>You should see output like:</p>
+        <pre><code class="language-bash">  ▲ Next.js 15.5.3
+  - Local:        http://localhost:3000</code></pre>
+
+        <h3>Step 4: Open in Browser</h3>
+        <p>Open <a href="http://localhost:3000" target="_blank">http://localhost:3000</a> in your browser. You should see the ADVOCAT-Easy homepage!</p>
+
+        <h2>File Structure Overview</h2>
+        <p>Here's what each folder in the project does:</p>
+
+        <pre><code class="language-text">v7/
+├── app/                    # Next.js app directory
+│   ├── [locale]/          # Localized pages (en, hi, mr, te)
+│   │   ├── page.js        # Homepage
+│   │   ├── auth/          # Login/signup page
+│   │   ├── dashboard/     # User dashboard
+│   │   └── ...            # More pages
+│   ├── api/               # Backend API routes
+│   │   ├── auth/          # Authentication endpoints
+│   │   ├── chat/          # Chat with AI
+│   │   └── ...            # More endpoints
+│   └── components/        # Reusable React components
+├── hooks/                 # Custom React hooks
+├── lib/                   # Utility functions & database
+├── messages/              # Translations (en.json, hi.json, etc.)
+├── middleware.js          # Locale routing middleware
+├── i18n.js                # Internationalization config
+├── next.config.mjs        # Next.js configuration
+├── tailwind.config.js     # Tailwind CSS config
+└── package.json           # Dependencies list</code></pre>
+
+        <p>Don't worry about what everything does yet—we'll cover each section in detail!</p>
+
+        <h2>First Run Checklist</h2>
+        <div class="checklist">
+          <div class="item">
+            <input type="checkbox"> ✅ Node.js and npm installed
+          </div>
+          <div class="item">
+            <input type="checkbox"> ✅ Git installed
+          </div>
+          <div class="item">
+            <input type="checkbox"> ✅ Code editor (VS Code) installed
+          </div>
+          <div class="item">
+            <input type="checkbox"> ✅ Project cloned from GitHub
+          </div>
+          <div class="item">
+            <input type="checkbox"> ✅ Dependencies installed (`npm install` completed)
+          </div>
+          <div class="item">
+            <input type="checkbox"> ✅ Dev server running (`npm run dev`)
+          </div>
+          <div class="item">
+            <input type="checkbox"> ✅ Homepage loads at http://localhost:3000
+          </div>
+        </div>
+
+        <p class="success">🎉 If you've checked all these boxes, you're ready for Chapter 2!</p>
+      </section>
+
+      <!-- CHAPTER 2: Web Foundations -->
+      <section id="chapter-2" class="chapter">
+        <h1>🌐 Chapter 2: Web Foundations for Beginners</h1>
+        <p class="intro">Before we jump into React and Next.js, you need to understand the three pillars of the web: HTML, CSS, and JavaScript. If you already know these, feel free to skip to Chapter 3.</p>
+
+        <h2>HTML: The Skeleton</h2>
+        <p>HTML is a markup language that structures content on a webpage. Think of it as the skeleton of a building—it defines what goes where.</p>
+
+        <h3>Basic HTML Example</h3>
+        <pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;title&gt;My First Page&lt;/title&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;h1&gt;Hello, World!&lt;/h1&gt;
+    &lt;p&gt;This is a paragraph.&lt;/p&gt;
+    &lt;a href="https://example.com"&gt;Click me!&lt;/a&gt;
+  &lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+        <h3>Key HTML Concepts</h3>
+        <div class="concept">
+          <h4>Tags</h4>
+          <p>Tags are instructions wrapped in angle brackets. Examples: <code>&lt;h1&gt;</code>, <code>&lt;p&gt;</code>, <code>&lt;a&gt;</code>.</p>
+          <p><strong>Rule:</strong> Most tags must be closed: <code>&lt;p&gt;text&lt;/p&gt;</code></p>
+        </div>
+
+        <div class="concept">
+          <h4>Attributes</h4>
+          <p>Attributes add extra information to tags. Example: <code>&lt;a href="url"&gt;</code> has an <code>href</code> attribute.</p>
+        </div>
+
+        <div class="concept">
+          <h4>Semantic HTML</h4>
+          <p>Use meaningful tags: <code>&lt;header&gt;</code>, <code>&lt;nav&gt;</code>, <code>&lt;main&gt;</code>, <code>&lt;footer&gt;</code>. This helps search engines and assistive tech understand your page.</p>
+        </div>
+
+        <h3>Common HTML Tags You'll Use</h3>
+        <pre><code class="language-html">&lt;h1&gt;...&lt;/h1&gt;  &lt;!-- Headings (h1 is largest, h6 is smallest) --&gt;
+&lt;p&gt;...&lt;/p&gt;    &lt;!-- Paragraph --&gt;
+&lt;a href="url"&gt;...&lt;/a&gt;  &lt;!-- Link --&gt;
+&lt;button&gt;...&lt;/button&gt;  &lt;!-- Button --&gt;
+&lt;input /&gt;  &lt;!-- Text input field --&gt;
+&lt;div&gt;...&lt;/div&gt;  &lt;!-- Generic container --&gt;
+&lt;img src="url" /&gt;  &lt;!-- Image --&gt;</code></pre>
+
+        <h2>CSS: The Styling</h2>
+        <p>CSS makes things look pretty. It colors text, positions elements, creates animations, and responsive designs.</p>
+
+        <h3>CSS Basics</h3>
+        <pre><code class="language-css">/* This is a CSS rule */
+h1 {
+  color: blue;           /* Text color */
+  font-size: 24px;       /* Font size */
+  text-align: center;    /* Alignment */
+}</code></pre>
+
+        <h3>Three Ways to Use CSS</h3>
+        <div class="concept">
+          <h4>1. Inline (Bad ❌)</h4>
+          <pre><code class="language-html">&lt;h1 style="color: blue;"&gt;Hello&lt;/h1&gt;</code></pre>
+          <p>Don't use this—it mixes HTML and CSS, making code messy.</p>
+        </div>
+
+        <div class="concept">
+          <h4>2. In &lt;style&gt; tag (Okay ✅)</h4>
+          <pre><code class="language-html">&lt;style&gt;
+  h1 { color: blue; }
+&lt;/style&gt;
+&lt;h1&gt;Hello&lt;/h1&gt;</code></pre>
+          <p>Good for small pages, but not scalable.</p>
+        </div>
+
+        <div class="concept">
+          <h4>3. External CSS file (Best ✅✅)</h4>
+          <pre><code class="language-html">&lt;link rel="stylesheet" href="styles.css"&gt;
+&lt;h1&gt;Hello&lt;/h1&gt;</code></pre>
+          <pre><code class="language-css">/* In styles.css */
+h1 { color: blue; }</code></pre>
+          <p>Professional approach—separates content from styling.</p>
+        </div>
+
+        <h3>CSS Selectors: Targeting Elements</h3>
+        <pre><code class="language-css">/* Select all h1 tags */
+h1 { }
+
+/* Select element with id="header" */
+#header { }
+
+/* Select all elements with class="title" */
+.title { }
+
+/* Select h1 tags INSIDE div */
+div h1 { }
+
+/* Select all h1 AND p tags */
+h1, p { }</code></pre>
+
+        <h3>Useful CSS Properties</h3>
+        <pre><code class="language-css">/* Color & text */
+color: red;
+background-color: yellow;
+font-size: 16px;
+font-weight: bold;
+text-align: center;
+
+/* Size & spacing */
+width: 100%;
+height: 200px;
+margin: 10px;              /* Space OUTSIDE */
+padding: 10px;             /* Space INSIDE */
+
+/* Layout */
+display: flex;             /* Makes children flex in a row */
+display: grid;             /* Advanced layouts */
+justify-content: center;   /* Align items horizontally */
+align-items: center;       /* Align items vertically */</code></pre>
+
+        <h2>JavaScript: The Brain</h2>
+        <p>JavaScript makes webpages interactive. It responds to clicks, fetches data, and updates the page without refreshing.</p>
+
+        <h3>JavaScript Basics</h3>
+        <pre><code class="language-javascript">// Variables (store data)
+let name = "Alice";
+const age = 25;  // const = can't change later
+
+// Functions (reusable code)
+function greet(person) {
+  console.log("Hello, " + person);
+}
+greet("Alice");  // Prints: Hello, Alice
+
+// Objects (store related data)
+const user = {
+  name: "Alice",
+  age: 25,
+  email: "alice@example.com"
+};
+console.log(user.name);  // Prints: Alice</code></pre>
+
+        <h3>The DOM: Interacting with HTML</h3>
+        <p>The DOM (Document Object Model) is a JavaScript interface that lets you select and modify HTML elements.</p>
+
+        <pre><code class="language-javascript">// Find an element
+const heading = document.getElementById("title");
+
+// Change its text
+heading.textContent = "New Title";
+
+// Change its style
+heading.style.color = "blue";
+
+// Listen for clicks
+const button = document.querySelector("button");
+button.addEventListener("click", function() {
+  console.log("Button clicked!");
+});</code></pre>
+
+        <h3>Async/Await: Fetching Data</h3>
+        <p>Modern web apps fetch data from servers. JavaScript's <code>async/await</code> makes this clean and readable.</p>
+
+        <pre><code class="language-javascript">// Fetch data from an API
+async function getUser() {
+  const response = await fetch("/api/users/1");
+  const user = await response.json();
+  console.log(user);  // {name: "Alice", age: 25}
+}
+
+getUser();</code></pre>
+
+        <h2>How They Work Together</h2>
+        <p>In ADVOCAT-Easy, you'll see this pattern everywhere:</p>
+        <ol>
+          <li><strong>HTML</strong> defines the page structure (buttons, inputs, text)</li>
+          <li><strong>CSS</strong> makes it look professional (colors, spacing, responsive)</li>
+          <li><strong>JavaScript</strong> makes it interactive (clicks, form submissions, API calls)</li>
+        </ol>
+
+        <p>But in modern React apps, we write JavaScript that generates the HTML and CSS dynamically—which is why React is powerful!</p>
+
+        <p class="success">✅ You now understand the foundation. Let's move to React!</p>
+      </section>
+
+      <!-- CHAPTER 3: React 101 -->
+      <section id="chapter-3" class="chapter">
+        <h1>⚛️ Chapter 3: React 101</h1>
+        <p class="intro">React is a JavaScript library that makes building interactive user interfaces easier. Instead of manually updating the DOM, React handles it for you. Let's understand the core concepts.</p>
+
+        <h2>What is React?</h2>
+        <p>React is built on three core ideas:</p>
+
+        <div class="concept">
+          <h4>1. Components</h4>
+          <p>A component is a reusable JavaScript function that returns HTML (called JSX). Think of it as a recipe for a UI piece.</p>
+          <pre><code class="language-javascript">function Welcome() {
+  return &lt;h1&gt;Hello, World!&lt;/h1&gt;;
+}</code></pre>
+        </div>
+
+        <div class="concept">
+          <h4>2. JSX</h4>
+          <p>JSX is HTML-like syntax in JavaScript. It looks like HTML but is actually JavaScript.</p>
+          <pre><code class="language-javascript">// This is JSX:
+const element = &lt;h1 className="title"&gt;Hello&lt;/h1&gt;;
+
+// React converts it to JavaScript:
+// const element = React.createElement("h1", {className: "title"}, "Hello");</code></pre>
+        </div>
+
+        <div class="concept">
+          <h4>3. Virtual DOM</h4>
+          <p>React keeps a "virtual" copy of the page in memory. When state changes, React updates the virtual copy first, then efficiently updates only what changed in the real DOM. This makes apps fast.</p>
+        </div>
+
+        <h2>Your First Component</h2>
+        <pre><code class="language-javascript">// A simple component
+function Button() {
+  return &lt;button&gt;Click me&lt;/button&gt;;
+}
+
+// Export so other files can use it
+export default Button;</code></pre>
+
+        <p>Components are just JavaScript functions. They take input (props) and return JSX.</p>
+
+        <h2>Props: Passing Data to Components</h2>
+        <p>Props are like function arguments—they let you customize a component.</p>
+
+        <pre><code class="language-javascript">// Define a component that accepts props
+function Greeting({ name, age }) {
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;Hello, {name}!&lt;/h1&gt;
+      &lt;p&gt;You are {age} years old.&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+
+// Use the component with different props
+&lt;Greeting name="Alice" age={25} /&gt;
+&lt;Greeting name="Bob" age={30} /&gt;</code></pre>
+
+        <h3>Key Points About Props</h3>
+        <ul>
+          <li>Props flow <strong>down</strong> from parent to child</li>
+          <li>Components can't change their own props</li>
+          <li>Props are read-only (immutable)</li>
+        </ul>
+
+        <h2>State: Making Components Interactive</h2>
+        <p>State is data that a component can change. When state changes, React re-renders the component.</p>
+
+        <pre><code class="language-javascript">import { useState } from 'react';
+
+function Counter() {
+  // Declare state variable 'count' and function to change it 'setCount'
+  const [count, setCount] = useState(0);
+
+  return (
+    &lt;div&gt;
+      &lt;p&gt;Count: {count}&lt;/p&gt;
+      &lt;button onClick={() => setCount(count + 1)}&gt;
+        Increment
+      &lt;/button&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default Counter;</code></pre>
+
+        <h3>How useState Works</h3>
+        <ol>
+          <li><code>useState(0)</code> creates a state variable initialized to 0</li>
+          <li>It returns an array: <code>[currentValue, functionToChangeIt]</code></li>
+          <li>When you call <code>setCount(5)</code>, React updates the value and re-renders</li>
+        </ol>
+
+        <h2>React Hooks: Powerful Utilities</h2>
+        <p>Hooks are functions that let you "hook into" React features. Here are the most common:</p>
+
+        <div class="concept">
+          <h4>useState: Store and update state</h4>
+          <pre><code class="language-javascript">const [count, setCount] = useState(0);</code></pre>
+        </div>
+
+        <div class="concept">
+          <h4>useEffect: Run code after render</h4>
+          <pre><code class="language-javascript">import { useEffect } from 'react';
+
+function App() {
+  useEffect(() => {
+    // This runs AFTER the component renders
+    console.log("Component mounted!");
+
+    // Fetch data
+    fetch('/api/data').then(res => res.json());
+  }, []);  // Empty array = run once on mount
+
+  return &lt;div&gt;Hello&lt;/div&gt;;
+}</code></pre>
+        </div>
+
+        <div class="concept">
+          <h4>Custom Hooks: Write your own</h4>
+          <p>You can create custom hooks to reuse logic across components.</p>
+          <pre><code class="language-javascript">// Custom hook
+function useWindowWidth() {
+  const [width, setWidth] = useState(window.innerWidth);
+
+  useEffect(() => {
+    function handleResize() {
+      setWidth(window.innerWidth);
+    }
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return width;
+}
+
+// Use it in a component
+function App() {
+  const width = useWindowWidth();
+  return &lt;p&gt;Window width: {width}px&lt;/p&gt;;
+}</code></pre>
+        </div>
+
+        <h2>Real Example: Authentication Hook</h2>
+        <p>In ADVOCAT-Easy, the <code>useAuth()</code> hook checks if a user is logged in. Here's how it works:</p>
+
+        <pre><code class="language-javascript">// hooks/useAuth.js
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+
+export function useAuth(requireAuth = true) {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    // Check if token exists in localStorage
+    const token = localStorage.getItem('sessionToken');
+
+    if (!token) {
+      // No token = not logged in
+      if (requireAuth) router.push('/auth');
+      return;
+    }
+
+    // Validate token with backend
+    fetch('/api/auth/validate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token })
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.isValid) {
+          setIsLoggedIn(true);
+        } else {
+          // Token invalid = redirect to login
+          if (requireAuth) router.push('/auth');
+        }
+      });
+  }, []);
+
+  return { isLoggedIn };
+}
+
+// Use it in a component
+function Dashboard() {
+  const { isLoggedIn } = useAuth(true);  // true = must be logged in
+
+  if (!isLoggedIn) return &lt;p&gt;Loading...&lt;/p&gt;;
+
+  return &lt;h1&gt;Welcome back!&lt;/h1&gt;;
+}</code></pre>
+
+        <h3>Why This Pattern Matters</h3>
+        <ul>
+          <li><strong>Reusable:</strong> Any component can use <code>useAuth()</code></li>
+          <li><strong>Clean:</strong> Logic is in one place, not scattered</li>
+          <li><strong>Maintainable:</strong> Change the hook, all components update</li>
+        </ul>
+
+        <h2>Key React Rules</h2>
+        <div class="checklist">
+          <div class="item">
+            <input type="checkbox"> Component names start with capital letters: <code>Button</code>, not <code>button</code>
+          </div>
+          <div class="item">
+            <input type="checkbox"> Always return a single root element (wrap in <code>&lt;div&gt;</code> if needed)
+          </div>
+          <div class="item">
+            <input type="checkbox"> Don't call hooks inside loops or conditions—call them at the top level
+          </div>
+          <div class="item">
+            <input type="checkbox"> Props flow down, events flow up (parent to child, child to parent via callbacks)
+          </div>
+          <div class="item">
+            <input type="checkbox"> State is immutable—use <code>setState</code>, don't modify state directly
+          </div>
+        </div>
+
+        <p class="success">✅ You now understand React basics. Chapter 4 will show how Next.js builds on top of React!</p>
+      </section>
+
+      <!-- Quick Navigation at bottom -->
+      <div class="chapter-nav">
+        <button class="btn btn-prev" onclick="previousChapter()">← Previous</button>
+        <span class="chapter-progress">Chapters <span id="current-chapter">1</span>/14</span>
+        <button class="btn btn-next" onclick="nextChapter()">Next →</button>
+      </div>
+    </main>
+
+    <!-- RIGHT SIDEBAR: Quick Reference -->
+    <aside class="sidebar-ref">
+      <div class="ref-box">
+        <h3>📌 Quick Reference</h3>
+
+        <h4>Essential Commands</h4>
+        <code class="ref-code">npm run dev</code>
+        <code class="ref-code">npm run build</code>
+        <code class="ref-code">npm install</code>
+
+        <h4>Key Files</h4>
+        <ul class="ref-list">
+          <li><code>app/[locale]/page.js</code> - Pages</li>
+          <li><code>app/api/route.js</code> - API</li>
+          <li><code>hooks/useAuth.js</code> - Custom hooks</li>
+          <li><code>messages/en.json</code> - Translations</li>
+        </ul>
+
+        <h4>Keyboard Shortcuts</h4>
+        <ul class="ref-list">
+          <li><kbd>Ctrl</kbd> + <kbd>F</kbd> - Search</li>
+          <li><kbd>Ctrl</kbd> + <kbd>C</kbd> - Copy code blocks</li>
+        </ul>
+      </div>
+
+      <div class="ref-box">
+        <h3>🎯 Learning Path</h3>
+        <ol class="learning-path">
+          <li>Chapters 1-3: Web Basics</li>
+          <li>Chapters 4-5: Next.js & Architecture</li>
+          <li>Chapters 6-9: Build Pages & Features</li>
+          <li>Chapters 10-13: Advanced Topics</li>
+          <li>Chapter 14: Your Own SaaS</li>
+        </ol>
+      </div>
+
+      <div class="ref-box">
+        <h3>💡 Pro Tips</h3>
+        <ul class="ref-list">
+          <li>Read 1 chapter per session</li>
+          <li>Practice the examples</li>
+          <li>Explore the code in your editor</li>
+          <li>Break things, fix them, learn!</li>
+        </ul>
+      </div>
+    </aside>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

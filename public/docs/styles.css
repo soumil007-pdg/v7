@@ -1,0 +1,512 @@
+/* ========================================
+   DOCUMENTATION STYLES
+   ======================================== */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --primary: #FF5B33;
+  --dark: #171717;
+  --light: #f5f5f5;
+  --border: #e0e0e0;
+  --text: #333;
+  --text-light: #666;
+  --bg: #ffffff;
+  --sidebar-width: 280px;
+  --content-width: 1000px;
+  --ref-width: 300px;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  color: var(--text);
+  background: var(--light);
+  line-height: 1.6;
+}
+
+/* ========================================
+   LAYOUT
+   ======================================== */
+
+.container {
+  display: grid;
+  grid-template-columns: var(--sidebar-width) 1fr var(--ref-width);
+  gap: 20px;
+  margin: 0 auto;
+  max-width: 1800px;
+  height: 100vh;
+}
+
+.sidebar-nav {
+  background: var(--dark);
+  color: white;
+  overflow-y: auto;
+  padding: 30px 20px;
+  border-right: 2px solid var(--primary);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.content {
+  overflow-y: auto;
+  padding: 40px;
+  background: white;
+}
+
+.sidebar-ref {
+  background: var(--light);
+  overflow-y: auto;
+  padding: 20px;
+  border-left: 2px solid var(--border);
+}
+
+/* ========================================
+   NAVIGATION SIDEBAR
+   ======================================== */
+
+.nav-header {
+  margin-bottom: 30px;
+  border-bottom: 2px solid var(--primary);
+  padding-bottom: 15px;
+}
+
+.nav-header h2 {
+  font-size: 24px;
+  margin-bottom: 5px;
+}
+
+.nav-subtitle {
+  font-size: 12px;
+  color: #aaa;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.nav-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.nav-section h3 {
+  font-size: 12px;
+  text-transform: uppercase;
+  color: var(--primary);
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+
+.nav-item {
+  display: block;
+  color: #ccc;
+  text-decoration: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.2s;
+  margin-bottom: 5px;
+}
+
+.nav-item:hover {
+  color: white;
+  background: rgba(255, 91, 51, 0.1);
+  padding-left: 16px;
+}
+
+.nav-item.active {
+  color: var(--primary);
+  background: rgba(255, 91, 51, 0.15);
+  font-weight: 600;
+}
+
+.nav-footer {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid #444;
+  font-size: 11px;
+  color: #888;
+  line-height: 1.5;
+}
+
+/* ========================================
+   CONTENT AREA
+   ======================================== */
+
+.chapter {
+  display: none;
+  animation: fadeIn 0.3s ease-in;
+}
+
+.chapter.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Typography */
+h1 {
+  font-size: 40px;
+  margin: 0 0 20px 0;
+  color: var(--dark);
+}
+
+h2 {
+  font-size: 28px;
+  margin: 40px 0 20px 0;
+  color: var(--dark);
+  border-bottom: 3px solid var(--primary);
+  padding-bottom: 10px;
+}
+
+h3 {
+  font-size: 20px;
+  margin: 25px 0 15px 0;
+  color: var(--text);
+}
+
+h4 {
+  font-size: 16px;
+  margin: 15px 0 10px 0;
+  color: var(--text);
+  font-weight: 600;
+}
+
+p {
+  margin: 15px 0;
+  color: var(--text-light);
+  line-height: 1.8;
+}
+
+.intro {
+  font-size: 16px;
+  color: var(--text);
+  font-weight: 500;
+  background: rgba(255, 91, 51, 0.05);
+  padding: 15px;
+  border-left: 4px solid var(--primary);
+  border-radius: 4px;
+  margin: 20px 0;
+}
+
+/* Lists */
+ul, ol {
+  margin: 20px 0;
+  padding-left: 30px;
+}
+
+li {
+  margin: 10px 0;
+  color: var(--text-light);
+}
+
+/* Code blocks */
+pre {
+  background: #1e1e1e;
+  color: #d4d4d4;
+  padding: 20px;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 20px 0;
+  border-left: 4px solid var(--primary);
+  position: relative;
+}
+
+code {
+  font-family: 'Monaco', 'Courier New', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+p > code {
+  background: #f0f0f0;
+  padding: 2px 6px;
+  border-radius: 3px;
+  color: var(--dark);
+}
+
+/* Inline code */
+.ref-code {
+  background: #f0f0f0;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 13px;
+  display: block;
+  margin: 8px 0;
+  color: var(--dark);
+  border-left: 2px solid var(--primary);
+  padding-left: 10px;
+}
+
+/* ========================================
+   COMPONENTS & BOXES
+   ======================================== */
+
+.checklist {
+  background: #f9f9f9;
+  padding: 20px;
+  border-radius: 8px;
+  margin: 20px 0;
+  border: 1px solid var(--border);
+}
+
+.checklist .item {
+  padding: 15px;
+  border-left: 3px solid var(--primary);
+  margin-bottom: 15px;
+  background: white;
+  border-radius: 4px;
+}
+
+.checklist .item:last-child {
+  margin-bottom: 0;
+}
+
+.checklist h3 {
+  margin-top: 0;
+  color: var(--dark);
+}
+
+.checklist input[type="checkbox"] {
+  margin-right: 10px;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.concept {
+  background: #f0f8ff;
+  padding: 20px;
+  border-left: 4px solid var(--primary);
+  margin: 20px 0;
+  border-radius: 6px;
+  border-top: 1px solid #e0e8ff;
+}
+
+.concept h4 {
+  color: var(--primary);
+  margin-top: 0;
+}
+
+.success {
+  background: #f0fdf4;
+  color: #166534;
+  padding: 15px 20px;
+  border-left: 4px solid #22c55e;
+  border-radius: 6px;
+  margin: 20px 0;
+  font-weight: 500;
+}
+
+/* Links */
+a {
+  color: var(--primary);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: all 0.2s;
+}
+
+a:hover {
+  border-bottom-color: var(--primary);
+}
+
+/* ========================================
+   REFERENCE SIDEBAR
+   ======================================== */
+
+.ref-box {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.ref-box h3 {
+  font-size: 16px;
+  margin: 0 0 15px 0;
+  color: var(--dark);
+  border-bottom: 2px solid var(--primary);
+  padding-bottom: 10px;
+}
+
+.ref-box h4 {
+  font-size: 13px;
+  margin: 15px 0 10px 0;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ref-list {
+  list-style: none;
+  padding: 0;
+}
+
+.ref-list li {
+  padding: 6px 0;
+  font-size: 13px;
+  margin: 0;
+}
+
+.ref-list li:before {
+  content: "▸ ";
+  color: var(--primary);
+  font-weight: bold;
+}
+
+.learning-path {
+  list-style: none;
+  padding: 0;
+  counter-reset: step-counter;
+}
+
+.learning-path li {
+  counter-increment: step-counter;
+  padding: 10px 0 10px 30px;
+  position: relative;
+  font-size: 13px;
+}
+
+.learning-path li:before {
+  content: counter(step-counter);
+  position: absolute;
+  left: 0;
+  width: 22px;
+  height: 22px;
+  background: var(--primary);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* ========================================
+   CHAPTER NAVIGATION
+   ======================================== */
+
+.chapter-nav {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 60px;
+  padding-top: 40px;
+  border-top: 2px solid var(--border);
+}
+
+.btn {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-prev, .btn-next {
+  background: var(--primary);
+  color: white;
+}
+
+.btn-prev:hover, .btn-next:hover {
+  background: #e84d1f;
+  transform: translateY(-2px);
+}
+
+.chapter-progress {
+  font-size: 14px;
+  color: var(--text-light);
+  font-weight: 500;
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+@media (max-width: 1400px) {
+  :root {
+    --sidebar-width: 240px;
+    --ref-width: 250px;
+  }
+
+  .container {
+    gap: 15px;
+  }
+
+  .content {
+    padding: 30px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .container {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar-nav, .sidebar-ref {
+    display: none;
+  }
+
+  .content {
+    padding: 20px;
+  }
+}
+
+/* ========================================
+   SCROLLBAR STYLING
+   ======================================== */
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* ========================================
+   KEYBOARD SHORTCUT STYLES
+   ======================================== */
+
+kbd {
+  background: #f5f5f5;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  padding: 2px 6px;
+  font-family: monospace;
+  font-size: 12px;
+  display: inline-block;
+  margin: 0 2px;
+}
