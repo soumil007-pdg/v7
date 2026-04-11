@@ -10,6 +10,10 @@ import {
 import { ChatSkeleton } from '@/app/components/SkeletonLoader';
 import { useAuth } from '@/hooks/useAuth';
 import { useTranslations, useLocale } from 'next-intl';
+import { Button } from '@/components/ui/button';
+import { TabsRoot, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { TooltipProvider, TooltipRoot, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import { DialogRoot, DialogTrigger, DialogContent, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
 
 // --- Styles & Animations ---
 const FontLoader = () => (
@@ -69,6 +73,7 @@ export default function GeneralQueriesClient() {
   const [caseFiles, setCaseFiles] = useState({});
   const [activeCaseId, setActiveCaseId] = useState(null);
   const [messages, setMessages] = useState([]);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [mode, setMode] = useState('quick'); 
@@ -224,7 +229,7 @@ export default function GeneralQueriesClient() {
     setMessages(newMessages);
     setInput('');
     setIsLoading(true);
-    
+
     if (textareaRef.current) textareaRef.current.style.height = 'auto';
 
     try {
@@ -297,20 +302,16 @@ export default function GeneralQueriesClient() {
   };
 
   const ModeToggle = () => (
-    <div className="flex bg-slate-100 p-1 rounded-lg self-start md:self-auto">
-        <button 
-            onClick={() => setMode('quick')}
-            className={`px-3 py-1.5 rounded-md text-xs font-bold flex items-center gap-2 transition-all ${mode === 'quick' ? 'bg-white text-[#FF5B33] shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-        >
-            <Zap size={14} /> {t('header.quickBtn')}
-        </button>
-        <button 
-            onClick={() => setMode('deep')}
-            className={`px-3 py-1.5 rounded-md text-xs font-bold flex items-center gap-2 transition-all ${mode === 'deep' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-        >
-            <FileText size={14} /> {t('header.deepBtn')}
-        </button>
-    </div>
+    <TabsRoot value={mode} onValueChange={(v) => setMode(v)} className="self-start md:self-auto">
+        <TabsList>
+            <TabsTrigger value="quick" className="data-[state=active]:text-[#FF5B33]">
+                <Zap size={14} /> {t('header.quickBtn')}
+            </TabsTrigger>
+            <TabsTrigger value="deep" className="data-[state=active]:text-blue-600">
+                <FileText size={14} /> {t('header.deepBtn')}
+            </TabsTrigger>
+        </TabsList>
+    </TabsRoot>
   );
 
   if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
@@ -333,9 +334,9 @@ export default function GeneralQueriesClient() {
              <button onClick={() => setIsSidebarOpen(false)} className="md:hidden text-slate-400"><X size={20}/></button>
           </div>
           <div className="p-4 min-w-[288px]">
-            <button onClick={() => handleCreateNewCase()} className="w-full bg-[#171717] text-white py-3 px-4 rounded-lg hover:bg-black transition font-semibold flex items-center justify-center gap-2 shadow-md shadow-slate-900/10">
+            <Button variant="dark" onClick={() => handleCreateNewCase()} className="w-full justify-center py-3 px-4 shadow-md shadow-slate-900/10">
                 <Pencil size={16} /> {t('sidebar.newConsultation')}
-            </button>
+            </Button>
           </div>
           <div className="flex-1 overflow-y-auto p-2 space-y-1 min-w-[288px]">
              {Object.entries(caseFiles).sort((a, b) => b[0].localeCompare(a[0])).map(([caseId, caseData]) => (
@@ -378,9 +379,23 @@ export default function GeneralQueriesClient() {
             >
                 <button onClick={() => toast.success("Pinned (Demo)")} className="w-full text-left px-4 py-2 text-sm hover:bg-slate-50 flex items-center gap-2"><Pin size={14}/> {t('contextMenu.pin')}</button>
                 <button onClick={handleRenameStart} className="w-full text-left px-4 py-2 text-sm hover:bg-slate-50 flex items-center gap-2"><Pencil size={14}/> {t('contextMenu.rename')}</button>
-                <button onClick={handleDeleteCase} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"><Trash2 size={14}/> {t('contextMenu.delete')}</button>
+                <button onClick={() => { setContextMenu({ ...contextMenu, visible: false }); setDeleteDialogOpen(true); }} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"><Trash2 size={14}/> {t('contextMenu.delete')}</button>
             </div>
         )}
+
+        {/* Delete Confirmation Dialog */}
+        <DialogRoot open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+            <DialogContent>
+                <DialogTitle>Delete Case</DialogTitle>
+                <DialogDescription>This will permanently delete this case and all its messages. This cannot be undone.</DialogDescription>
+                <div className="flex gap-3 justify-end">
+                    <DialogClose asChild>
+                        <Button variant="card-outline" size="sm">Cancel</Button>
+                    </DialogClose>
+                    <Button variant="brand" size="sm" className="bg-red-600 hover:bg-red-700" onClick={() => { handleDeleteCase(); setDeleteDialogOpen(false); }}>Delete</Button>
+                </div>
+            </DialogContent>
+        </DialogRoot>
 
         {/* Main Area */}
         <div className="flex-1 flex flex-col h-full relative w-full transition-all duration-300">
@@ -403,12 +418,21 @@ export default function GeneralQueriesClient() {
             </div>
             
             <div className="flex items-center gap-3 md:gap-4">
-                <div className="group relative hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 text-orange-700 rounded-full border border-orange-100 text-xs font-bold cursor-help">
-                    <Sparkles size={14} className="text-[#FF5B33] fill-[#FF5B33]" />
-                    <span>{savedCredits} {t('header.creditsSaved')}</span>
-                    <Info size={14} className="ml-1 text-orange-300 group-hover:text-orange-600 transition-colors" />
-                    
-                    <div className="absolute top-full right-0 mt-2 w-72 p-4 bg-white shadow-2xl border border-slate-200 rounded-xl text-left invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-200 z-50">
+                <TooltipProvider>
+                  <TooltipRoot>
+                    <TooltipTrigger asChild>
+                      <div className="relative hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 text-orange-700 rounded-full border border-orange-100 text-xs font-bold cursor-help">
+                          <Sparkles size={14} className="text-[#FF5B33] fill-[#FF5B33]" />
+                          <span>{savedCredits} {t('header.creditsSaved')}</span>
+                          <Info size={14} className="ml-1 text-orange-300" />
+                          {creditPop && (
+                              <div className="absolute -top-6 right-0 text-[#FF5B33] font-bold text-sm animate-float">
+                                  +{creditPop}
+                              </div>
+                          )}
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" align="end">
                         <h4 className="font-bold text-slate-900 mb-2 flex items-center gap-2">
                             <Sparkles size={14} className="text-[#FF5B33]"/> {t('header.howCreditsWork')}
                         </h4>
@@ -425,14 +449,9 @@ export default function GeneralQueriesClient() {
                                 <span className="text-slate-600">{t('header.specificDesc')}</span>
                             </li>
                         </ul>
-                    </div>
-
-                    {creditPop && (
-                        <div className="absolute -top-6 right-0 text-[#FF5B33] font-bold text-sm animate-float">
-                            +{creditPop}
-                        </div>
-                    )}
-                </div>
+                    </TooltipContent>
+                  </TooltipRoot>
+                </TooltipProvider>
 
                 <div className="hidden md:block border-l border-slate-200 h-6 mx-2"></div>
                 <ModeToggle />
@@ -530,13 +549,15 @@ export default function GeneralQueriesClient() {
                         rows={1}
                         disabled={isLoading || !activeCaseId}
                     />
-                    <button
+                    <Button
                         type="submit"
+                        variant="dark"
+                        size="icon"
                         disabled={isLoading || !input.trim()}
-                        className="p-3 bg-[#171717] text-white rounded-lg hover:bg-black transition disabled:opacity-50 disabled:cursor-not-allowed mb-px"
+                        className="p-3 mb-px size-auto"
                     >
                         <Send size={18} />
-                    </button>
+                    </Button>
                 </form>
                 <p className="text-center text-xs text-slate-400 mt-3">
                     {t('input.disclaimer')}

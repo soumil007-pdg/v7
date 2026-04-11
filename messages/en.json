@@ -145,6 +145,8 @@
     "createAccount": "Create an account",
     "loginDesc": "Enter your details to access your case files.",
     "signupDesc": "Start understanding your rights in minutes.",
+    "nameLabel": "Full name",
+    "namePh": "e.g. Ravi Kumar",
     "emailLabel": "Email address",
     "emailPh": "name@example.com",
     "passLabel": "Password",

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 export function useAuth(requireAuth = true) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userEmail, setUserEmail] = useState('');
+  const [userName, setUserName] = useState('');
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -28,6 +29,7 @@ export function useAuth(requireAuth = true) {
         if (res.ok && data.isValid) {
           setIsLoggedIn(true);
           setUserEmail(data.email);
+          setUserName(data.name || '');
         } else {
           localStorage.removeItem('sessionToken');
           setIsLoggedIn(false);
@@ -44,5 +46,5 @@ export function useAuth(requireAuth = true) {
     validate();
   }, [router, requireAuth]);
 
-  return { isLoggedIn, userEmail, loading };
+  return { isLoggedIn, userEmail, userName, loading };
 }

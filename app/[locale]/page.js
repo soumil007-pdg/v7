@@ -1,10 +1,12 @@
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import Link from 'next/link';
 import { Clock, RefreshCw, Layers, MessageSquare, Scale, ArrowRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export async function generateMetadata({ params }) {
   const resolvedParams = await params;
   const locale = resolvedParams.locale;
+  setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'HomePage' });
 
   return {
@@ -16,6 +18,7 @@ export async function generateMetadata({ params }) {
 export default async function HomePage({ params }) {
   const resolvedParams = await params;
   const locale = resolvedParams.locale;
+  setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'HomePage' });
 
   return (
@@ -34,18 +37,18 @@ export default async function HomePage({ params }) {
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-5 md:gap-8">
-            <Link href="/auth" className="w-full sm:w-auto">
-              <button className="w-full sm:w-auto bg-white text-[#FF5B33] font-bold py-4 px-10 rounded-xl shadow-xl hover:bg-gray-50 hover:scale-105 transition-all duration-200 flex items-center justify-center gap-3 text-xl border-2 border-transparent">
+            <Link href="/general-queries" className="w-full sm:w-auto">
+              <Button variant="brand-outline" size="xl-wide" className="w-full sm:w-auto shadow-xl hover:scale-105">
                 <MessageSquare size={24} />
                 {t('hero.quickChatBtn')}
-              </button>
+              </Button>
             </Link>
 
-            <Link href="/auth" className="w-full sm:w-auto">
-              <button className="w-full sm:w-auto bg-white text-[#171717] font-bold py-4 px-10 rounded-xl shadow-xl hover:bg-gray-50 hover:scale-105 transition-all duration-200 flex items-center justify-center gap-3 text-xl border-2 border-transparent">
+            <Link href="/case-advisor" className="w-full sm:w-auto">
+              <Button variant="dark-outline" size="xl-wide" className="w-full sm:w-auto shadow-xl hover:scale-105">
                 <Scale size={24} />
                 {t('hero.caseAdvisorBtn')}
-              </button>
+              </Button>
             </Link>
           </div>
         </div>
@@ -63,10 +66,10 @@ export default async function HomePage({ params }) {
             <p className="text-lg text-slate-600 mb-10 max-w-xl leading-relaxed">
               {t('insights.description')}
             </p>
-            <Link href="/auth">
-              <button className="bg-[#171717] text-white font-bold py-4 px-8 rounded-xl shadow-lg hover:bg-black hover:-translate-y-1 transition-all duration-300 flex items-center gap-2">
+            <Link href="/dashboard">
+              <Button variant="dark" size="xl" className="shadow-lg hover:-translate-y-1">
                 {t('insights.startBtn')} <ArrowRight size={20}/>
-              </button>
+              </Button>
             </Link>
           </div>
         </div>
@@ -83,7 +86,7 @@ export default async function HomePage({ params }) {
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            <Link href="/auth" className="group block h-full">
+            <Link href="/general-queries" className="group block h-full">
               <div className="relative bg-white border border-slate-200 p-8 rounded-2xl h-full flex flex-col transition-all duration-300 hover:border-[#FF5B33] hover:shadow-xl hover:-translate-y-1">
                 <div className="mb-6 p-4 bg-orange-50 rounded-xl w-fit group-hover:bg-[#FF5B33] transition-colors duration-300">
                   <MessageSquare size={32} className="text-[#FF5B33] group-hover:text-white transition-colors duration-300" />
@@ -97,7 +100,7 @@ export default async function HomePage({ params }) {
               </div>
             </Link>
 
-            <Link href="/auth" className="group block h-full">
+            <Link href="/case-advisor" className="group block h-full">
               <div className="relative bg-white border border-slate-200 p-8 rounded-2xl h-full flex flex-col transition-all duration-300 hover:border-[#171717] hover:shadow-xl hover:-translate-y-1">
                 <div className="mb-6 p-4 bg-slate-50 rounded-xl w-fit group-hover:bg-[#171717] transition-colors duration-300">
                   <Scale size={32} className="text-[#171717] group-hover:text-white transition-colors duration-300" />
@@ -136,10 +139,10 @@ export default async function HomePage({ params }) {
           <div style={{backgroundColor: 'var(--primary-accent)'}} className="p-10 md:p-12 rounded-3xl shadow-2xl">
             <h2 className="text-4xl font-extrabold mb-6 leading-tight">{t('faqCta.ctaTitle')}</h2>
             <p className="text-lg text-white/90 mb-8 font-medium">{t('faqCta.ctaDesc')}</p>
-            <Link href="/auth">
-              <button className="bg-white text-[#FF5B33] font-bold py-4 px-8 rounded-xl shadow-lg hover:bg-gray-50 hover:scale-105 transition-all duration-300 flex items-center gap-2 text-lg">
+            <Link href="/dashboard">
+              <Button variant="brand-outline" size="xl" className="shadow-lg hover:scale-105">
                 {t('faqCta.startJourneyBtn')} <ArrowRight size={20} />
-              </button>
+              </Button>
             </Link>
           </div>
 

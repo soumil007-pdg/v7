@@ -5,9 +5,12 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import { CheckCircle, ArrowRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 export default function AuthClient() {
   const t = useTranslations('Auth');
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLogin, setIsLogin] = useState(true);
@@ -24,7 +27,7 @@ export default function AuthClient() {
       const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, ...(!isLogin && { name }) }),
       });
       const data = await res.json();
 
@@ -85,34 +88,45 @@ export default function AuthClient() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-4">
+              {!isLogin && (
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">{t('nameLabel')}</label>
+                  <Input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder={t('namePh')}
+                    required
+                  />
+                </div>
+              )}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">{t('emailLabel')}</label>
-                <input
+                <Input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder={t('emailPh')}
-                  className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:border-[#FF5B33] focus:ring-4 focus:ring-[#FF5B33]/10 transition-all outline-none text-slate-900 placeholder:text-slate-400"
                   required
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">{t('passLabel')}</label>
-                <input
+                <Input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder={t('passPh')}
-                  className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:border-[#FF5B33] focus:ring-4 focus:ring-[#FF5B33]/10 transition-all outline-none text-slate-900 placeholder:text-slate-400"
                   required
                 />
               </div>
             </div>
 
-            <button
+            <Button
               type="submit"
+              variant="dark"
               disabled={isLoading}
-              className="w-full bg-[#171717] text-white font-bold py-3.5 rounded-lg hover:bg-black hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full py-3.5 hover:shadow-lg hover:-translate-y-0.5"
             >
               {isLoading ? (
                 <span className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -122,17 +136,18 @@ export default function AuthClient() {
                   {!isLogin && <ArrowRight size={18} />}
                 </>
               )}
-            </button>
+            </Button>
           </form>
 
           <div className="text-center text-sm text-slate-500">
             {isLogin ? t('noAccount') : t('hasAccount')}
-            <button
+            <Button
+              type="button"
+              variant="link-brand"
               onClick={() => setIsLogin(!isLogin)}
-              className="font-bold text-[#FF5B33] hover:text-[#e04f2a] hover:underline transition-colors"
             >
               {isLogin ? t('signUpLink') : t('logInLink')}
-            </button>
+            </Button>
           </div>
 
           {!isLogin && (

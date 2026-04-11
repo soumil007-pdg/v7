@@ -145,6 +145,8 @@
     "createAccount": "खाता बनाएं",
     "loginDesc": "अपनी केस फ़ाइलों तक पहुँचने के लिए अपना विवरण दर्ज करें।",
     "signupDesc": "मिनटों में अपने अधिकारों को समझना शुरू करें।",
+    "nameLabel": "पूरा नाम",
+    "namePh": "जैसे रवि कुमार",
     "emailLabel": "ईमेल पता",
     "emailPh": "name@example.com",
     "passLabel": "पासवर्ड",

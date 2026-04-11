@@ -3,14 +3,18 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { MapPin, Star, ArrowLeft, ExternalLink, Phone, AlertTriangle, Navigation } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
-export default function DirectoryClient({ initialCity = 'Pitampura' }) {
+export default function DirectoryClient({ initialCity = 'Delhi' }) {
   const searchParams = useSearchParams();
   const router = useRouter();
 
   const category = searchParams.get('category') || 'legal';
+  const urlCity = searchParams.get('city');
 
-  const [city, setCity] = useState(initialCity);
+  const [city, setCity] = useState(urlCity || initialCity);
   const [lawyers, setLawyers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -102,21 +106,22 @@ export default function DirectoryClient({ initialCity = 'Pitampura' }) {
             </p>
           </div>
 
-          <button
+          <Button
+            variant="brand"
+            size="md"
             onClick={detectMyLocation}
             disabled={detectingLocation}
-            className="flex items-center gap-2 bg-[#FF5B33] hover:bg-orange-600 text-white px-6 py-3 rounded-xl font-semibold transition disabled:opacity-50"
           >
             <Navigation size={20} />
             {detectingLocation ? 'Detecting...' : 'Use My Current Location'}
-          </button>
+          </Button>
         </div>
 
         {error && (
-          <div className="bg-red-900/20 border border-red-500 rounded-xl p-8 text-center">
-            <AlertTriangle className="mx-auto mb-4 text-red-500" size={48} />
-            <p className="text-red-200">{error}</p>
-          </div>
+          <Alert variant="destructive" className="text-center">
+            <AlertTriangle className="mx-auto mb-4" size={48} />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
         )}
 
         {loading ? (
@@ -132,10 +137,10 @@ export default function DirectoryClient({ initialCity = 'Pitampura' }) {
                 <h2 className="text-xl font-bold mb-2 line-clamp-2">{lawyer.name}</h2>
 
                 <div className="flex items-center gap-2 mb-4">
-                  <div className="flex items-center bg-gray-800 px-3 py-1 rounded text-sm">
-                    <Star size={16} className="text-yellow-400 fill-yellow-400 mr-1" />
+                  <Badge variant="directory">
+                    <Star size={16} className="text-yellow-400 fill-yellow-400" />
                     {lawyer.rating}
-                  </div>
+                  </Badge>
                   <span className="text-gray-400">({lawyer.reviews} reviews)</span>
                 </div>
 
