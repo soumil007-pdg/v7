@@ -1,0 +1,183 @@
+<!-- CHAPTER 2: Web Foundations -->
+<section id="chapter-2" class="chapter">
+  <h1>🌐 Chapter 2: Web Foundations for Beginners</h1>
+  <p class="intro">Before we jump into React and Next.js, you need to understand the three pillars of the web: HTML, CSS, and JavaScript. If you already know these, feel free to skip to Chapter 3.</p>
+
+  <h2>HTML: The Skeleton</h2>
+  <p>HTML is a markup language that structures content on a webpage. Think of it as the skeleton of a building—it defines what goes where.</p>
+
+  <h3>Basic HTML Example</h3>
+  <pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;title&gt;My First Page&lt;/title&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;h1&gt;Hello, World!&lt;/h1&gt;
+    &lt;p&gt;This is a paragraph.&lt;/p&gt;
+    &lt;a href="https://example.com"&gt;Click me!&lt;/a&gt;
+  &lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+  <h3>Key HTML Concepts</h3>
+  <div class="concept">
+    <h4>Tags</h4>
+    <p>Tags are instructions wrapped in angle brackets. Examples: <code>&lt;h1&gt;</code>, <code>&lt;p&gt;</code>, <code>&lt;a&gt;</code>.</p>
+    <p><strong>Rule:</strong> Most tags must be closed: <code>&lt;p&gt;text&lt;/p&gt;</code></p>
+  </div>
+
+  <div class="concept">
+    <h4>Attributes</h4>
+    <p>Attributes add extra information to tags. Example: <code>&lt;a href="url"&gt;</code> has an <code>href</code> attribute.</p>
+  </div>
+
+  <div class="concept">
+    <h4>Semantic HTML</h4>
+    <p>Use meaningful tags: <code>&lt;header&gt;</code>, <code>&lt;nav&gt;</code>, <code>&lt;main&gt;</code>, <code>&lt;footer&gt;</code>. This helps search engines and assistive tech understand your page.</p>
+  </div>
+
+  <h3>Common HTML Tags You'll Use</h3>
+  <pre><code class="language-html">&lt;h1&gt;...&lt;/h1&gt;  &lt;!-- Headings (h1 is largest, h6 is smallest) --&gt;
+&lt;p&gt;...&lt;/p&gt;    &lt;!-- Paragraph --&gt;
+&lt;a href="url"&gt;...&lt;/a&gt;  &lt;!-- Link --&gt;
+&lt;button&gt;...&lt;/button&gt;  &lt;!-- Button --&gt;
+&lt;input /&gt;  &lt;!-- Text input field --&gt;
+&lt;div&gt;...&lt;/div&gt;  &lt;!-- Generic container --&gt;
+&lt;img src="url" /&gt;  &lt;!-- Image --&gt;</code></pre>
+
+  <h2>CSS: The Styling</h2>
+  <p>CSS makes things look pretty. It colors text, positions elements, creates animations, and responsive designs.</p>
+
+  <h3>CSS Basics</h3>
+  <pre><code class="language-css">/* This is a CSS rule */
+h1 {
+  color: blue;           /* Text color */
+  font-size: 24px;       /* Font size */
+  text-align: center;    /* Alignment */
+}</code></pre>
+
+  <h3>Three Ways to Use CSS</h3>
+  <div class="concept">
+    <h4>1. Inline (Bad ❌)</h4>
+    <pre><code class="language-html">&lt;h1 style="color: blue;"&gt;Hello&lt;/h1&gt;</code></pre>
+    <p>Don't use this—it mixes HTML and CSS, making code messy.</p>
+  </div>
+
+  <div class="concept">
+    <h4>2. In &lt;style&gt; tag (Okay ✅)</h4>
+    <pre><code class="language-html">&lt;style&gt;
+  h1 { color: blue; }
+&lt;/style&gt;
+&lt;h1&gt;Hello&lt;/h1&gt;</code></pre>
+    <p>Good for small pages, but not scalable.</p>
+  </div>
+
+  <div class="concept">
+    <h4>3. External CSS file (Best ✅✅)</h4>
+    <pre><code class="language-html">&lt;link rel="stylesheet" href="styles.css"&gt;
+&lt;h1&gt;Hello&lt;/h1&gt;</code></pre>
+    <pre><code class="language-css">/* In styles.css */
+h1 { color: blue; }</code></pre>
+    <p>Professional approach—separates content from styling.</p>
+  </div>
+
+  <h3>CSS Selectors: Targeting Elements</h3>
+  <pre><code class="language-css">/* Select all h1 tags */
+h1 { }
+
+/* Select element with id="header" */
+#header { }
+
+/* Select all elements with class="title" */
+.title { }
+
+/* Select h1 tags INSIDE div */
+div h1 { }
+
+/* Select all h1 AND p tags */
+h1, p { }</code></pre>
+
+  <h3>Useful CSS Properties</h3>
+  <pre><code class="language-css">/* Color & text */
+color: red;
+background-color: yellow;
+font-size: 16px;
+font-weight: bold;
+text-align: center;
+
+/* Size & spacing */
+width: 100%;
+height: 200px;
+margin: 10px;              /* Space OUTSIDE */
+padding: 10px;             /* Space INSIDE */
+
+/* Layout */
+display: flex;             /* Makes children flex in a row */
+display: grid;             /* Advanced layouts */
+justify-content: center;   /* Align items horizontally */
+align-items: center;       /* Align items vertically */</code></pre>
+
+  <h2>JavaScript: The Brain</h2>
+  <p>JavaScript makes webpages interactive. It responds to clicks, fetches data, and updates the page without refreshing.</p>
+
+  <h3>JavaScript Basics</h3>
+  <pre><code class="language-javascript">// Variables (store data)
+let name = "Alice";
+const age = 25;  // const = can't change later
+
+// Functions (reusable code)
+function greet(person) {
+  console.log("Hello, " + person);
+}
+greet("Alice");  // Prints: Hello, Alice
+
+// Objects (store related data)
+const user = {
+  name: "Alice",
+  age: 25,
+  email: "alice@example.com"
+};
+console.log(user.name);  // Prints: Alice</code></pre>
+
+  <h3>The DOM: Interacting with HTML</h3>
+  <p>The DOM (Document Object Model) is a JavaScript interface that lets you select and modify HTML elements.</p>
+
+  <pre><code class="language-javascript">// Find an element
+const heading = document.getElementById("title");
+
+// Change its text
+heading.textContent = "New Title";
+
+// Change its style
+heading.style.color = "blue";
+
+// Listen for clicks
+const button = document.querySelector("button");
+button.addEventListener("click", function() {
+  console.log("Button clicked!");
+});</code></pre>
+
+  <h3>Async/Await: Fetching Data</h3>
+  <p>Modern web apps fetch data from servers. JavaScript's <code>async/await</code> makes this clean and readable.</p>
+
+  <pre><code class="language-javascript">// Fetch data from an API
+async function getUser() {
+  const response = await fetch("/api/users/1");
+  const user = await response.json();
+  console.log(user);  // {name: "Alice", age: 25}
+}
+
+getUser();</code></pre>
+
+  <h2>How They Work Together</h2>
+  <p>In ADVOCAT-Easy, you'll see this pattern everywhere:</p>
+  <ol>
+    <li><strong>HTML</strong> defines the page structure (buttons, inputs, text)</li>
+    <li><strong>CSS</strong> makes it look professional (colors, spacing, responsive)</li>
+    <li><strong>JavaScript</strong> makes it interactive (clicks, form submissions, API calls)</li>
+  </ol>
+
+  <p>But in modern React apps, we write JavaScript that generates the HTML and CSS dynamically—which is why React is powerful!</p>
+
+  <p class="success">✅ You now understand the foundation. Let's move to React!</p>
+</section>

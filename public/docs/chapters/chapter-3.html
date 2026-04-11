@@ -1,0 +1,222 @@
+<!-- CHAPTER 3: React 101 -->
+<section id="chapter-3" class="chapter">
+  <h1>⚛️ Chapter 3: React 101</h1>
+  <p class="intro">React is a JavaScript library that makes building interactive user interfaces easier. Instead of manually updating the DOM, React handles it for you. Let's understand the core concepts.</p>
+
+  <h2>What is React?</h2>
+  <p>React is built on three core ideas:</p>
+
+  <div class="concept">
+    <h4>1. Components</h4>
+    <p>A component is a reusable JavaScript function that returns HTML (called JSX). Think of it as a recipe for a UI piece.</p>
+    <pre><code class="language-javascript">function Welcome() {
+  return &lt;h1&gt;Hello, World!&lt;/h1&gt;;
+}</code></pre>
+  </div>
+
+  <div class="concept">
+    <h4>2. JSX</h4>
+    <p>JSX is HTML-like syntax in JavaScript. It looks like HTML but is actually JavaScript.</p>
+    <pre><code class="language-javascript">// This is JSX:
+const element = &lt;h1 className="title"&gt;Hello&lt;/h1&gt;;
+
+// React converts it to JavaScript:
+// const element = React.createElement("h1", {className: "title"}, "Hello");</code></pre>
+  </div>
+
+  <div class="concept">
+    <h4>3. Virtual DOM</h4>
+    <p>React keeps a "virtual" copy of the page in memory. When state changes, React updates the virtual copy first, then efficiently updates only what changed in the real DOM. This makes apps fast.</p>
+  </div>
+
+  <h2>Your First Component</h2>
+  <pre><code class="language-javascript">// A simple component
+function Button() {
+  return &lt;button&gt;Click me&lt;/button&gt;;
+}
+
+// Export so other files can use it
+export default Button;</code></pre>
+
+  <p>Components are just JavaScript functions. They take input (props) and return JSX.</p>
+
+  <h2>Props: Passing Data to Components</h2>
+  <p>Props are like function arguments—they let you customize a component.</p>
+
+  <pre><code class="language-javascript">// Define a component that accepts props
+function Greeting({ name, age }) {
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;Hello, {name}!&lt;/h1&gt;
+      &lt;p&gt;You are {age} years old.&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+
+// Use the component with different props
+&lt;Greeting name="Alice" age={25} /&gt;
+&lt;Greeting name="Bob" age={30} /&gt;</code></pre>
+
+  <h3>Key Points About Props</h3>
+  <ul>
+    <li>Props flow <strong>down</strong> from parent to child</li>
+    <li>Components can't change their own props</li>
+    <li>Props are read-only (immutable)</li>
+  </ul>
+
+  <h2>State: Making Components Interactive</h2>
+  <p>State is data that a component can change. When state changes, React re-renders the component.</p>
+
+  <pre><code class="language-javascript">import { useState } from 'react';
+
+function Counter() {
+  // Declare state variable 'count' and function to change it 'setCount'
+  const [count, setCount] = useState(0);
+
+  return (
+    &lt;div&gt;
+      &lt;p&gt;Count: {count}&lt;/p&gt;
+      &lt;button onClick={() => setCount(count + 1)}&gt;
+        Increment
+      &lt;/button&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default Counter;</code></pre>
+
+  <h3>How useState Works</h3>
+  <ol>
+    <li><code>useState(0)</code> creates a state variable initialized to 0</li>
+    <li>It returns an array: <code>[currentValue, functionToChangeIt]</code></li>
+    <li>When you call <code>setCount(5)</code>, React updates the value and re-renders</li>
+  </ol>
+
+  <h2>React Hooks: Powerful Utilities</h2>
+  <p>Hooks are functions that let you "hook into" React features. Here are the most common:</p>
+
+  <div class="concept">
+    <h4>useState: Store and update state</h4>
+    <pre><code class="language-javascript">const [count, setCount] = useState(0);</code></pre>
+  </div>
+
+  <div class="concept">
+    <h4>useEffect: Run code after render</h4>
+    <pre><code class="language-javascript">import { useEffect } from 'react';
+
+function App() {
+  useEffect(() => {
+    // This runs AFTER the component renders
+    console.log("Component mounted!");
+
+    // Fetch data
+    fetch('/api/data').then(res => res.json());
+  }, []);  // Empty array = run once on mount
+
+  return &lt;div&gt;Hello&lt;/div&gt;;
+}</code></pre>
+  </div>
+
+  <div class="concept">
+    <h4>Custom Hooks: Write your own</h4>
+    <p>You can create custom hooks to reuse logic across components.</p>
+    <pre><code class="language-javascript">// Custom hook
+function useWindowWidth() {
+  const [width, setWidth] = useState(window.innerWidth);
+
+  useEffect(() => {
+    function handleResize() {
+      setWidth(window.innerWidth);
+    }
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return width;
+}
+
+// Use it in a component
+function App() {
+  const width = useWindowWidth();
+  return &lt;p&gt;Window width: {width}px&lt;/p&gt;;
+}</code></pre>
+  </div>
+
+  <h2>Real Example: Authentication Hook</h2>
+  <p>In ADVOCAT-Easy, the <code>useAuth()</code> hook checks if a user is logged in. Here's how it works:</p>
+
+  <pre><code class="language-javascript">// hooks/useAuth.js
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+
+export function useAuth(requireAuth = true) {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    // Check if token exists in localStorage
+    const token = localStorage.getItem('sessionToken');
+
+    if (!token) {
+      // No token = not logged in
+      if (requireAuth) router.push('/auth');
+      return;
+    }
+
+    // Validate token with backend
+    fetch('/api/auth/validate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token })
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.isValid) {
+          setIsLoggedIn(true);
+        } else {
+          // Token invalid = redirect to login
+          if (requireAuth) router.push('/auth');
+        }
+      });
+  }, []);
+
+  return { isLoggedIn };
+}
+
+// Use it in a component
+function Dashboard() {
+  const { isLoggedIn } = useAuth(true);  // true = must be logged in
+
+  if (!isLoggedIn) return &lt;p&gt;Loading...&lt;/p&gt;;
+
+  return &lt;h1&gt;Welcome back!&lt;/h1&gt;;
+}</code></pre>
+
+  <h3>Why This Pattern Matters</h3>
+  <ul>
+    <li><strong>Reusable:</strong> Any component can use <code>useAuth()</code></li>
+    <li><strong>Clean:</strong> Logic is in one place, not scattered</li>
+    <li><strong>Maintainable:</strong> Change the hook, all components update</li>
+  </ul>
+
+  <h2>Key React Rules</h2>
+  <div class="checklist">
+    <div class="item">
+      <input type="checkbox"> Component names start with capital letters: <code>Button</code>, not <code>button</code>
+    </div>
+    <div class="item">
+      <input type="checkbox"> Always return a single root element (wrap in <code>&lt;div&gt;</code> if needed)
+    </div>
+    <div class="item">
+      <input type="checkbox"> Don't call hooks inside loops or conditions—call them at the top level
+    </div>
+    <div class="item">
+      <input type="checkbox"> Props flow down, events flow up (parent to child, child to parent via callbacks)
+    </div>
+    <div class="item">
+      <input type="checkbox"> State is immutable—use <code>setState</code>, don't modify state directly
+    </div>
+  </div>
+
+  <p class="success">✅ You now understand React basics. Chapter 4 will show how Next.js builds on top of React!</p>
+</section>

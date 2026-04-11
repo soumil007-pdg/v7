@@ -1,0 +1,109 @@
+<!-- CHAPTER 1: Getting Started -->
+<section id="chapter-1" class="chapter">
+  <h1>🚀 Chapter 1: Getting Started</h1>
+  <p class="intro">Welcome! This guide takes you from zero to building a professional SaaS application. You don't need any prior coding experience — we'll explain everything from scratch.</p>
+
+  <h2>Prerequisites</h2>
+  <p>Before we start, you'll need three things installed on your computer:</p>
+
+  <div class="checklist">
+    <div class="item">
+      <h3>1. Node.js & npm</h3>
+      <p>Node.js is a runtime that lets JavaScript run outside the browser. npm is the package manager (like an app store for code).</p>
+      <p><strong>How to check:</strong></p>
+      <pre><code class="language-bash">node --version
+npm --version</code></pre>
+      <p>If these commands fail, download from <a href="https://nodejs.org" target="_blank">nodejs.org</a> (choose LTS version).</p>
+    </div>
+
+    <div class="item">
+      <h3>2. Git</h3>
+      <p>Git is a version control system (like "track changes" for code). It lets you save snapshots of your work and collaborate with others.</p>
+      <p><strong>How to check:</strong></p>
+      <pre><code class="language-bash">git --version</code></pre>
+      <p>If this fails, download from <a href="https://git-scm.com" target="_blank">git-scm.com</a>.</p>
+    </div>
+
+    <div class="item">
+      <h3>3. A Code Editor</h3>
+      <p>You'll write code in a text editor. We recommend <strong>VS Code</strong> (free, powerful, beginner-friendly).</p>
+      <p>Download from <a href="https://code.visualstudio.com" target="_blank">code.visualstudio.com</a>.</p>
+    </div>
+  </div>
+
+  <h2>Setting Up ADVOCAT-Easy Locally</h2>
+  <p>Now let's clone the project and get it running on your computer.</p>
+
+  <h3>Step 1: Clone the Repository</h3>
+  <p>A repository is a folder that contains all the code for a project. Cloning means making a copy on your computer.</p>
+  <pre><code class="language-bash">git clone https://github.com/soumil007-pdg/v7.git
+cd v7/.claude/worktrees/flamboyant-solomon</code></pre>
+
+  <h3>Step 2: Install Dependencies</h3>
+  <p>The project depends on many libraries (React, Next.js, Tailwind, etc.). npm will download and install them all.</p>
+  <pre><code class="language-bash">npm install</code></pre>
+  <p><strong>⏳ This may take 2-5 minutes on first run.</strong></p>
+
+  <h3>Step 3: Start the Dev Server</h3>
+  <p>The dev server is a local web server that runs your app on your computer.</p>
+  <pre><code class="language-bash">npm run dev</code></pre>
+  <p>You should see output like:</p>
+  <pre><code class="language-bash">  ▲ Next.js 15.5.3
+  - Local:        http://localhost:3000</code></pre>
+
+  <h3>Step 4: Open in Browser</h3>
+  <p>Open <a href="http://localhost:3000" target="_blank">http://localhost:3000</a> in your browser. You should see the ADVOCAT-Easy homepage!</p>
+
+  <h2>File Structure Overview</h2>
+  <p>Here's what each folder in the project does:</p>
+
+  <pre><code class="language-text">v7/
+├── app/                    # Next.js app directory
+│   ├── [locale]/          # Localized pages (en, hi, mr, te)
+│   │   ├── page.js        # Homepage
+│   │   ├── auth/          # Login/signup page
+│   │   ├── dashboard/     # User dashboard
+│   │   └── ...            # More pages
+│   ├── api/               # Backend API routes
+│   │   ├── auth/          # Authentication endpoints
+│   │   ├── chat/          # Chat with AI
+│   │   └── ...            # More endpoints
+│   └── components/        # Reusable React components
+├── hooks/                 # Custom React hooks
+├── lib/                   # Utility functions & database
+├── messages/              # Translations (en.json, hi.json, etc.)
+├── middleware.js          # Locale routing middleware
+├── i18n.js                # Internationalization config
+├── next.config.mjs        # Next.js configuration
+├── tailwind.config.js     # Tailwind CSS config
+└── package.json           # Dependencies list</code></pre>
+
+  <p>Don't worry about what everything does yet—we'll cover each section in detail!</p>
+
+  <h2>First Run Checklist</h2>
+  <div class="checklist">
+    <div class="item">
+      <input type="checkbox"> ✅ Node.js and npm installed
+    </div>
+    <div class="item">
+      <input type="checkbox"> ✅ Git installed
+    </div>
+    <div class="item">
+      <input type="checkbox"> ✅ Code editor (VS Code) installed
+    </div>
+    <div class="item">
+      <input type="checkbox"> ✅ Project cloned from GitHub
+    </div>
+    <div class="item">
+      <input type="checkbox"> ✅ Dependencies installed (`npm install` completed)
+    </div>
+    <div class="item">
+      <input type="checkbox"> ✅ Dev server running (`npm run dev`)
+    </div>
+    <div class="item">
+      <input type="checkbox"> ✅ Homepage loads at http://localhost:3000
+    </div>
+  </div>
+
+  <p class="success">🎉 If you've checked all these boxes, you're ready for Chapter 2!</p>
+</section>
