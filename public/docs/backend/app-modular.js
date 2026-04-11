@@ -55,6 +55,7 @@ async function loadChapter(chapterNum) {
 
     if (chapterSection) {
       document.getElementById('chapters-container').innerHTML = chapterSection.outerHTML;
+      document.querySelector(`#chapter-${chapterNum}`).classList.add('active');
 
       // Re-highlight code blocks
       setTimeout(() => {

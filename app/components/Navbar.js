@@ -40,7 +40,7 @@ const Navbar = ({ isLoggedIn, userEmail, userName, handleLogout }) => {
         
         {/* --- DOCS BUTTON --- */}
         <a
-          href="/docs/index.html"
+          href="/docs/hub.html"
           target="_blank"
           rel="noreferrer"
           title="Documentation"
