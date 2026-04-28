@@ -167,3 +167,104 @@
     @apply font-sans;
   }
 }
+
+/* ================================================================
+   ADVOCATE PRO THEME — Navy + Gold
+   Toggle: Ctrl + Shift + T  (hidden shortcut)
+   ================================================================ */
+
+[data-theme="pro"] {
+  --primary-accent: #daa53b;
+  --dark-text: #031126;
+  --light-accent: #E8D5A3;
+}
+
+/* Hero section: orange → deep navy gradient */
+[data-theme="pro"] section[class*="#FF5B33"] {
+  background: linear-gradient(135deg, #031126 0%, #031126 100%) !important;
+}
+
+/* All other orange bg elements (cards, divs) → gold */
+[data-theme="pro"] div[class*="bg-[#FF5B33]"],
+[data-theme="pro"] button[class*="bg-[#FF5B33]"],
+[data-theme="pro"] a[class*="bg-[#FF5B33]"] {
+  background-color: #daa53b !important;
+}
+
+/* Orange text → gold */
+[data-theme="pro"] [class*="text-[#FF5B33]"] {
+  color: #daa53b !important;
+}
+
+/* Orange borders → gold */
+[data-theme="pro"] [class*="border-[#FF5B33]"] {
+  border-color: #daa53b !important;
+}
+
+/* Hover: orange border → gold */
+[data-theme="pro"] [class*="hover:border-[#FF5B33]"]:hover {
+  border-color: #daa53b !important;
+}
+
+/* Hover: orange text → gold */
+[data-theme="pro"] [class*="hover:text-[#FF5B33]"]:hover {
+  color: #daa53b !important;
+}
+
+/* Group hover: orange bg → gold */
+[data-theme="pro"] .group:hover [class*="group-hover:bg-[#FF5B33]"] {
+  background-color: #daa53b !important;
+}
+
+/* Group hover: orange text → gold */
+[data-theme="pro"] .group:hover [class*="group-hover:text-[#FF5B33]"] {
+  color: #daa53b !important;
+}
+
+/* Dark #171717 backgrounds → deep navy */
+[data-theme="pro"] [class*="bg-[#171717]"] {
+  background-color: #031126 !important;
+}
+
+/* Dark #171717 text → deep navy */
+[data-theme="pro"] [class*="text-[#171717]"] {
+  color: #031126 !important;
+}
+
+/* Dark borders → navy */
+[data-theme="pro"] [class*="border-[#171717]"] {
+  border-color: #031126 !important;
+}
+
+/* Hover: dark border → navy */
+[data-theme="pro"] [class*="hover:border-[#171717]"]:hover {
+  border-color: #031126 !important;
+}
+
+/* Service card hover: dark bg → navy */
+[data-theme="pro"] [class*="group-hover:bg-[#171717]"] {
+  background-color: #031126 !important;
+}
+
+/* orange-50 highlight bg → warm gold tint */
+[data-theme="pro"] .bg-orange-50 {
+  background-color: #FBF5E6 !important;
+}
+
+/* Markdown link colors in chat/case-advisor */
+[data-theme="pro"] .prose-legal a,
+[data-theme="pro"] .prose-brief a {
+  color: #daa53b !important;
+}
+[data-theme="pro"] .prose-legal a:hover,
+[data-theme="pro"] .prose-brief a:hover {
+  color: #a67c2e !important;
+}
+
+/* Navbar logo — always visible regardless of theme */
+[data-theme="pro"] .navbar-brand {
+  color: white !important;
+}
+[data-theme="pro"] .navbar-brand-icon {
+  color: #daa53b !important;
+}

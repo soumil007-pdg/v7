@@ -3,6 +3,7 @@
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { toast } from 'react-hot-toast';
 import Navbar from './Navbar';
 
 export default function NavbarClient() {
@@ -14,6 +15,27 @@ export default function NavbarClient() {
       if (e.ctrlKey && e.shiftKey && e.key === 'D') {
         e.preventDefault();
         window.open('/docs/hub.html', '_blank');
+      }
+      if (e.ctrlKey && e.shiftKey && e.key === 'T') {
+        e.preventDefault();
+        // Navigate between orange (professor demo) ↔ pro (design workspace)
+        // Maps the current page to its equivalent:
+        //   /en/case-advisor  →  /en/pro/case-advisor
+        //   /en/pro/general-queries  →  /en/general-queries
+        const segments = window.location.pathname.split('/').filter(Boolean);
+        const locale = segments[0] || 'en';
+        const isPro = segments[1] === 'pro';
+        if (isPro) {
+          // Remove 'pro' segment → go back to orange equivalent page
+          const restPath = segments.slice(2).join('/');
+          router.push(`/${locale}/${restPath}`);
+          toast.success('Original Theme', { duration: 1500 });
+        } else {
+          // Insert 'pro' segment → go to pro equivalent page
+          const restPath = segments.slice(1).join('/');
+          router.push(`/${locale}/pro/${restPath}`);
+          toast.success('Pro Design Workspace', { duration: 1500 });
+        }
       }
     };
     window.addEventListener('keydown', handleKeyDown);

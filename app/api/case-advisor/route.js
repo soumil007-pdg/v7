@@ -84,6 +84,26 @@ Do not just recite the law. Analyze the *winnability* of this case. Your job is 
     { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
   ];
 
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  async function generateWithRetry(requestPayload, maxRetries = 4) {
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        return await model.generateContent(requestPayload);
+      } catch (err) {
+        const is503 = err.status === 503 || err.message?.includes('503');
+        const is429 = err.status === 429 || err.message?.includes('429');
+        const retryable = is503 || is429;
+        if (!retryable || attempt === maxRetries) throw err;
+        // Parse retry delay from error message if available, else exponential backoff
+        const match = err.message?.match(/Please retry in ([\d.]+)s/);
+        const delay = match ? parseFloat(match[1]) * 1000 : Math.min(2000 * 2 ** attempt, 30000);
+        console.log(`Attempt ${attempt + 1} failed (${err.status}). Retrying in ${Math.round(delay / 1000)}s...`);
+        await sleep(delay);
+      }
+    }
+  }
+
   try {
     const prompt = `ACT AS A SENIOR INDIAN BASED LAWYER. Analyze this civil case:
     
@@ -111,7 +131,7 @@ Do not just recite the law. Analyze the *winnability* of this case. Your job is 
     
     **CRITICAL INSTRUCTION:** You MUST generate your ENTIRE response (including headings) in ${targetLanguage}.`;
 
-    const result = await model.generateContent({
+    const result = await generateWithRetry({
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
       generationConfig,
       safetySettings,
@@ -124,8 +144,14 @@ Do not just recite the law. Analyze the *winnability* of this case. Your job is 
     return new Response(JSON.stringify({ text }), { status: 200 });
   } catch (error) {
     console.error('Gemini API error:', error);
-    const status = error.message?.includes('503') ? 503 : 500;
-    const msg = status === 503 ? 'AI Model Overloaded. Please wait 10s.' : 'AI Processing Error';
+    const is503 = error.status === 503 || error.message?.includes('503');
+    const is429 = error.status === 429 || error.message?.includes('429');
+    const status = is503 ? 503 : is429 ? 429 : 500;
+    const msg = is503
+      ? 'AI servers are overloaded. Please try again in a moment.'
+      : is429
+      ? 'API quota exceeded. Please try again later.'
+      : 'AI Processing Error';
     return new Response(JSON.stringify({ message: msg }), { status });
   }
 }

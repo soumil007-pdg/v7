@@ -25,8 +25,8 @@ const Navbar = ({ isLoggedIn, userEmail, userName, handleLogout }) => {
     <div className="flex w-full justify-between items-center p-3" style={{backgroundColor: 'var(--dark-text)'}}>
       
       {/* Left Side: Logo & Title */}
-      <Link href={"/"} className="flex items-center gap-2 title text-3xl font-extrabold text-white">
-        <Scale size={32} style={{color: 'var(--primary-accent)'}} />
+      <Link href={"/"} className="navbar-brand flex items-center gap-2 title text-3xl font-extrabold text-white">
+        <Scale size={32} className="navbar-brand-icon" style={{color: 'var(--primary-accent)'}} />
         ADVOCAT-Easy
       </Link>
       

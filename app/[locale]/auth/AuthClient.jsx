@@ -36,7 +36,7 @@ export default function AuthClient() {
           if (data.token) {
             localStorage.setItem('sessionToken', data.token);
             toast.success(t('toastWelcome'));
-            router.push('/');
+            window.location.href = '/';
           } else {
             toast.error(t('toastNoToken'));
           }

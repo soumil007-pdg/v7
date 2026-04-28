@@ -582,7 +582,13 @@ export default function CaseAdvisorClient() {
                            {isLoading ? (
                                <AnalysisSkeleton />
                            ) : (
-                               <ReactMarkdown>{result}</ReactMarkdown>
+                               <ReactMarkdown
+                                  components={{
+                                    a: ({ href, children }) => (
+                                      <a href={href} target="_blank" rel="noopener noreferrer">{children}</a>
+                                    )
+                                  }}
+                              >{result}</ReactMarkdown>
                            )}
                        </div>
 

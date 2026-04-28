@@ -126,9 +126,9 @@ export default async function HomePage({ params }) {
           </h2>
 
           <div className="flex flex-col space-y-8">
-            <FeatureRow icon={Layers} title={t('features.easyTitle')} description={t('features.easyDesc')} accent="#171717" variant="filled" />
-            <FeatureRow icon={RefreshCw} title={t('features.accurateTitle')} description={t('features.accurateDesc')} accent="#171717" variant="default" />
-            <FeatureRow icon={Clock} title={t('features.saveTitle')} description={t('features.saveDesc')} accent="#FF5B33" variant="filled" />
+            <FeatureRow icon={Layers} title={t('features.easyTitle')} description={t('features.easyDesc')} accent="var(--dark-text)" variant="filled" />
+            <FeatureRow icon={RefreshCw} title={t('features.accurateTitle')} description={t('features.accurateDesc')} accent="var(--dark-text)" variant="default" />
+            <FeatureRow icon={Clock} title={t('features.saveTitle')} description={t('features.saveDesc')} accent="var(--primary-accent)" variant="filled" />
           </div>
         </div>
       </section>
@@ -181,7 +181,7 @@ const FeatureRow = ({ icon: Icon, title, description, accent, variant = 'default
   return (
     <div 
       className={`flex flex-col md:flex-row items-center gap-6 md:gap-12 p-10 md:p-12 rounded-3xl transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 group w-full ${isFilled ? 'shadow-lg' : 'bg-white'}`}
-      style={{ backgroundColor: isFilled ? accent : 'white', border: isFilled ? 'none' : `2px solid ${accent}20` }}
+      style={{ backgroundColor: isFilled ? accent : 'white', border: isFilled ? 'none' : '2px solid rgba(0,0,0,0.1)' }}
     >
       <div className="flex flex-col md:flex-row items-center gap-6 md:w-1/3 shrink-0 text-center md:text-left">
         <div className={`p-5 rounded-2xl shadow-sm transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3 ${isFilled ? 'bg-white' : 'bg-gray-50'}`}>
