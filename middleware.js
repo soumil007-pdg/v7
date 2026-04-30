@@ -15,16 +15,26 @@ export default function middleware(req) {
   );
   const locale = pathnameLocale || defaultLocale;
 
-  const isAuthPage = pathname === `/${locale}/auth` || pathname === '/auth';
+  const isProPath = pathname.startsWith(`/${locale}/pro`) || pathname.startsWith('/pro');
+  const isAuthPage =
+    pathname === `/${locale}/auth` ||
+    pathname === '/auth' ||
+    pathname === `/${locale}/pro/auth`;
 
   const token = req.cookies.get('sessionToken')?.value;
 
   if (!token && !isAuthPage) {
-    return NextResponse.redirect(new URL(`/${locale}/auth`, req.url));
+    const redirectTarget = isProPath
+      ? `/${locale}/pro/auth`
+      : `/${locale}/auth`;
+    return NextResponse.redirect(new URL(redirectTarget, req.url));
   }
 
   if (token && isAuthPage) {
-    return NextResponse.redirect(new URL(`/${locale}`, req.url));
+    const redirectTarget = isProPath
+      ? `/${locale}/pro`
+      : `/${locale}`;
+    return NextResponse.redirect(new URL(redirectTarget, req.url));
   }
 
   return intlMiddleware(req);

@@ -15,9 +15,10 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { ProgressBar } from '@/components/ui/progress';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { 
+import {
   Download, Link as LinkIcon, ArrowRight, Plus, Trash2,
-  UploadCloud, FileText, Scale, CheckCircle, AlertTriangle, Gavel, MapPin, Star, Search
+  UploadCloud, FileText, Scale, CheckCircle, AlertTriangle, Gavel, MapPin, Star, Search,
+  FolderOpen, X, Clock, ChevronRight
 } from 'lucide-react';
 
 const FontLoader = () => (
@@ -67,7 +68,7 @@ const indianStates = [
 ];
 
 export default function CaseAdvisorClient() {
-  const { isLoggedIn, loading } = useAuth(true); 
+  const { isLoggedIn, loading, userEmail } = useAuth(true); 
   const t = useTranslations('CaseAdvisor');
   const locale = useLocale(); 
 
@@ -101,10 +102,61 @@ export default function CaseAdvisorClient() {
   const [result, setResult] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   
-  const [witnesses, setWitnesses] = useState([]); 
+  const [witnesses, setWitnesses] = useState([]);
   const [evidence, setEvidence] = useState([]);
   const [activeCitations, setActiveCitations] = useState([]);
   const router = useRouter();
+
+  // ── Case History Drawer ──────────────────────────────
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [caseHistory, setCaseHistory] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+
+  const caseTypeColors = {
+    contract: '#3B82F6',
+    property: '#10B981',
+    family:   '#8B5CF6',
+    consumer: '#F59E0B',
+    tort:     '#EF4444',
+    other:    '#6B7280',
+  };
+
+  const timeAgo = (iso) => {
+    const diff = Date.now() - new Date(iso).getTime();
+    const m = Math.floor(diff / 60000);
+    if (m < 1) return 'just now';
+    if (m < 60) return `${m}m ago`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `${h}h ago`;
+    return `${Math.floor(h / 24)}d ago`;
+  };
+
+  useEffect(() => {
+    if (!userEmail) return;
+    const fetchHistory = async () => {
+      setHistoryLoading(true);
+      try {
+        const res = await fetch('/api/case-advisor/history', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: userEmail }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setCaseHistory(data.history || []);
+        }
+      } catch (_) {}
+      finally { setHistoryLoading(false); }
+    };
+    fetchHistory();
+  }, [userEmail]);
+
+  const loadFromHistory = (entry) => {
+    setResult(entry.result);
+    setActiveCitations(parseCitations(entry.result));
+    setStep(4);
+    setHistoryOpen(false);
+  };
 
   const methods = useForm({
     resolver: zodResolver(schema),
@@ -195,12 +247,13 @@ export default function CaseAdvisorClient() {
     try {
       const payload = {
         ...data,
-        locale: locale, 
+        locale: locale,
+        email: userEmail,
         certificateFile: data.certificateFile?.[0]?.name || "Not uploaded",
         evidence: data.evidence?.map(item => ({
           type: item.type,
           description: item.description,
-          attachedFile: item.fileName || "No file attached" 
+          attachedFile: item.fileName || "No file attached"
         }))
       };
 
@@ -347,10 +400,35 @@ export default function CaseAdvisorClient() {
         <div className="max-w-5xl mx-auto px-6 mb-12">
           <div className="flex items-center justify-between mb-6">
              <h1 className="text-3xl font-extrabold flex items-center gap-3">
-                <Gavel className="text-[#FF5B33]" size={32} /> 
+                <Gavel className="text-[#FF5B33]" size={32} />
                 {t('header.title') || "Case Advisor"}
              </h1>
-             <div className="text-sm text-gray-400 font-mono">{t('header.step', { step }) || `Step ${step} of 4`}</div>
+             <div className="flex items-center gap-3">
+               <div className="text-sm text-gray-400 font-mono">{t('header.step', { step }) || `Step ${step} of 4`}</div>
+               <button
+                 type="button"
+                 onClick={() => { setStep(1); methods.reset(); setWitnesses([]); setEvidence([]); }}
+                 className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold transition-all"
+                 style={{ backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)' }}
+                 title="Start a new case"
+               >
+                 <Plus size={14} /> New Case
+               </button>
+               <button
+                 type="button"
+                 onClick={() => setHistoryOpen(true)}
+                 className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all"
+                 style={{ backgroundColor: 'rgba(255,91,51,0.1)', border: '1px solid rgba(255,91,51,0.25)', color: '#FF5B33' }}
+               >
+                 <FolderOpen size={15} />
+                 Case Dossiers
+                 {caseHistory.length > 0 && (
+                   <span style={{ backgroundColor: '#FF5B33', color: 'white', borderRadius: 999, fontSize: 10, padding: '1px 7px', fontWeight: 700 }}>
+                     {caseHistory.length}
+                   </span>
+                 )}
+               </button>
+             </div>
           </div>
           
           <ProgressBar value={(step / 4) * 100} className="mb-8" />
@@ -668,6 +746,127 @@ export default function CaseAdvisorClient() {
 
           </form>
         </div>
+      </div>
+
+      {/* ── Case History Drawer ──────────────────────────── */}
+      {/* Backdrop */}
+      {historyOpen && (
+        <div
+          onClick={() => setHistoryOpen(false)}
+          style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(2px)', zIndex: 40 }}
+        />
+      )}
+
+      {/* Drawer panel */}
+      <div style={{
+        position: 'fixed', top: 0, right: 0, height: '100vh', width: 400,
+        backgroundColor: '#0D1117', borderLeft: '1px solid rgba(255,255,255,0.07)',
+        zIndex: 50, display: 'flex', flexDirection: 'column',
+        transform: historyOpen ? 'translateX(0)' : 'translateX(100%)',
+        transition: 'transform 0.3s cubic-bezier(0.4,0,0.2,1)',
+        boxShadow: '-20px 0 60px rgba(0,0,0,0.5)',
+      }}>
+
+        {/* Drawer header */}
+        <div style={{ padding: '24px 24px 20px', borderBottom: '1px solid rgba(255,255,255,0.07)', flexShrink: 0 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <FolderOpen size={18} color="#FF5B33" />
+              <span style={{ color: 'white', fontWeight: 700, fontSize: 16, letterSpacing: 0.3 }}>Case Dossiers</span>
+            </div>
+            <button onClick={() => setHistoryOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)', padding: 4 }}>
+              <X size={18} />
+            </button>
+          </div>
+          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', margin: 0 }}>
+            {caseHistory.length} case{caseHistory.length !== 1 ? 's' : ''} on record — click any to reload its analysis
+          </p>
+        </div>
+
+        {/* Drawer body */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {historyLoading ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: 'rgba(255,255,255,0.3)', fontSize: 13, marginTop: 40, justifyContent: 'center' }}>
+              <div style={{ width: 16, height: 16, border: '2px solid rgba(255,91,51,0.3)', borderTopColor: '#FF5B33', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+              Loading dossiers...
+            </div>
+
+          ) : caseHistory.length === 0 ? (
+            <div style={{ textAlign: 'center', marginTop: 60, color: 'rgba(255,255,255,0.2)' }}>
+              <FolderOpen size={40} style={{ margin: '0 auto 16px', opacity: 0.3 }} />
+              <p style={{ fontSize: 13 }}>No cases on record yet.</p>
+              <p style={{ fontSize: 12, marginTop: 6 }}>Complete your first analysis and it will appear here.</p>
+            </div>
+
+          ) : (
+            caseHistory.map((entry) => {
+              const typeColor = caseTypeColors[entry.caseType] || caseTypeColors.other;
+              return (
+                <button
+                  key={entry.id}
+                  type="button"
+                  onClick={() => loadFromHistory(entry)}
+                  style={{
+                    width: '100%', textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+                  }}
+                >
+                  <div style={{
+                    backgroundColor: 'rgba(255,255,255,0.03)',
+                    border: '1px solid rgba(255,255,255,0.07)',
+                    borderLeft: `3px solid ${typeColor}`,
+                    borderRadius: 6, padding: '14px 16px',
+                    transition: 'all 0.15s',
+                    display: 'flex', flexDirection: 'column', gap: 8,
+                  }}
+                    onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)'}
+                    onMouseLeave={e => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.03)'}
+                  >
+                    {/* Top row: title + arrow */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+                      <span style={{ color: 'white', fontWeight: 600, fontSize: 14, lineHeight: 1.3 }}>
+                        {entry.caseTitle}
+                      </span>
+                      <ChevronRight size={14} style={{ color: 'rgba(255,255,255,0.2)', flexShrink: 0, marginTop: 2 }} />
+                    </div>
+
+                    {/* Middle row: type badge + location */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                      {entry.caseType && (
+                        <span style={{
+                          fontSize: 9, fontWeight: 700, letterSpacing: 1,
+                          padding: '2px 8px', borderRadius: 3,
+                          backgroundColor: `${typeColor}20`, color: typeColor,
+                          textTransform: 'uppercase',
+                        }}>
+                          {entry.caseType}
+                        </span>
+                      )}
+                      {entry.city && (
+                        <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', display: 'flex', alignItems: 'center', gap: 3 }}>
+                          <MapPin size={9} /> {entry.city}{entry.state ? `, ${entry.state}` : ''}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Relief sought snippet */}
+                    {entry.reliefSought && (
+                      <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', margin: 0, lineHeight: 1.4, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                        {entry.reliefSought}
+                      </p>
+                    )}
+
+                    {/* Bottom row: time */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'rgba(255,255,255,0.2)', fontSize: 10 }}>
+                      <Clock size={9} /> {timeAgo(entry.createdAt)}
+                    </div>
+                  </div>
+                </button>
+              );
+            })
+          )}
+        </div>
+
+        <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
       </div>
     </>
   );

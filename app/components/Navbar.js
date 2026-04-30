@@ -22,7 +22,7 @@ const Navbar = ({ isLoggedIn, userEmail, userName, handleLogout }) => {
   const currentLocale = pathname.split('/')[1] || 'en';
 
   return (
-    <div className="flex w-full justify-between items-center p-3" style={{backgroundColor: 'var(--dark-text)'}}>
+    <div className="site-navbar flex w-full justify-between items-center p-3" style={{backgroundColor: 'var(--dark-text)'}}>
       
       {/* Left Side: Logo & Title */}
       <Link href={"/"} className="navbar-brand flex items-center gap-2 title text-3xl font-extrabold text-white">

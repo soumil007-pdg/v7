@@ -1,0 +1,275 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --bg-app: #F5F4EF;
+  --color-gold: #C5A03A;
+  --color-gold-hover: #D4AF37;
+  --color-gold-gradient: linear-gradient(135deg, #DFB961 0%, #C5A03A 100%);
+  --color-dark: #0D1625;
+  --color-panel: #111827;
+  --color-card-light: #ffffff;
+  --color-text-light: #1E293B;
+  --color-text-muted: #64748B;
+  --shadow-card: 0 10px 40px rgba(0, 0, 0, 0.08);
+  --shadow-hover: 0 20px 60px rgba(0, 0, 0, 0.14);
+}
+
+.dash-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 80px 20px;
+  background-color: var(--bg-app);
+  font-family: 'Inter', -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Header */
+.dash-header {
+  text-align: center;
+  margin-bottom: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.dash-logo-box {
+  background: white;
+  width: 72px;
+  height: 72px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+}
+
+.dash-logo-icon {
+  color: var(--color-gold);
+}
+
+.dash-main-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--color-dark);
+  margin: 0 0 16px 0;
+  letter-spacing: -0.5px;
+}
+
+.dash-main-subtitle {
+  font-size: 16px;
+  color: var(--color-text-muted);
+  max-width: 600px;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.dash-main-subtitle strong {
+  color: var(--color-dark);
+  font-weight: 600;
+}
+
+/* Cards container */
+.dash-main {
+  display: flex;
+  gap: 28px;
+  max-width: 1000px;
+  width: 100%;
+  justify-content: center;
+  margin-bottom: 80px;
+}
+
+/* Base card */
+.dash-card {
+  flex: 1;
+  max-width: 480px;
+  border-radius: 12px;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-card);
+  position: relative;
+}
+
+.dash-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-hover);
+}
+
+/* Dark card — Quick Rights Chat */
+.dash-card-dark {
+  background-color: var(--color-dark);
+  border: 1px solid rgba(197, 160, 58, 0.3);
+}
+
+.dash-card-dark::before,
+.dash-card-dark::after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--color-gold);
+  pointer-events: none;
+}
+
+.dash-card-dark::before {
+  top: 10px;
+  right: 10px;
+  border-bottom: none;
+  border-left: none;
+}
+
+.dash-card-dark::after {
+  bottom: 10px;
+  left: 10px;
+  border-top: none;
+  border-right: none;
+}
+
+/* Light card — Case Strategist (slightly lighter navy) */
+.dash-card-light {
+  background-color: var(--color-card-light);
+  border: 1px solid rgba(197, 160, 58, 0.3);
+  box-shadow: var(--shadow-card), 0 0 0 8px rgba(255,255,255,0.5);
+}
+
+/* Card header */
+.dash-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 30px;
+}
+
+.dash-card-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 26px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 16px 0;
+  letter-spacing: -0.5px;
+}
+
+.dash-card-dark .dash-card-title {
+  color: var(--color-gold);
+}
+
+.dash-card-light .dash-card-title {
+  color: var(--color-dark);
+}
+
+.dash-icon-gold { color: var(--color-gold); }
+.dash-icon-dark { color: var(--color-gold); }
+
+.dash-badge {
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  flex-shrink: 0;
+}
+
+.dash-badge-light {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255,255,255,0.15);
+}
+
+.dash-badge-dark {
+  background: rgba(197, 160, 58, 0.1);
+  color: var(--color-gold);
+  border: 1px solid rgba(197, 160, 58, 0.2);
+}
+
+.dash-card-desc {
+  font-size: 15px;
+  line-height: 1.65;
+  margin: 0 0 40px 0;
+  font-weight: 400;
+  letter-spacing: 0.2px;
+}
+
+.dash-card-dark .dash-card-desc {
+  color: #64748B;
+}
+
+.dash-card-light .dash-card-desc {
+  color: #475569;
+}
+
+/* Buttons */
+.dash-btn {
+  width: 100%;
+  padding: 14px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  margin-top: auto;
+  text-decoration: none;
+  font-family: 'Inter', sans-serif;
+}
+
+.dash-btn-gold {
+  background: var(--color-gold-gradient);
+  color: #000;
+  box-shadow: 0 4px 15px rgba(197, 160, 58, 0.2);
+}
+
+.dash-btn-gold:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(197, 160, 58, 0.4);
+}
+
+.dash-btn-dark {
+  background-color: var(--color-dark);
+  color: #ffffff;
+  border: none;
+}
+
+.dash-btn-dark:hover {
+  background-color: #1a2744;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(13, 22, 37, 0.2);
+}
+
+/* Footer */
+.dash-footer {
+  width: 100%;
+  max-width: 800px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  padding-top: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #94A3B8;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+}
+
+@media (max-width: 800px) {
+  .dash-main {
+    flex-direction: column;
+    align-items: center;
+  }
+  .dash-card {
+    width: 100%;
+    max-width: 100%;
+  }
+}

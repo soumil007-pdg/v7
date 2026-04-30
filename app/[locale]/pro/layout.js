@@ -1,13 +1,14 @@
 import ThemeSetter from './ThemeSetter';
+import ProNavbarClient from './ProNavbarClient';
+import ProFooter from './ProFooter';
 
-// Pro design workspace layout.
-// ThemeSetter activates the navy+gold CSS variables automatically.
-// All pages inside /pro/ get the pro theme — no changes to the orange pages.
 export default function ProLayout({ children }) {
   return (
     <>
       <ThemeSetter />
+      <ProNavbarClient />
       {children}
+      <ProFooter />
     </>
   );
 }

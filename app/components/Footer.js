@@ -4,7 +4,7 @@ import { Scale } from 'lucide-react'; // Keep Scale for the logo
 
 const Footer = () => {
   return (
-    <footer className="bg-gray-900 text-gray-400 py-6 border-t border-gray-700" style={{backgroundColor: 'var(--dark-text)'}}>
+    <footer className="site-footer bg-gray-900 text-gray-400 py-6 border-t border-gray-700" style={{backgroundColor: 'var(--dark-text)'}}>
       <div className="container mx-auto px-4 max-w-6xl">
         
         {/* --- Single Row: Logo/Description (Left) | Disclaimer (Right) --- */}

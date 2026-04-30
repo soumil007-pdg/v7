@@ -3,6 +3,7 @@ import {
   HarmCategory,
   HarmBlockThreshold,
 } from '@google/generative-ai';
+import { saveCaseAdvisorEntry } from '@/lib/localDb';
 
 const MODEL_NAME = 'gemini-2.5-flash';
 
@@ -140,6 +141,25 @@ Do not just recite the law. Analyze the *winnability* of this case. Your job is 
 
     const response = result.response;
     const text = response.text();
+
+    // Save to case advisor history if user email is present
+    if (formData.email) {
+      try {
+        saveCaseAdvisorEntry({
+          id: `ca-${Date.now()}`,
+          email: formData.email,
+          caseTitle: formData.caseTitle || 'Untitled Case',
+          caseType: formData.caseType || '',
+          city: formData.city || '',
+          state: formData.state || '',
+          reliefSought: formData.reliefSought || '',
+          result: text,
+          createdAt: new Date().toISOString(),
+        });
+      } catch (err) {
+        console.error('Failed to save case advisor history:', err);
+      }
+    }
 
     return new Response(JSON.stringify({ text }), { status: 200 });
   } catch (error) {

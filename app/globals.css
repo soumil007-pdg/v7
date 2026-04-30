@@ -268,3 +268,9 @@
 [data-theme="pro"] .navbar-brand-icon {
   color: #daa53b !important;
 }
+
+/* Hide site navbar & footer on pro pages — lx-nav/lx-footer take over */
+[data-theme="pro"] .site-navbar,
+[data-theme="pro"] .site-footer {
+  display: none !important;
+}
