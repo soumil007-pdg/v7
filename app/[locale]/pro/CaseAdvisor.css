@@ -60,9 +60,22 @@
   font-family: 'Playfair Display', serif;
   font-size: 18px;
   font-weight: 700;
-  color: var(--ca-gold);
   letter-spacing: 1.5px;
   margin: 0 0 4px;
+  /* Gold shimmer text — sweeps once on load */
+  background: linear-gradient(
+    90deg,
+    var(--ca-gold) 0%,
+    var(--ca-gold) 25%,
+    #F5D78A        50%,
+    var(--ca-gold) 75%,
+    var(--ca-gold) 100%
+  );
+  background-size: 250% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gold-text-shimmer 2.5s ease-out 0.3s both;
 }
 
 .ca-sidebar-logo p {
@@ -96,6 +109,7 @@
 .ca-step-item.active {
   background: var(--ca-gold-dim);
   border-color: rgba(212,175,55,0.2);
+  animation: gold-border-glow 3s ease-in-out infinite;
 }
 
 .ca-step-item.done {
@@ -122,9 +136,27 @@
 }
 
 .ca-step-item.active .ca-step-num {
-  background: var(--ca-gold);
+  background: linear-gradient(
+    105deg,
+    #B8902E 0%, #DFB961 35%, #F5D78A 50%, #DFB961 65%, #B8902E 100%
+  );
+  background-size: 220% auto;
   border-color: var(--ca-gold);
   color: #000;
+  animation: gold-sweep 2.5s linear infinite;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Glass streak on active step number circle */
+.ca-step-item.active .ca-step-num::after {
+  content: '';
+  position: absolute;
+  top: -50%; left: -80%;
+  width: 50%; height: 200%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  transform: skewX(-15deg);
+  animation: glass-streak 3s ease-in-out 1s infinite;
 }
 
 .ca-step-item.done .ca-step-num {
@@ -178,6 +210,18 @@
   cursor: pointer;
   transition: all 0.2s;
   text-transform: uppercase;
+  position: relative;
+  overflow: hidden;
+}
+
+.ca-dossier-btn::after {
+  content: '';
+  position: absolute;
+  top: -50%; left: -80%;
+  width: 40%; height: 200%;
+  background: linear-gradient(90deg, transparent, rgba(212,175,55,0.12), transparent);
+  transform: skewX(-20deg);
+  animation: glass-streak 6s ease-in-out 2s infinite;
 }
 
 .ca-dossier-btn:hover {
@@ -204,6 +248,15 @@
   min-width: 0;
 }
 
+/* Step enter animation — triggered by key={step} remount */
+@keyframes ca-step-enter {
+  0%   { opacity: 0; transform: translateX(18px) scale(0.99); filter: blur(2px); }
+  100% { opacity: 1; transform: translateX(0)    scale(1);    filter: blur(0);   }
+}
+.ca-step-panel {
+  animation: ca-step-enter 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
 .ca-main-header {
   margin-bottom: 40px;
 }
@@ -212,9 +265,22 @@
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 2px;
-  color: var(--ca-gold);
   text-transform: uppercase;
   margin-bottom: 10px;
+  background: linear-gradient(
+    90deg,
+    var(--ca-gold) 0%,
+    var(--ca-gold) 20%,
+    #F5D78A        50%,
+    var(--ca-gold) 80%,
+    var(--ca-gold) 100%
+  );
+  background-size: 250% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gold-text-shimmer 3s ease-out 0.5s both,
+             gold-sweep        8s linear    3.6s infinite;
 }
 
 .ca-main-header h1 {
@@ -354,14 +420,32 @@
 }
 
 .ca-btn-primary {
-  background: var(--ca-gold);
+  background: linear-gradient(
+    105deg,
+    #B8902E 0%, #DFB961 30%, #F5D78A 50%, #DFB961 70%, #B8902E 100%
+  );
+  background-size: 220% auto;
   color: #000;
   flex: 1;
+  position: relative;
+  overflow: hidden;
+  animation: gold-sweep 3s linear infinite;
+}
+
+/* Glass reflection on primary button */
+.ca-btn-primary::after {
+  content: '';
+  position: absolute;
+  top: -50%; left: -80%;
+  width: 40%; height: 200%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  transform: skewX(-20deg);
+  animation: glass-streak 3.5s ease-in-out 0.5s infinite;
 }
 
 .ca-btn-primary:hover:not(:disabled) {
-  background: var(--ca-gold-hover);
-  box-shadow: 0 4px 20px rgba(212,175,55,0.25);
+  box-shadow: 0 6px 24px rgba(212,175,55,0.4);
+  animation-duration: 1.5s;
 }
 
 .ca-btn-ghost {
@@ -379,6 +463,19 @@
   background: transparent;
   color: var(--ca-gold);
   border: 1px solid rgba(212,175,55,0.35);
+  position: relative;
+  overflow: hidden;
+  animation: gold-border-glow 3.5s ease-in-out infinite;
+}
+
+.ca-btn-outline-gold::after {
+  content: '';
+  position: absolute;
+  top: -50%; left: -80%;
+  width: 40%; height: 200%;
+  background: linear-gradient(90deg, transparent, rgba(212,175,55,0.15), transparent);
+  transform: skewX(-20deg);
+  animation: glass-streak 5s ease-in-out 1.5s infinite;
 }
 
 .ca-btn-outline-gold:hover:not(:disabled) {
@@ -653,7 +750,20 @@
 .ca-rail-btn.dark {
   background: #0f172a;
   color: #fff;
+  position: relative;
+  overflow: hidden;
 }
+
+.ca-rail-btn.dark::after {
+  content: '';
+  position: absolute;
+  top: -50%; left: -80%;
+  width: 40%; height: 200%;
+  background: linear-gradient(90deg, transparent, rgba(212,175,55,0.1), transparent);
+  transform: skewX(-20deg);
+  animation: glass-streak 5s ease-in-out 3s infinite;
+}
+
 .ca-rail-btn.dark:hover { background: #1e293b; }
 
 .ca-rail-btn.outline {

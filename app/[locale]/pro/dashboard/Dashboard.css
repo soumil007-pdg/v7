@@ -1,19 +1,71 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Inter:wght@300;400;500;600;700&display=swap');
 
+/* ── Variables ─────────────────────────────────────── */
 :root {
-  --bg-app: #F5F4EF;
-  --color-gold: #C5A03A;
-  --color-gold-hover: #D4AF37;
-  --color-gold-gradient: linear-gradient(135deg, #DFB961 0%, #C5A03A 100%);
-  --color-dark: #0D1625;
-  --color-panel: #111827;
-  --color-card-light: #ffffff;
-  --color-text-light: #1E293B;
-  --color-text-muted: #64748B;
-  --shadow-card: 0 10px 40px rgba(0, 0, 0, 0.08);
-  --shadow-hover: 0 20px 60px rgba(0, 0, 0, 0.14);
+  --bg-app:              #F5F4EF;
+  --color-gold:          #C5A03A;
+  --color-gold-light:    #DFB961;
+  --color-gold-bright:   #F5D78A;
+  --color-gold-hover:    #D4AF37;
+  --color-dark:          #0D1625;
+  --color-panel:         #111827;
+  --color-card-light:    #ffffff;
+  --color-text-muted:    #64748B;
+  --shadow-card:         0 10px 40px rgba(0,0,0,0.08);
+  --shadow-hover:        0 20px 60px rgba(0,0,0,0.14);
+  --shadow-gold-glow:    0 0 24px 4px rgba(197,160,58,0.18);
 }
 
+/* ── Keyframes ─────────────────────────────────────── */
+
+/* Entrance — sections slide up and fade in */
+@keyframes dash-fade-up {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+/* Gold shimmer — background sweep for the button */
+@keyframes gold-sweep {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center;  }
+}
+
+/* Glass streak — a bright diagonal light crossing a surface */
+@keyframes glass-streak {
+  0%        { left: -80%; opacity: 0;   }
+  5%        {             opacity: 1;   }
+  95%       {             opacity: 1;   }
+  100%      { left: 140%; opacity: 0;   }
+}
+
+/* Border glow — card border breathes gold */
+@keyframes border-breathe {
+  0%, 100% { box-shadow: 0 10px 40px rgba(0,0,0,0.08),
+                         0 0  0px 0px rgba(197,160,58,0);    }
+  50%      { box-shadow: 0 10px 40px rgba(0,0,0,0.12),
+                         0 0 28px 2px rgba(197,160,58,0.22); }
+}
+
+/* Dot pulse — latest case dot */
+@keyframes dot-pulse {
+  0%, 100% { transform: scale(1);   box-shadow: 0 0 0 0 currentColor;    }
+  50%      { transform: scale(1.3); box-shadow: 0 0 0 4px transparent;   }
+}
+
+/* Text shimmer — one-time sweep on stat numbers */
+@keyframes text-shimmer {
+  0%   { background-position: -200% center; }
+  60%  { background-position: 200% center;  }
+  100% { background-position: 200% center;  }
+}
+
+/* Case row slide-in */
+@keyframes row-arrive {
+  from { opacity: 0; transform: translateX(-10px); }
+  to   { opacity: 1; transform: translateX(0);      }
+}
+
+/* ── Page Shell ────────────────────────────────────── */
 .dash-container {
   min-height: 100vh;
   display: flex;
@@ -25,13 +77,14 @@
   -webkit-font-smoothing: antialiased;
 }
 
-/* Header */
+/* ── Header ────────────────────────────────────────── */
 .dash-header {
   text-align: center;
-  margin-bottom: 60px;
+  margin-bottom: 40px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  animation: dash-fade-up 0.55s ease-out both;
 }
 
 .dash-logo-box {
@@ -43,20 +96,38 @@
   align-items: center;
   justify-content: center;
   margin-bottom: 24px;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0,0,0,0.05);
   box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+  position: relative;
+  overflow: hidden;
 }
 
-.dash-logo-icon {
-  color: var(--color-gold);
+/* Glass streak on the logo box */
+.dash-logo-box::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -80%;
+  width: 50%;
+  height: 200%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(212,175,55,0.35),
+    transparent
+  );
+  transform: skewX(-20deg);
+  animation: glass-streak 5s ease-in-out 1s infinite;
 }
+
+.dash-logo-icon { color: var(--color-gold); }
 
 .dash-main-title {
   font-family: 'Playfair Display', serif;
   font-size: 36px;
   font-weight: 700;
   color: var(--color-dark);
-  margin: 0 0 16px 0;
+  margin: 0 0 16px;
   letter-spacing: -0.5px;
 }
 
@@ -67,23 +138,86 @@
   margin: 0;
   line-height: 1.6;
 }
+.dash-main-subtitle strong { color: var(--color-dark); font-weight: 600; }
 
-.dash-main-subtitle strong {
-  color: var(--color-dark);
-  font-weight: 600;
+/* ── Stats Row ─────────────────────────────────────── */
+.dash-stats-row {
+  display: flex;
+  align-items: center;
+  background: white;
+  border: 1px solid rgba(0,0,0,0.07);
+  border-radius: 10px;
+  padding: 20px 40px;
+  max-width: 1000px;
+  width: 100%;
+  margin-bottom: 32px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  animation: dash-fade-up 0.55s ease-out 0.1s both;
 }
 
-/* Cards container */
+.dash-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  gap: 4px;
+}
+
+/* Gold shimmer text — plays once on load */
+.dash-stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  font-family: 'Playfair Display', serif;
+  line-height: 1;
+  background: linear-gradient(
+    90deg,
+    var(--color-dark)        0%,
+    var(--color-dark)        30%,
+    var(--color-gold-bright) 50%,
+    var(--color-dark)        70%,
+    var(--color-dark)        100%
+  );
+  background-size: 250% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: text-shimmer 2s ease-out 0.4s both;
+}
+
+/* Colored stats (case type) keep their color — override shimmer */
+.dash-stat-value[data-colored="true"] {
+  background: none;
+  -webkit-text-fill-color: unset;
+  background-clip: unset;
+  animation: none;
+}
+
+.dash-stat-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: #94A3B8;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.dash-stat-divider {
+  width: 1px;
+  height: 36px;
+  background: rgba(0,0,0,0.07);
+  flex-shrink: 0;
+}
+
+/* ── Tool Cards ────────────────────────────────────── */
 .dash-main {
   display: flex;
   gap: 28px;
   max-width: 1000px;
   width: 100%;
   justify-content: center;
-  margin-bottom: 80px;
+  margin-bottom: 32px;
+  animation: dash-fade-up 0.55s ease-out 0.2s both;
 }
 
-/* Base card */
 .dash-card {
   flex: 1;
   max-width: 480px;
@@ -91,22 +225,25 @@
   padding: 40px;
   display: flex;
   flex-direction: column;
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
   box-shadow: var(--shadow-card);
   position: relative;
+  overflow: hidden;
 }
 
 .dash-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-6px);
   box-shadow: var(--shadow-hover);
 }
 
-/* Dark card — Quick Rights Chat */
+/* Dark card */
 .dash-card-dark {
   background-color: var(--color-dark);
-  border: 1px solid rgba(197, 160, 58, 0.3);
+  border: 1px solid rgba(197,160,58,0.3);
+  animation: border-breathe 4s ease-in-out 0.6s infinite;
 }
 
+/* Corner brackets */
 .dash-card-dark::before,
 .dash-card-dark::after {
   content: '';
@@ -115,27 +252,19 @@
   height: 20px;
   border: 1px solid var(--color-gold);
   pointer-events: none;
+  transition: opacity 0.3s;
 }
+.dash-card-dark::before { top: 10px; right: 10px; border-bottom: none; border-left: none; }
+.dash-card-dark::after  { bottom: 10px; left: 10px; border-top: none; border-right: none; }
 
-.dash-card-dark::before {
-  top: 10px;
-  right: 10px;
-  border-bottom: none;
-  border-left: none;
-}
-
-.dash-card-dark::after {
-  bottom: 10px;
-  left: 10px;
-  border-top: none;
-  border-right: none;
-}
-
-/* Light card — Case Strategist (slightly lighter navy) */
+/* Light card */
 .dash-card-light {
   background-color: var(--color-card-light);
-  border: 1px solid rgba(197, 160, 58, 0.3);
-  box-shadow: var(--shadow-card), 0 0 0 8px rgba(255,255,255,0.5);
+  border: 1px solid rgba(197,160,58,0.2);
+}
+
+.dash-card-light:hover {
+  box-shadow: var(--shadow-hover), 0 0 20px 2px rgba(197,160,58,0.1);
 }
 
 /* Card header */
@@ -153,17 +282,11 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  margin: 0 0 16px 0;
+  margin: 0 0 16px;
   letter-spacing: -0.5px;
 }
-
-.dash-card-dark .dash-card-title {
-  color: var(--color-gold);
-}
-
-.dash-card-light .dash-card-title {
-  color: var(--color-dark);
-}
+.dash-card-dark  .dash-card-title { color: var(--color-gold); }
+.dash-card-light .dash-card-title { color: var(--color-dark); }
 
 .dash-icon-gold { color: var(--color-gold); }
 .dash-icon-dark { color: var(--color-gold); }
@@ -176,36 +299,20 @@
   letter-spacing: 1.2px;
   flex-shrink: 0;
 }
-
-.dash-badge-light {
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.7);
-  border: 1px solid rgba(255,255,255,0.15);
-}
-
-.dash-badge-dark {
-  background: rgba(197, 160, 58, 0.1);
-  color: var(--color-gold);
-  border: 1px solid rgba(197, 160, 58, 0.2);
-}
+.dash-badge-light { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.15); }
+.dash-badge-dark  { background: rgba(197,160,58,0.1);  color: var(--color-gold);    border: 1px solid rgba(197,160,58,0.2);  }
 
 .dash-card-desc {
   font-size: 15px;
   line-height: 1.65;
-  margin: 0 0 40px 0;
+  margin: 0 0 40px;
   font-weight: 400;
   letter-spacing: 0.2px;
 }
+.dash-card-dark  .dash-card-desc { color: #64748B; }
+.dash-card-light .dash-card-desc { color: #475569; }
 
-.dash-card-dark .dash-card-desc {
-  color: #64748B;
-}
-
-.dash-card-light .dash-card-desc {
-  color: #475569;
-}
-
-/* Buttons */
+/* ── Gold Button with shimmer ──────────────────────── */
 .dash-btn {
   width: 100%;
   padding: 14px 20px;
@@ -217,41 +324,92 @@
   justify-content: center;
   gap: 10px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
   border: none;
   margin-top: auto;
   text-decoration: none;
   font-family: 'Inter', sans-serif;
+  position: relative;
+  overflow: hidden;
 }
 
 .dash-btn-gold {
-  background: var(--color-gold-gradient);
+  /* Animated gold gradient — the shimmer base */
+  background: linear-gradient(
+    105deg,
+    #B8902E 0%,
+    var(--color-gold-light) 30%,
+    var(--color-gold-bright) 50%,
+    var(--color-gold-light) 70%,
+    #B8902E 100%
+  );
+  background-size: 220% auto;
   color: #000;
-  box-shadow: 0 4px 15px rgba(197, 160, 58, 0.2);
+  animation: gold-sweep 3s linear infinite;
+  box-shadow: 0 4px 15px rgba(197,160,58,0.25);
+}
+
+/* Glass light streak — the reflection */
+.dash-btn-gold::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -80%;
+  width: 45%;
+  height: 200%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255,255,255,0.45),
+    transparent
+  );
+  transform: skewX(-20deg);
+  animation: glass-streak 3.5s ease-in-out 0.5s infinite;
 }
 
 .dash-btn-gold:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 24px rgba(197, 160, 58, 0.4);
+  box-shadow: 0 8px 28px rgba(197,160,58,0.45);
+  animation-duration: 1.5s; /* speeds up shimmer on hover */
 }
 
 .dash-btn-dark {
   background-color: var(--color-dark);
-  color: #ffffff;
+  color: #fff;
   border: none;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle streak on dark button too */
+.dash-btn-dark::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -80%;
+  width: 40%;
+  height: 200%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(212,175,55,0.12),
+    transparent
+  );
+  transform: skewX(-20deg);
+  animation: glass-streak 5s ease-in-out 2s infinite;
 }
 
 .dash-btn-dark:hover {
-  background-color: #1a2744;
+  background-color: #162038;
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(13, 22, 37, 0.2);
+  box-shadow: 0 6px 20px rgba(13,22,37,0.3);
 }
 
-/* Footer */
+/* ── Footer ────────────────────────────────────────── */
 .dash-footer {
   width: 100%;
   max-width: 800px;
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  border-top: 1px solid rgba(0,0,0,0.08);
   padding-top: 28px;
   display: flex;
   align-items: center;
@@ -261,15 +419,382 @@
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 1.5px;
+  animation: dash-fade-up 0.55s ease-out 0.5s both;
 }
 
+/* ── Recent Cases ──────────────────────────────────── */
+.dash-recent-section {
+  max-width: 1000px;
+  width: 100%;
+  margin-bottom: 48px;
+  animation: dash-fade-up 0.55s ease-out 0.35s both;
+}
+
+.dash-recent-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.dash-recent-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-dark);
+  letter-spacing: 0.5px;
+}
+
+.dash-recent-viewall {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-gold);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  letter-spacing: 0.3px;
+  transition: color 0.2s;
+}
+.dash-recent-viewall:hover { color: var(--color-gold-light); }
+
+.dash-recent-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dash-recent-empty {
+  background: white;
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 10px;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Staggered row entrances */
+.dash-case-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: white;
+  border: 1px solid rgba(0,0,0,0.06);
+  border-left: 3px solid transparent;
+  border-radius: 8px;
+  padding: 16px 20px;
+  text-decoration: none;
+  transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
+  cursor: pointer;
+  opacity: 0;
+}
+
+.dash-case-row:nth-child(1) { animation: row-arrive 0.4s ease-out 0.4s forwards; }
+.dash-case-row:nth-child(2) { animation: row-arrive 0.4s ease-out 0.5s forwards; }
+.dash-case-row:nth-child(3) { animation: row-arrive 0.4s ease-out 0.6s forwards; }
+
+.dash-case-row:hover {
+  border-left-color: var(--color-gold);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+  transform: translateX(3px);
+}
+
+.dash-case-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+/* Latest case dot pulses gold */
+.dash-case-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+
+.dash-case-row:nth-child(1) .dash-case-dot {
+  animation: dot-pulse 2.5s ease-in-out 1s infinite;
+}
+
+.dash-case-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.dash-case-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-dark);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 400px;
+}
+
+.dash-case-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dash-case-type {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.dash-case-city {
+  font-size: 11px;
+  color: #94A3B8;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.dash-case-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  margin-left: 16px;
+  transition: transform 0.2s;
+}
+
+.dash-case-row:hover .dash-case-right {
+  transform: translateX(3px);
+}
+
+.dash-case-time {
+  font-size: 11px;
+  color: #94A3B8;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+/* ── Immediate Action Card ─────────────────────────── */
+.dash-action-card {
+  max-width: 1000px;
+  width: 100%;
+  margin-bottom: 32px;
+  background: #0D1625;
+  border: 1px solid rgba(212,175,55,0.25);
+  border-left: 3px solid #D4AF37;
+  border-radius: 10px;
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  animation: dash-fade-up 0.55s ease-out 0.18s both;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle shimmer streak on action card */
+.dash-action-card::after {
+  content: '';
+  position: absolute;
+  top: -50%; left: -80%;
+  width: 40%; height: 200%;
+  background: linear-gradient(90deg, transparent, rgba(212,175,55,0.07), transparent);
+  transform: skewX(-20deg);
+  animation: glass-streak 6s ease-in-out 1.5s infinite;
+}
+
+.dash-action-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  min-width: 0;
+  flex: 1;
+}
+
+.dash-action-icon-box {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: rgba(212,175,55,0.1);
+  border: 1px solid rgba(212,175,55,0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.dash-action-body { min-width: 0; }
+
+.dash-action-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 5px;
+}
+
+.dash-action-tag {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  color: #D4AF37;
+  background: rgba(212,175,55,0.1);
+  border: 1px solid rgba(212,175,55,0.2);
+  padding: 2px 7px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.dash-action-case-name {
+  font-size: 11px;
+  color: rgba(255,255,255,0.35);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 240px;
+}
+
+.dash-action-text {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.8);
+  margin: 0;
+  line-height: 1.5;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dash-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #D4AF37;
+  text-decoration: none;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+  border: 1px solid rgba(212,175,55,0.25);
+  padding: 7px 12px;
+  border-radius: 6px;
+  transition: background 0.2s, border-color 0.2s;
+  white-space: nowrap;
+}
+
+.dash-action-btn:hover {
+  background: rgba(212,175,55,0.08);
+  border-color: rgba(212,175,55,0.5);
+}
+
+/* ── Strength Badge ─────────────────────────────────── */
+.dash-strength-badge {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* ── Legal Quick Reference ──────────────────────────── */
+.dash-ref-section {
+  max-width: 1000px;
+  width: 100%;
+  margin-bottom: 48px;
+  animation: dash-fade-up 0.55s ease-out 0.45s both;
+}
+
+.dash-ref-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.dash-ref-card {
+  background: white;
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 10px;
+  padding: 18px;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.dash-ref-card:hover {
+  box-shadow: 0 6px 20px rgba(0,0,0,0.07);
+  transform: translateY(-2px);
+}
+
+.dash-ref-card-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.dash-ref-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.dash-ref-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #1E293B;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.dash-ref-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.dash-ref-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  font-size: 11px;
+  color: #64748B;
+  line-height: 1.4;
+}
+
+.dash-ref-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+/* ── Responsive ────────────────────────────────────── */
 @media (max-width: 800px) {
-  .dash-main {
-    flex-direction: column;
-    align-items: center;
-  }
-  .dash-card {
-    width: 100%;
-    max-width: 100%;
-  }
+  .dash-main           { flex-direction: column; align-items: center; }
+  .dash-card           { width: 100%; max-width: 100%; }
+  .dash-stats-row      { padding: 16px 20px; }
+  .dash-case-title     { max-width: 160px; }
+  .dash-ref-grid       { grid-template-columns: 1fr 1fr; }
+  .dash-action-card    { flex-direction: column; align-items: flex-start; }
+  .dash-action-btn     { align-self: flex-end; }
+  .dash-action-text    { white-space: normal; }
+  .dash-action-case-name { max-width: 100%; }
+}
+
+@media (max-width: 480px) {
+  .dash-ref-grid { grid-template-columns: 1fr; }
 }

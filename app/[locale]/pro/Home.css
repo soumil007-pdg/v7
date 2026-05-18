@@ -24,7 +24,20 @@
 }
 
 .lx-gold {
-  color: var(--lx-gold);
+  background: linear-gradient(
+    90deg,
+    var(--lx-gold) 0%,
+    var(--lx-gold) 20%,
+    #F5D78A        50%,
+    var(--lx-gold) 80%,
+    var(--lx-gold) 100%
+  );
+  background-size: 250% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gold-text-shimmer 3s ease-out 0.4s both,
+             gold-sweep        6s linear    3.5s infinite;
 }
 
 .lx-italic {
@@ -121,6 +134,7 @@
   font-weight: 600;
   letter-spacing: 1px;
   margin-bottom: 32px;
+  animation: gold-border-glow 3.5s ease-in-out infinite;
 }
 
 .lx-hero-title {
@@ -155,6 +169,22 @@
   letter-spacing: 1px;
   cursor: pointer;
   transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+  animation: gold-border-glow 3.5s ease-in-out infinite;
+}
+
+/* Glass reflection streak */
+.lx-btn-primary::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -80%;
+  width: 40%;
+  height: 200%;
+  background: linear-gradient(90deg, transparent, rgba(212,175,55,0.2), transparent);
+  transform: skewX(-20deg);
+  animation: glass-streak 4s ease-in-out 0.8s infinite;
 }
 
 .lx-btn-primary:hover {
@@ -319,9 +349,22 @@
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 2px;
-  color: var(--lx-gold);
   text-transform: uppercase;
   margin: 0 0 16px 0;
+  background: linear-gradient(
+    90deg,
+    var(--lx-gold) 0%,
+    var(--lx-gold) 20%,
+    #F5D78A        50%,
+    var(--lx-gold) 80%,
+    var(--lx-gold) 100%
+  );
+  background-size: 250% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gold-text-shimmer 3s ease-out 0.6s both,
+             gold-sweep        8s linear    3.7s infinite;
 }
 
 .lx-suite-header {
@@ -358,7 +401,22 @@
 }
 
 .lx-badge.muted { color: var(--lx-text-muted); }
-.lx-badge.gold  { color: var(--lx-gold); }
+.lx-badge.gold  {
+  background: linear-gradient(
+    90deg,
+    var(--lx-gold) 0%,
+    var(--lx-gold) 20%,
+    #F5D78A        50%,
+    var(--lx-gold) 80%,
+    var(--lx-gold) 100%
+  );
+  background-size: 250% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gold-text-shimmer 3s ease-out 0.8s both,
+             gold-sweep        8s linear    3.9s infinite;
+}
 
 .lx-link {
   font-size: 10px;
@@ -369,6 +427,18 @@
   display: inline-flex;
   align-items: center;
   margin-top: 40px;
+  position: relative;
+  overflow: hidden;
+}
+
+.lx-link::after {
+  content: '';
+  position: absolute;
+  top: -50%; left: -80%;
+  width: 50%; height: 200%;
+  background: linear-gradient(90deg, transparent, rgba(212,175,55,0.25), transparent);
+  transform: skewX(-20deg);
+  animation: glass-streak 5s ease-in-out 2s infinite;
 }
 
 .lx-link span {

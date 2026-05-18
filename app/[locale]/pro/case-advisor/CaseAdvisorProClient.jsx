@@ -11,7 +11,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import {
   Scale, ArrowRight, Plus, Trash2, UploadCloud, Link as LinkIcon,
   Download, Search, Gavel, AlertTriangle, CheckCircle, FolderOpen,
-  X, Clock, MapPin, ChevronRight, Loader,
+  X, Clock, MapPin, ChevronRight, Loader, MessageSquare,
 } from 'lucide-react';
 import '../CaseAdvisor.css';
 
@@ -418,7 +418,7 @@ export default function CaseAdvisorProClient() {
 
         {/* ── Main ────────────────────────────────────── */}
         <main className="ca-main">
-          <div className="ca-main-header">
+          <div key={`header-${step}`} className="ca-main-header ca-step-panel">
             <p className="ca-tag">{tc('header.step', { step })}</p>
             <h1>
               {step === 1 && t('step1Label')}
@@ -438,7 +438,7 @@ export default function CaseAdvisorProClient() {
 
             {/* ── Step 1 ─────────────────────────────── */}
             {step === 1 && (
-              <div className="ca-form-card">
+              <div key="step1" className="ca-form-card ca-step-panel">
                 <h3>{t('step1FormTitle')}</h3>
 
                 <div className="ca-field-grid">
@@ -495,7 +495,7 @@ export default function CaseAdvisorProClient() {
 
             {/* ── Step 2 ─────────────────────────────── */}
             {step === 2 && (
-              <div className="ca-form-card">
+              <div key="step2" className="ca-form-card ca-step-panel">
                 <h3>{t('step2FormTitle')}</h3>
 
                 <div className="ca-field-grid full">
@@ -541,7 +541,7 @@ export default function CaseAdvisorProClient() {
 
             {/* ── Step 3 ─────────────────────────────── */}
             {step === 3 && (
-              <div className="ca-form-card">
+              <div key="step3" className="ca-form-card ca-step-panel">
                 <h3>{t('step3FormTitle')}</h3>
 
                 {/* Evidence */}
@@ -663,7 +663,7 @@ export default function CaseAdvisorProClient() {
 
             {/* ── Step 4: Result ──────────────────────── */}
             {step === 4 && (
-              <div className="ca-result-layout">
+              <div key="step4" className="ca-result-layout ca-step-panel">
 
                 {/* Document body */}
                 <div className="ca-result-body">
@@ -746,6 +746,36 @@ export default function CaseAdvisorProClient() {
                     <button type="button" className="ca-rail-btn dark" onClick={handleExportPDF} disabled={isSubmitting || !result}>
                       <Download size={14} /> {t('downloadPdfBtn')}
                     </button>
+
+                    {/* Follow-up Chat bridge */}
+                    {!isSubmitting && result && (
+                      <button
+                        type="button"
+                        className="ca-rail-btn"
+                        style={{
+                          background: 'rgba(212,175,55,0.12)',
+                          border: '1px solid rgba(212,175,55,0.35)',
+                          color: '#D4AF37',
+                          display: 'flex', alignItems: 'center', gap: 6,
+                          fontWeight: 600, fontSize: 11, letterSpacing: 0.5,
+                          padding: '10px 14px', borderRadius: 6, cursor: 'pointer',
+                          width: '100%', justifyContent: 'center',
+                        }}
+                        onClick={() => {
+                          sessionStorage.setItem('ca_followup_context', JSON.stringify({
+                            caseTitle: getValues('caseTitle'),
+                            caseType:  getValues('caseType'),
+                            city:      getValues('city'),
+                            state:     getValues('state'),
+                            result,
+                          }));
+                          window.location.href = `/${locale}/pro/general-queries?source=case-advisor`;
+                        }}
+                      >
+                        <MessageSquare size={13} /> Ask Follow-up Questions
+                      </button>
+                    )}
+
                     <button type="button" className="ca-rail-btn outline" onClick={resetAll}>
                       {t('newAnalysisBtn')}
                     </button>

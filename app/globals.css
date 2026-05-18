@@ -274,3 +274,36 @@
 [data-theme="pro"] .site-footer {
   display: none !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   GLOBAL GOLD SHIMMER & GLASS REFLECTION SYSTEM
+   Canonical keyframe definitions — used across ALL pro CSS files.
+   Apply via: animation: gold-sweep / glass-streak / gold-border-glow
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Sweeps a bright highlight across a gold gradient background */
+@keyframes gold-sweep {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+
+/* A diagonal white light streak crossing a surface (glass reflection) */
+@keyframes glass-streak {
+  0%        { left: -80%; opacity: 0; }
+  5%        {             opacity: 1; }
+  95%       {             opacity: 1; }
+  100%      { left: 140%; opacity: 0; }
+}
+
+/* Gold border breathes a soft glow in and out */
+@keyframes gold-border-glow {
+  0%, 100% { box-shadow: 0 0  0px 0px rgba(212,175,55,0);    }
+  50%      { box-shadow: 0 0 22px 3px rgba(212,175,55,0.22); }
+}
+
+/* One-time text shimmer sweep — dark → bright gold → dark */
+@keyframes gold-text-shimmer {
+  0%   { background-position: -200% center; }
+  60%  { background-position:  200% center; }
+  100% { background-position:  200% center; }
+}

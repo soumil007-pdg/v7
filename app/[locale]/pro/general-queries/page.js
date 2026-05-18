@@ -1,18 +1,20 @@
-// PRO VERSION — General Queries (Quick Rights Chat)
-// Same backend/logic as the orange version.
-// Redesign the UI here freely — original is untouched at app/[locale]/general-queries/
-// Press Ctrl+Shift+T to toggle back.
-
 import { setRequestLocale } from 'next-intl/server';
 import GeneralQueriesClient from '../../general-queries/GeneralQueriesClient';
+import ProCaseFollowUpClient from './ProCaseFollowUpClient';
 
 export const metadata = {
   title: 'Quick Rights Chat — Pro',
   robots: { index: false, follow: false },
 };
 
-export default async function ProGeneralQueriesPage({ params }) {
+export default async function ProGeneralQueriesPage({ params, searchParams }) {
   const { locale } = await params;
+  const sp = await searchParams;
   setRequestLocale(locale);
+
+  if (sp?.source === 'case-advisor') {
+    return <ProCaseFollowUpClient />;
+  }
+
   return <GeneralQueriesClient />;
 }
