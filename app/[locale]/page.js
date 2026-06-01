@@ -26,7 +26,7 @@ export default async function HomePage({ params }) {
       
       {/* --- Section 1: Hero --- */}
       <section className="bg-[#FF5B33] pt-24 pb-32 md:pt-32 md:pb-48 text-white relative overflow-hidden">
-        <div className="absolute inset-0 opacity-5 bg-[url('/noise.png')]"></div>
+        <div className="absolute inset-0 opacity-5 bg-[url('/noise.png')] pointer-events-none"></div>
         <div className="container mx-auto px-4 max-w-4xl text-center relative z-10">
           <h1 className="text-5xl md:text-7xl font-extrabold leading-tight mb-6 tracking-tight">
             {t('hero.titlePart1')} <br />
@@ -37,19 +37,19 @@ export default async function HomePage({ params }) {
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-5 md:gap-8">
-            <Link href="/general-queries" className="w-full sm:w-auto">
-              <Button variant="brand-outline" size="xl-wide" className="w-full sm:w-auto shadow-xl hover:scale-105">
+            <Button asChild variant="brand-outline" size="xl-wide" className="w-full sm:w-auto shadow-xl hover:scale-105">
+              <Link href="/general-queries">
                 <MessageSquare size={24} />
                 {t('hero.quickChatBtn')}
-              </Button>
-            </Link>
+              </Link>
+            </Button>
 
-            <Link href="/case-advisor" className="w-full sm:w-auto">
-              <Button variant="dark-outline" size="xl-wide" className="w-full sm:w-auto shadow-xl hover:scale-105">
+            <Button asChild variant="dark-outline" size="xl-wide" className="w-full sm:w-auto shadow-xl hover:scale-105">
+              <Link href="/case-advisor">
                 <Scale size={24} />
                 {t('hero.caseAdvisorBtn')}
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
         </div>
       </section>
@@ -66,11 +66,11 @@ export default async function HomePage({ params }) {
             <p className="text-lg text-slate-600 mb-10 max-w-xl leading-relaxed">
               {t('insights.description')}
             </p>
-            <Link href="/dashboard">
-              <Button variant="dark" size="xl" className="shadow-lg hover:-translate-y-1">
+            <Button asChild variant="dark" size="xl" className="shadow-lg hover:-translate-y-1">
+              <Link href="/dashboard">
                 {t('insights.startBtn')} <ArrowRight size={20}/>
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
         </div>
       </section>
@@ -139,11 +139,11 @@ export default async function HomePage({ params }) {
           <div style={{backgroundColor: 'var(--primary-accent)'}} className="p-10 md:p-12 rounded-3xl shadow-2xl">
             <h2 className="text-4xl font-extrabold mb-6 leading-tight">{t('faqCta.ctaTitle')}</h2>
             <p className="text-lg text-white/90 mb-8 font-medium">{t('faqCta.ctaDesc')}</p>
-            <Link href="/dashboard">
-              <Button variant="brand-outline" size="xl" className="shadow-lg hover:scale-105">
+            <Button asChild variant="brand-outline" size="xl" className="shadow-lg hover:scale-105">
+              <Link href="/dashboard">
                 {t('faqCta.startJourneyBtn')} <ArrowRight size={20} />
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
 
           <div className="space-y-8">

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import { CheckCircle, ArrowRight } from 'lucide-react';
@@ -16,6 +16,23 @@ export default function AuthClient() {
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+
+  // If user already has a valid session, send them to home
+  useEffect(() => {
+    const token = localStorage.getItem('sessionToken');
+    if (!token) return;
+    fetch('/api/auth/validate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token }),
+    }).then(res => res.json()).then(data => {
+      if (data.isValid) router.replace('/');
+      else {
+        localStorage.removeItem('sessionToken');
+        document.cookie = 'sessionToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+      }
+    }).catch(() => {});
+  }, [router]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

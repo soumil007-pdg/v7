@@ -42,11 +42,14 @@ export function useAuth(requireAuth = true) {
           setUserName(data.name || '');
         } else {
           localStorage.removeItem('sessionToken');
+          document.cookie = 'sessionToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
           setIsLoggedIn(false);
           if (requireAuth) router.push('/auth');
         }
       } catch (err) {
         console.error('Auth check failed', err);
+        localStorage.removeItem('sessionToken');
+        document.cookie = 'sessionToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
         if (requireAuth) router.push('/auth');
       } finally {
         setLoading(false);

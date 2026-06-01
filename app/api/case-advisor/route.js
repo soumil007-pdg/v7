@@ -106,6 +106,69 @@ Do not just recite the law. Analyze the *winnability* of this case. Your job is 
   }
 
   try {
+    // --- PRE-VALIDATION: Check for gibberish input ---
+    // --- LAYER 1: Fast JS heuristic check ---
+    const gibberishPatterns = [
+      /\b(asdf|qwerty|zxcvb|hjkl|uiop|bnm|qaz|wsx|edc|rfv|tgb|yhn|ujm|ijk)\b/i,
+      /\b(lorem|ipsum|dolor|sit amet)\b/i,
+      /\b(hello world|foo bar|test test|blah blah|abc xyz|xyz abc)\b/i,
+    ];
+    const descWords = (formData.description || '').trim().split(/\s+/);
+    const titleWords = (formData.caseTitle || '').trim().split(/\s+/);
+    const allText = `${formData.caseTitle} ${formData.description} ${formData.reliefSought}`;
+    const digitRatio = (allText.replace(/[^0-9]/g, '').length) / Math.max(allText.replace(/\s/g, '').length, 1);
+    const avgWordLen = allText.replace(/[^a-zA-Z ]/g, '').split(/\s+/).reduce((s, w) => s + w.length, 0) / Math.max(descWords.length, 1);
+
+    const isHeuristicGibberish =
+      gibberishPatterns.some(p => p.test(allText)) ||
+      digitRatio > 0.45 ||
+      descWords.length < 8 ||
+      avgWordLen < 2.5;
+
+    if (isHeuristicGibberish) {
+      return new Response(
+        JSON.stringify({ message: 'Invalid input: Please provide a real legal case description. Random text, numbers, or gibberish cannot be analyzed.' }),
+        { status: 400 }
+      );
+    }
+
+    // --- LAYER 2: Gemini semantic check ---
+    const validationPrompt = `You are a strict input validator for a legal case analysis tool.
+
+INPUTS:
+Title: "${formData.caseTitle}"
+Description: "${formData.description}"
+Relief Sought: "${formData.reliefSought}"
+
+Does this describe a real or plausible legal dispute between two parties, in any language (English, Hindi, Marathi, Telugu, etc.)?
+
+Examples of INVALID inputs:
+- "1234 abc xyz 9999" / "asdfgh blah blah 777" / "qwerty 000"
+- Random trivia facts or numbers with no dispute
+- Placeholder text
+
+Examples of VALID inputs:
+- "My landlord refused to return security deposit after I vacated the flat"
+- "Contractor took advance payment but did not complete construction work"
+- "मेरे पड़ोसी ने मेरी जमीन पर कब्जा कर लिया"
+
+Reply with one word only — VALID or INVALID.`;
+
+    const validationResult = await generateWithRetry({
+      contents: [{ role: 'user', parts: [{ text: validationPrompt }] }],
+      generationConfig: { temperature: 0, maxOutputTokens: 5 },
+      safetySettings,
+    });
+
+    const validationText = validationResult.response.text().trim().toUpperCase();
+    if (validationText.startsWith('INVALID')) {
+      return new Response(
+        JSON.stringify({ message: 'Invalid input: Please provide a real legal case description. Random text, numbers, or gibberish cannot be analyzed.' }),
+        { status: 400 }
+      );
+    }
+    // --- END PRE-VALIDATION ---
+
     const prompt = `ACT AS A SENIOR INDIAN BASED LAWYER. Analyze this civil case:
     
     **CLIENT DETAILS:**

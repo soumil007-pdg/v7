@@ -30,13 +30,6 @@ export default function middleware(req) {
     return NextResponse.redirect(new URL(redirectTarget, req.url));
   }
 
-  if (token && isAuthPage) {
-    const redirectTarget = isProPath
-      ? `/${locale}/pro`
-      : `/${locale}`;
-    return NextResponse.redirect(new URL(redirectTarget, req.url));
-  }
-
   return intlMiddleware(req);
 }
 

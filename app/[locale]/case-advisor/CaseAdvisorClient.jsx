@@ -158,6 +158,25 @@ export default function CaseAdvisorClient() {
     setHistoryOpen(false);
   };
 
+  const deleteFromHistory = async (e, entry) => {
+    e.stopPropagation();
+    try {
+      const res = await fetch('/api/case-advisor/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: entry.id, email: userEmail }),
+      });
+      if (res.ok) {
+        setCaseHistory(prev => prev.filter(h => h.id !== entry.id));
+        toast.success('Case deleted');
+      } else {
+        toast.error('Failed to delete case');
+      }
+    } catch (_) {
+      toast.error('Failed to delete case');
+    }
+  };
+
   const methods = useForm({
     resolver: zodResolver(schema),
     mode: 'onChange', 
@@ -821,12 +840,28 @@ export default function CaseAdvisorClient() {
                     onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)'}
                     onMouseLeave={e => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.03)'}
                   >
-                    {/* Top row: title + arrow */}
+                    {/* Top row: title + delete + arrow */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
-                      <span style={{ color: 'white', fontWeight: 600, fontSize: 14, lineHeight: 1.3 }}>
+                      <span style={{ color: 'white', fontWeight: 600, fontSize: 14, lineHeight: 1.3, flex: 1 }}>
                         {entry.caseTitle}
                       </span>
-                      <ChevronRight size={14} style={{ color: 'rgba(255,255,255,0.2)', flexShrink: 0, marginTop: 2 }} />
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                        <button
+                          type="button"
+                          onClick={(e) => deleteFromHistory(e, entry)}
+                          title="Delete case"
+                          style={{
+                            background: 'none', border: 'none', cursor: 'pointer', padding: '2px 4px',
+                            color: 'rgba(255,255,255,0.2)', borderRadius: 4, display: 'flex', alignItems: 'center',
+                            transition: 'color 0.15s',
+                          }}
+                          onMouseEnter={e => e.currentTarget.style.color = '#ef4444'}
+                          onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.2)'}
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                        <ChevronRight size={14} style={{ color: 'rgba(255,255,255,0.2)', marginTop: 2 }} />
+                      </div>
                     </div>
 
                     {/* Middle row: type badge + location */}
